@@ -1,0 +1,8 @@
+*.root
+*.png
+bin/
+data_back/
+graph_back/
+graph_back2/
+data/
+root_data_source/

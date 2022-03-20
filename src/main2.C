@@ -233,7 +233,7 @@ int main(int argc, char **argv)
     // ./program pt n_noise mode {eventID}
     double Pt_data = atof(argv[1]);
     // string path = "/home/txiao/STCF_Oscar2.0.0/share/test2/posPt100.root";
-    string path = "/home/txiao/STCF_Oscar2.0.0/share/test2/posPt";
+    string path = "/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/root_data_source/pi+/posPt";
     path += argv[1];
     path += ".root";
 
@@ -282,8 +282,8 @@ int main(int argc, char **argv)
     string savepath = "./trackdata_Pt" + string(argv[1]) + "_noise" + string(argv[2]) + ".root";
     auto savefile = new TFile(savepath.c_str(), "RECREATE");
     auto savetree = new TTree("tree1", "tree1");
-    int event_id, track_id, num_true, num_total;
-    double Q_min, p_t;
+    int event_id, track_id, num_true, num_total, Qe;
+    double Q_min, p_t, d_rr;
     bool true_track;
     savetree->Branch("event_id", &event_id);
     savetree->Branch("track_id", &track_id);
@@ -292,6 +292,8 @@ int main(int argc, char **argv)
     savetree->Branch("Q", &Q_min);
     savetree->Branch("num_true", &num_true);
     savetree->Branch("num_total", &num_total);
+    savetree->Branch("Qe", &Qe);
+    savetree->Branch("D_origin", &d_rr);
     for (int eventIDTest = eventIDTest_begin; eventIDTest < eventIDTest_end; eventIDTest++)
     {
         std::vector<HoughPoint *> pointsList;
@@ -368,6 +370,7 @@ int main(int argc, char **argv)
                     Q_min = Q;
                     num_true = track->NumTruePoints();
                     num_total = track->Counts();
+                    Qe = track->GetSpin();
                     savefile->cd();
                     savetree->Fill();
 

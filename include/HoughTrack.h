@@ -38,7 +38,7 @@ public:
     bool ContainTrueTrack() const;
     int GetSpin() const;
     std::set<int> *GetPointIDSet() const;
-    void GetLayerDistribution(int *layer1, int *layer2, int *layer3) const;
+    void GetLayerDistribution(int *layer0, int *layer1, int *layer2) const;
 };
 
 HoughTrack::HoughTrack()

@@ -72,7 +72,7 @@ void graph5()
             std::cout << entries << std::endl;
             std::cout << "n_total: " << n_total << "\tn_eff: " << n_eff << "\tnum_with_cut: " << num_with_cut << std::endl;
             std::cout << "eff: " << double(n_eff) / double(n_total) << std::endl;
-            std::cout << "fake ratio: " << 1.0 - double(n_eff) / double(num_with_cut) << std::endl;
+            std::cout << "fake rate: " << 1.0 - double(n_eff) / double(num_with_cut) << std::endl;
             std::cout << "number of tracks without fake points: " << n_all_true_points << std::endl;
             out_txt_stream << pt_str[i] << " " << noise_str[j] << " " << double(n_eff) / n_total << " " << 1.0 - double(n_eff) / double(num_with_cut) << std::endl;
         }

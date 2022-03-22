@@ -35,7 +35,9 @@ public:
     bool HitALayers() const;
     double RatioTrues() const;
     int NumTruePoints() const;
+    int NumTruePointsMulti(std::set<int> *events_id) const;
     bool ContainTrueTrack() const;
+    bool ContainTrueTrackMulti(std::set<int> *events_id) const;
     int GetSpin() const;
     std::set<int> *GetPointIDSet() const;
     void GetLayerDistribution(int *layer0, int *layer1, int *layer2) const;
@@ -361,5 +363,35 @@ void HoughTrack::GetLayerDistribution(int *layer0, int *layer1, int *layer2) con
     *layer0 = _nlayer0;
     *layer1 = _nlayer1;
     *layer2 = _nlayer2;
+}
+
+bool HoughTrack::ContainTrueTrackMulti(std::set<int> *events_id) const
+{
+    return this->NumTruePointsMulti(events_id) == 3;
+}
+
+int HoughTrack::NumTruePointsMulti(std::set<int> *events_id) const
+{
+    int flag[events_id->size()] = {0};
+    int i = 0;
+    for (auto it = events_id->begin(); it != events_id->end(); it++, i++)
+    {
+        for (auto point : *_ptr)
+        {
+            if (point->eventID() == *it)
+            {
+                flag[i]++;
+            }
+        }
+    }
+    int max = 0;
+    for (auto n : flag)
+    {
+        if (n >= max)
+        {
+            max = n;
+        }
+    }
+    return max;
 }
 #endif

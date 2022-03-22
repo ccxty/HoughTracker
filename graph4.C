@@ -30,7 +30,7 @@ void graph4()
     std::string inpath = "./PtRe" + pt_str[0] + ".txt";
     std::ifstream infile(inpath.c_str());
     char buff[256];
-    std::string title = "sucesses ratio @" + pt_str[0] + " MeV/c with noise";
+    std::string title = "sucesses rate @" + pt_str[0] + " MeV/c with noise";
     std::string savepath = "./graph/sucesses" + pt_str[0] + "_noise.png";
     std::cout << title.c_str() << std::endl;
     std::cout << savepath.c_str() << std::endl;
@@ -79,7 +79,7 @@ void graph4()
     g->GetXaxis()->CenterTitle();
     g->SetMarkerStyle(EMarkerStyle::kFullCircle);
     g->GetYaxis()->SetRangeUser(0.2, 1);
-    g->GetYaxis()->SetTitle("success ratio");
+    g->GetYaxis()->SetTitle("success rate");
     g->GetYaxis()->CenterTitle();
     g->Draw();
     c1->SaveAs(savepath.c_str());

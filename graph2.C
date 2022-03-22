@@ -30,7 +30,7 @@ void graph2()
     g->GetXaxis()->CenterTitle();
     g->SetMarkerStyle(EMarkerStyle::kFullCircle);
     g->GetYaxis()->SetRangeUser(0.95, 1);
-    g->GetYaxis()->SetTitle("success ratio");
+    g->GetYaxis()->SetTitle("success rate");
     g->GetYaxis()->CenterTitle();
     g->Draw();
     c1->SaveAs("./graph/sucesses_rate_pt.png");

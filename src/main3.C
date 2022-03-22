@@ -12,6 +12,8 @@
 #include <random>
 #include "TRandom.h"
 #include <set>
+#include <algorithm>
+#include "Hough.h"
 
 using namespace std;
 
@@ -228,6 +230,28 @@ void AddNoise(int n_noise, std::vector<HoughPoint *> &points)
     }
 }
 
+std::set<int> *GetRandomSet(int n_tracks_in_event, std::set<int> &base)
+{
+    auto set = new std::set<int>;
+    while (set->size() < n_tracks_in_event)
+    {
+        auto it(base.begin());
+        advance(it, rand() % base.size());
+        set->insert(*it);
+    }
+    return set;
+}
+
+bool SetContain(std::set<int> *set, int num)
+{
+    bool contain = false;
+    for (auto e : *set)
+    {
+        if (e == num)
+            contain = true;
+    }
+    return contain;
+}
 int main(int argc, char **argv)
 {
     // ./program pt n_noise mode {eventID}
@@ -243,36 +267,42 @@ int main(int argc, char **argv)
     int eventIDTest_end = 1000; // 左闭右开
     int n_tracks_in_event = 1;
 
-    std::vector<int> eventIDs_toTest;
-
-    if (execMode == "single_random")
+    std::set<int> *eventIDs_toTest;
+    std::set<int> eventIDs_all;
+    for (int i = 0; i < 1000; i++)
     {
-        eventIDTest_begin = rand() % 1000;
-        eventIDTest_end = eventIDTest_begin + 1;
-        eventIDs_toTest.push_back(eventIDTest_begin);
+        eventIDs_all.insert(i);
     }
-    else if (execMode == "single_given")
+    // if (execMode == "single_random")
+    // {
+    //     eventIDTest_begin = rand() % 1000;
+    //     eventIDTest_end = eventIDTest_begin + 1;
+    //     eventIDs_toTest.push_back(eventIDTest_begin);
+    // }
+    // else if (execMode == "single_given")
+    // {
+    //     eventIDTest_begin = atoi(argv[4]);
+    //     eventIDTest_end = eventIDTest_begin + 1;
+    //     eventIDs_toTest.push_back(eventIDTest_begin);
+    // }
+    // else if (execMode == "all")
+    // {
+    //     eventIDTest_begin = 0;
+    //     eventIDTest_end = 1000;
+    //     for (int i = 0; i < 1000; i++)
+    //     {
+    //         eventIDs_toTest.push_back(i);
+    //     }
+    // }
+    if (execMode == "single_multi")
     {
-        eventIDTest_begin = atoi(argv[4]);
-        eventIDTest_end = eventIDTest_begin + 1;
-        eventIDs_toTest.push_back(eventIDTest_begin);
-    }
-    else if (execMode == "all")
-    {
-        eventIDTest_begin = 0;
-        eventIDTest_end = 1000;
-        for (int i = 0; i < 1000; i++)
-        {
-            eventIDs_toTest.push_back(i);
-        }
+        n_tracks_in_event = atoi(argv[4]);
+        eventIDs_toTest = GetRandomSet(n_tracks_in_event, eventIDs_all);
     }
     else if (execMode == "all_multi")
     {
         n_tracks_in_event = atoi(argv[4]);
-        for (int i = 0; i < 1000; i++)
-        {
-            eventIDs_toTest.push_back(i);
-        }
+        eventIDs_toTest = &eventIDs_all;
     }
     else
     {
@@ -296,7 +326,10 @@ int main(int argc, char **argv)
     nevents = tree->GetEntries();
     int n_true_tracks = 0;
 
-    string savepath = "./trackdata_Pt" + string(argv[1]) + "_noise" + string(argv[2]) + ".root";
+    string savepath = "./trackdata_Pt" + string(argv[1]) + "_noise" + string(argv[2]);
+    if (n_tracks_in_event != 1)
+        savepath += "_" + string(argv[4]);
+    savepath += ".root";
     auto savefile = new TFile(savepath.c_str(), "RECREATE");
     auto savetree = new TTree("tree1", "tree1");
     int event_id, track_id, num_true, num_total, Qe;
@@ -311,8 +344,14 @@ int main(int argc, char **argv)
     savetree->Branch("num_total", &num_total);
     savetree->Branch("Qe", &Qe);
     savetree->Branch("D_origin", &d_rr);
-    for (int eventIDTest = eventIDTest_begin; eventIDTest < eventIDTest_end; eventIDTest++)
+    while (eventIDs_toTest->size() >= n_tracks_in_event)
     {
+        int eventIDTest;
+        auto test_set = GetRandomSet(n_tracks_in_event, *eventIDs_toTest);
+        for (auto event : *test_set)
+        {
+            eventIDs_toTest->erase(event);
+        }
         std::vector<HoughPoint *> pointsList;
         int eventID_temp = -1;
         int read_count = 0;
@@ -322,7 +361,7 @@ int main(int argc, char **argv)
         {
             tree->GetEntry(ie);
 
-            if ((eventID == eventIDTest) && (trackID == 1) && (eventID != eventID_skip))
+            if (SetContain(test_set, eventID) && (trackID == 1) && (eventID != eventID_skip))
             {
                 HoughPoint *ptr = new HoughPoint(posX, posY, posZ, eventID, trackID, layerID, Pt);
                 int identity = pointsList.size();
@@ -333,26 +372,25 @@ int main(int argc, char **argv)
                 if (read_count >= 3)
                 {
                     eventID_skip = eventID;
-                    // read_count = 0;
+                    read_count = 0;
                 }
             }
         }
-        if (read_count < 3)
-        {
-            std::cout << "number of points not enough!" << endl;
-            for (auto point : pointsList)
-            {
-                delete point;
-            }
-            continue;
-        }
+        // if (read_count < 3)
+        // {
+        //     std::cout << "number of points not enough!" << endl;
+        //     for (auto point : pointsList)
+        //     {
+        //         delete point;
+        //     }
+        //     continue;
+        // }
 
         n_true_tracks++;
         AddNoise(n_noise, pointsList);
         npoints = pointsList.size();
         std::cout << path << endl;
         std::cout << Pt_data << endl;
-        std::cout << "eventID for Test: " << eventIDTest << endl;
         std::cout << "number of points: " << npoints << endl;
 
         auto houghGrid = GridInit2();
@@ -380,12 +418,12 @@ int main(int argc, char **argv)
                     PtReContruction.push_back(pt);
                     QReContruction.push_back(Q);
 
-                    event_id = eventIDTest;
+                    event_id = 0;
                     track_id = PtReContruction.size();
-                    true_track = track->ContainTrueTrack();
+                    true_track = track->ContainTrueTrackMulti(test_set);
                     p_t = pt;
                     Q_min = Q;
-                    num_true = track->NumTruePoints();
+                    num_true = track->NumTruePointsMulti(test_set);
                     num_total = track->Counts();
                     Qe = track->GetSpin();
                     savefile->cd();

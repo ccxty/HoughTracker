@@ -1,28 +1,33 @@
-#include <TRandom.h>
 #include <iostream>
-#include <random>
-
+#include <set>
+std::set<int> *GetRandomSet(int n_tracks_in_event, std::set<int> &base)
+{
+    auto set = new std::set<int>;
+    while (set->size() < n_tracks_in_event)
+    {
+        auto it(base.begin());
+        advance(it, rand() % base.size());
+        set->insert(*it);
+    }
+    return set;
+}
 void test()
 {
-    std::random_device rd;
-    int n_noise = 10;
-    if (n_noise <= 0)
-        return;
-    else
+    std::set<int> base;
+    for (int i = 0; i < 100; i++)
     {
-        auto rdm = new TRandom();
-        auto rdm_layer = new TRandom();
+        base.insert(i);
+    }
 
-        double r[] = {65.115, 115.11, 165.11};
-        for (int i = 0; i < n_noise; i++)
+    for (int i = 0; i < 1000; i++)
+    {
+        auto a = GetRandomSet(2, base);
+        for (auto num : *a)
         {
-            rdm->SetSeed(rd() % kMaxUInt);
-            rdm_layer->SetSeed(rd() % kMaxUInt);
-
-            int layerID = rdm_layer->Integer(3);
-            double x, y;
-            rdm->Circle(x, y, r[layerID]);
-            std::cout << layerID << " " << x << " " << y << std::endl;
+            std::cout << num << "\t";
         }
+
+        std::cout << "\n"
+                  << a->size() << "\n";
     }
 }

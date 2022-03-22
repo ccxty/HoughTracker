@@ -29,5 +29,4 @@ void TherePointsLinearFit(HoughPoint *point1, HoughPoint *point2, HoughPoint *po
     param[0] = a0;
     param[1] = a1;
 }
-
 #endif

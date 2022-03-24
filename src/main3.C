@@ -10,7 +10,7 @@
 #include "TMath.h"
 #include "clag.h"
 #include <random>
-#include "TRandom.h"
+#include "TRandom3.h"
 #include <set>
 #include <algorithm>
 #include "Hough.h"
@@ -211,22 +211,31 @@ void AddNoise(int n_noise, std::vector<HoughPoint *> &points)
         return;
     else
     {
-        auto rdm = new TRandom();
-        auto rdm_layer = new TRandom();
+        auto rdm = new TRandom3();
+        auto rdm_layer = new TRandom3();
+        auto rdm_z = new TRandom3();
         std::random_device rd;
         double r[] = {65.115, 115.11, 165.11};
         int len = points.size();
+        rdm->SetSeed(rd() % kMaxULong);
+        rdm_layer->SetSeed(rd() % kMaxULong);
+        rdm_z->SetSeed(rd() % kMaxULong);
+        double cos_20 = cos(20 * TMath::Pi() / 180.);
+
         for (int i = 0; i < n_noise; i++)
         {
-            rdm->SetSeed(rd() % kMaxUInt);
-            rdm_layer->SetSeed(rd() % kMaxUInt);
             int layerID = rdm_layer->Integer(3);
-            double x, y;
+            double x, y, z, cos_theta;
             rdm->Circle(x, y, r[layerID]);
-            auto point = new HoughPoint(x, y, 0, -1, 1, layerID, 0);
+            cos_theta = rdm_z->Rndm() * (2 * cos_20) - cos_20;
+            z = r[layerID] * cos_theta / sqrt(1 - cos_theta * cos_theta);
+            auto point = new HoughPoint(x, y, z, -1, 1, layerID, 0);
             point->SetId(len + i - 1);
             points.push_back(point);
         }
+        delete rdm;
+        delete rdm_layer;
+        delete rdm_z;
     }
 }
 
@@ -252,6 +261,7 @@ bool SetContain(std::set<int> *set, int num)
     }
     return contain;
 }
+
 int main(int argc, char **argv)
 {
     // ./program pt n_noise mode {eventID}
@@ -327,19 +337,20 @@ int main(int argc, char **argv)
     int n_true_tracks = 0;
 
     string savepath = "./trackdata_Pt" + string(argv[1]) + "_noise" + string(argv[2]);
-    if (n_tracks_in_event != 1)
+    if (n_tracks_in_event != 0)
         savepath += "_" + string(argv[4]);
     savepath += ".root";
     auto savefile = new TFile(savepath.c_str(), "RECREATE");
     auto savetree = new TTree("tree1", "tree1");
     int event_id, track_id, num_true, num_total, Qe;
-    double Q_min, p_t, d_rr;
+    double Q_min, p_t, d_rr, Q_z;
     bool true_track;
     savetree->Branch("event_id", &event_id);
     savetree->Branch("track_id", &track_id);
     savetree->Branch("true_track", &true_track);
     savetree->Branch("Pt", &p_t);
     savetree->Branch("Q", &Q_min);
+    savetree->Branch("Qz", &Q_z);
     savetree->Branch("num_true", &num_true);
     savetree->Branch("num_total", &num_total);
     savetree->Branch("Qe", &Qe);
@@ -404,14 +415,14 @@ int main(int argc, char **argv)
         int n_good_tracks = 0;
         for (int i = 0; i < tracks->size(); i++)
         {
-            double pt, Q;
+            double pt, Q, Qz;
             auto track = tracks->at(i);
             if (track->HitALayers())
             {
                 track->Print();
                 std::cout << boolalpha << track->ContainTrueTrack() << " "
                           << noboolalpha << track->RatioTrues() << std::endl;
-                bool fit_fine = track->FitLinear(&pt, &Q);
+                bool fit_fine = track->FitLinear(&pt, &Q, &Qz);
 
                 if (fit_fine && (pt > PtMin) && (Q < QCut))
                 {
@@ -423,6 +434,7 @@ int main(int argc, char **argv)
                     true_track = track->ContainTrueTrackMulti(test_set);
                     p_t = pt;
                     Q_min = Q;
+                    Q_z = Qz;
                     num_true = track->NumTruePointsMulti(test_set);
                     num_total = track->Counts();
                     Qe = track->GetSpin();
@@ -438,10 +450,10 @@ int main(int argc, char **argv)
         //     return 0;
 
         // output
-        string outpath = "./PtRe";
-        outpath += argv[1];
-        outpath += ".txt";
-        ofstream output(outpath.c_str(), ios::app);
+        // string outpath = "./PtRe";
+        // outpath += argv[1];
+        // outpath += ".txt";
+        // ofstream output(outpath.c_str(), ios::app);
         for (auto pt : PtReContruction)
         {
             std::cout << pt << endl;

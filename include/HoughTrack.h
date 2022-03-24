@@ -25,7 +25,7 @@ public:
     ~HoughTrack();
     int Counts() const;
     void AddPoint(HoughPoint *point);
-    bool FitLinear(double *pt, double *Qmin);
+    bool FitLinear(double *pt, double *Qmin, double *Qz);
     double Pt() const;
     void Print() const;
     std::vector<HoughPoint *> *GetPoints() const;
@@ -197,7 +197,7 @@ bool HoughTrack::operator>(HoughTrack *other) const
 }
 
 // 先调用 HitALayers();
-bool HoughTrack::FitLinear(double *pt, double *Qmin)
+bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz)
 {
     double x[_counts];
     double y[_counts];
@@ -208,6 +208,8 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin)
     int i1 = 0;
     int i2 = 0;
     *Qmin = 1.0;
+    *Qz = 1000;
+    bool fit = false;
     for (int i = 0; i < _counts; i++)
     {
         auto point = _ptr->at(i);
@@ -236,7 +238,7 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin)
               << _nlayer2 << std::endl;
     double param[2];
     double a0, a1;
-    double Q_swap;
+    double Q_swap, Qz_swap;
     for (auto point1 : layer0)
     {
         for (auto point2 : layer1)
@@ -244,18 +246,26 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin)
             for (auto point3 : layer2)
             {
                 TherePointsLinearFit(point1, point2, point3, &Q_swap, param);
-                if (Q_swap < *Qmin)
+                FitZLinear(point1, point2, point3, &Qz_swap);
+                if ((Qz_swap < 2.0) && (Q_swap < *Qmin))
                 {
+                    fit = true;
                     *Qmin = Q_swap;
+                    *Qz = Qz_swap;
                     a0 = param[0];
                     a1 = param[1];
                 }
             }
         }
     }
+    if (fit == false)
+    {
+        return false;
+    }
     std::cout << "a0: " << a0 << "\t"
               << "a1: " << a1 << "\t"
-              << "Qmin: " << *Qmin << std::endl;
+              << "Qmin: " << *Qmin
+              << "Qz: " << *Qz << std::endl;
     double d = abs(a0) / sqrt(1 + a1 * a1);
     std::cout << "d: " << d << std::endl;
     std::cout << "Pt: " << 0.3 / d << std::endl;

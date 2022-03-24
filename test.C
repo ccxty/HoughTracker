@@ -1,5 +1,10 @@
 #include <iostream>
 #include <set>
+#include "TRandom3.h"
+#include <random>
+#include "TMath.h"
+#include "TH1.h"
+#include "TCanvas.h"
 std::set<int> *GetRandomSet(int n_tracks_in_event, std::set<int> &base)
 {
     auto set = new std::set<int>;
@@ -13,21 +18,46 @@ std::set<int> *GetRandomSet(int n_tracks_in_event, std::set<int> &base)
 }
 void test()
 {
-    std::set<int> base;
-    for (int i = 0; i < 100; i++)
-    {
-        base.insert(i);
-    }
+    // std::set<int> base;
+    // for (int i = 0; i < 100; i++)
+    // {
+    //     base.insert(i);
+    // }
 
-    for (int i = 0; i < 1000; i++)
-    {
-        auto a = GetRandomSet(2, base);
-        for (auto num : *a)
-        {
-            std::cout << num << "\t";
-        }
+    // for (int i = 0; i < 1000; i++)
+    // {
+    //     auto a = GetRandomSet(2, base);
+    //     for (auto num : *a)
+    //     {
+    //         std::cout << num << "\t";
+    //     }
 
-        std::cout << "\n"
-                  << a->size() << "\n";
+    //     std::cout << "\n"
+    //               << a->size() << "\n";
+    // }
+    int n_noise = 10000;
+    auto rdm = new TRandom3();
+    auto rdm_layer = new TRandom3();
+    auto rdm_z = new TRandom3();
+    std::random_device rd;
+    double r[] = {65.115, 115.11, 165.11};
+    rdm->SetSeed(rd() % kMaxULong);
+    rdm_layer->SetSeed(rd() % kMaxULong);
+    rdm_z->SetSeed(rd() % kMaxULong);
+    int n_plus = 0;
+    double cos_20 = cos(20 * TMath::Pi() / 180.);
+    auto c1 = new TCanvas("c1", "c1");
+    auto h = new TH1F("h", "h", 1000, -500, 500);
+    for (int i = 0; i < n_noise; i++)
+    {
+        int layerID = rdm_layer->Integer(3);
+        double x, y, cos_theta, z;
+        rdm->Circle(x, y, r[layerID]);
+        cos_theta = rdm_z->Rndm() * (2 * cos_20) - cos_20;
+        z = r[layerID] * cos_theta / sqrt(1 - cos_theta * cos_theta);
+        h->Fill(z);
     }
+    c1->cd();
+    h->Draw();
+    c1->Draw();
 }

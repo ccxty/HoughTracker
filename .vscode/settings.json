@@ -73,6 +73,7 @@
         "graph7.C": "cpp",
         "graph8.C": "cpp",
         "graph9.C": "cpp",
-        "graph10.C": "cpp"
+        "graph10.C": "cpp",
+        "ReadRoot.C": "cpp"
     }
 }

@@ -13,7 +13,6 @@ private:
     std::vector<HoughPoint *> *_ptr;
     double _pt;
     int _counts = 0;
-    bool _fit = false;
     int _nlayer0 = 0;
     int _nlayer1 = 0;
     int _nlayer2 = 0;

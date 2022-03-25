@@ -220,30 +220,33 @@ bool SetContain(std::set<int> *set, int num)
 
 int main(int argc, char **argv)
 {
-    // ./program pt n_noise mode multi
-    double Pt_data = atof(argv[1]);
-    string path = "/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/root_data_source/pi+/posPt";
-    path += argv[1];
+    // ./program particle pt n_noise mode multi
+    // argv:0        1    2     3     4     5
+    string particle(argv[1]);
+    double Pt_data = atof(argv[2]);
+    string path = "/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/root_data_source/";
+    path += particle + "/posPt";
+    path += argv[2];
     path += ".root";
 
-    int n_noise = atoi(argv[2]);
-    string execMode(argv[3]);
+    int n_noise = atoi(argv[3]);
+    string execMode(argv[4]);
     int n_tracks_in_event = 1;
 
     std::set<int> *eventIDs_toTest;
     std::set<int> eventIDs_all;
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < 10000; i++)
     {
         eventIDs_all.insert(i);
     }
     if (execMode == "single_multi")
     {
-        n_tracks_in_event = atoi(argv[4]);
+        n_tracks_in_event = atoi(argv[5]);
         eventIDs_toTest = GetRandomSet(n_tracks_in_event, eventIDs_all);
     }
     else if (execMode == "all_multi")
     {
-        n_tracks_in_event = atoi(argv[4]);
+        n_tracks_in_event = atoi(argv[5]);
         eventIDs_toTest = &eventIDs_all;
     }
     else
@@ -253,24 +256,34 @@ int main(int argc, char **argv)
 
     TFile *file = new TFile(path.c_str());
     TTree *tree = (TTree *)gDirectory->Get("tree1");
-    double posX, posY, posZ;
-    double Pt;
-    int layerID, eventID, trackID;
-    int nevents, npoints;
-    tree->SetBranchAddress("posX", &posX);
-    tree->SetBranchAddress("posY", &posY);
-    tree->SetBranchAddress("posZ", &posZ);
+    std::vector<double> *posX = 0;
+    std::vector<double> *posY = 0;
+    std::vector<double> *posZ = 0;
+    std::vector<int> *trackID = 0;
+    std::vector<int> *layerID = 0;
+    std::vector<double> *Pt = 0;
+    TBranch *b_posX = 0;
+    TBranch *b_posY = 0;
+    TBranch *b_posZ = 0;
+    TBranch *b_trackID = 0;
+    TBranch *b_Pt = 0;
+    TBranch *b_layerID = 0;
+    int eventID;
+    int nevents, npoints, nhits;
+    tree->SetBranchAddress("posX", &posX, &b_posX);
+    tree->SetBranchAddress("posY", &posY, &b_posY);
+    tree->SetBranchAddress("posZ", &posZ, &b_posZ);
     tree->SetBranchAddress("eventID", &eventID);
-    tree->SetBranchAddress("layerID", &layerID);
-    tree->SetBranchAddress("trackID", &trackID);
-    tree->SetBranchAddress("Pt", &Pt);
+    tree->SetBranchAddress("layerID", &layerID, &b_layerID);
+    tree->SetBranchAddress("trackID", &trackID, &b_trackID);
+    tree->SetBranchAddress("Pt", &Pt, &b_Pt);
+    tree->SetBranchAddress("nhits", &nhits);
 
     nevents = tree->GetEntries();
-    int n_true_tracks = 0;
 
-    string savepath = "./trackdata_Pt" + string(argv[1]) + "_noise" + string(argv[2]);
+    string savepath = "./trackdata_Pt" + string(argv[2]) + "_noise" + string(argv[3]);
     if (n_tracks_in_event != 0)
-        savepath += "_multi" + string(argv[4]);
+        savepath += "_multi" + string(argv[5]);
     savepath += ".root";
     auto savefile = new TFile(savepath.c_str(), "RECREATE");
     auto savetree = new TTree("tree1", "tree1");
@@ -286,8 +299,10 @@ int main(int argc, char **argv)
     savetree->Branch("num_true", &num_true);
     savetree->Branch("num_total", &num_total);
     savetree->Branch("Qe", &Qe);
+    int counts_useful_events = 0;
     while (eventIDs_toTest->size() >= n_tracks_in_event)
     {
+        std::cout << "There are " << eventIDs_toTest->size() << " events left\n";
         int eventIDTest;
         auto test_set = GetRandomSet(n_tracks_in_event, *eventIDs_toTest);
         for (auto event : *test_set)
@@ -296,39 +311,36 @@ int main(int argc, char **argv)
         }
         std::vector<HoughPoint *> pointsList;
         int eventID_temp = -1;
-        int read_count = 0;
-        int counts = 0;
         int eventID_skip = -1;
-        for (int ie = 0; ie < nevents; ie++)
+        for (auto ie : *test_set)
         {
             tree->GetEntry(ie);
-
-            if (SetContain(test_set, eventID) && (trackID == 1) && (eventID != eventID_skip))
+            if (nhits < 3)
             {
-                HoughPoint *ptr = new HoughPoint(posX, posY, posZ, eventID, trackID, layerID, Pt);
-                int identity = pointsList.size();
-                ptr->SetId(identity);
-                pointsList.push_back(ptr);
-                read_count++;
-                counts++;
+                continue;
+            }
+            int read_count = 0;
+            counts_useful_events++;
+            for (int ip = 0; ip < nhits; ip++)
+            {
+                if ((trackID->at(ip) == 1) && (eventID != eventID_skip))
+                {
+                    HoughPoint *ptr = new HoughPoint(posX->at(ip), posY->at(ip), posZ->at(ip),
+                                                     eventID, trackID->at(ip), layerID->at(ip), Pt->at(ip));
+                    ptr->SetId(pointsList.size());
+                    pointsList.push_back(ptr);
+                    read_count++;
+                }
                 if (read_count >= 3)
                 {
                     eventID_skip = eventID;
-                    read_count = 0;
                 }
             }
         }
-        // if (read_count < 3)
-        // {
-        //     std::cout << "number of points not enough!" << endl;
-        //     for (auto point : pointsList)
-        //     {
-        //         delete point;
-        //     }
-        //     continue;
-        // }
-
-        n_true_tracks++;
+        if (pointsList.size() < 3)
+        {
+            continue;
+        }
         AddNoise(n_noise, pointsList);
         npoints = pointsList.size();
         std::cout << path << endl;
@@ -425,6 +437,6 @@ int main(int argc, char **argv)
     savefile->Close();
     std::cout << execMode << std::endl;
     std::cout << "Save Path: " << savepath << std::endl;
-    std::cout << "totoal tarcks useful: " << n_true_tracks << endl;
+    std::cout << "totoal tarcks useful: " << counts_useful_events << endl;
     return 0;
 }

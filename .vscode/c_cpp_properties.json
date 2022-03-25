@@ -4,7 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${default}",
-                "${workspaceFolder}/include/",
+                "${workspaceFolder}/include/**",
+                "/home/zhouh/STCF_Oscar2.0.0/DataModel/SimEvent/**",
                 "/home/zhouh/STCF_Oscar2.0.0/DataModel/SimEvent/StcfMCEvent/**",
                 "/home/zhouh/STCF_Oscar2.0.0/DataModel/SimEvent/StcfMCEvent/Event/**",
                 "/home/zhouh/STCF_Oscar2.0.0/Reconstruction/HoughFinder/**",

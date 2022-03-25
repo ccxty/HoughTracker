@@ -22,8 +22,8 @@ int main()
   for (int i = 0; i < 18; i++)
   {
     string path = "/ustcfs/STCFUser/zhouh/20220319/SingleElectron/";
-    path += "singleEminus" + n_str[i] + ".root";
-    string savepath = "./root_data_source/e-/posPt";
+    path += "singleEplus" + n_str[i] + ".root";
+    string savepath = "./root_data_source/e+/posPt";
     savepath += pts[i] + ".root";
     TFile *file = new TFile(path.c_str());
     std::cout << "path: " << path << std::endl;
@@ -49,22 +49,44 @@ int main()
     double posX, posY, posZ;
     int trackID, charge;
     double Pt;
+    int hits;
+    std::vector<int> layer_id;
+    std::vector<int> track_id;
+    std::vector<double> x;
+    std::vector<double> y;
+    std::vector<double> z;
+    std::vector<double> pt;
 
-    driftTimeTree->Branch("posX", &posX);
-    driftTimeTree->Branch("posY", &posY);
-    driftTimeTree->Branch("posZ", &posZ);
+    // driftTimeTree->Branch("posX", &posX);
+    // driftTimeTree->Branch("posY", &posY);
+    // driftTimeTree->Branch("posZ", &posZ);
+    // driftTimeTree->Branch("eventID", &eventID);
+    // driftTimeTree->Branch("layerID", &layerID);
+    // driftTimeTree->Branch("trackID", &trackID);
+    // driftTimeTree->Branch("Pt", &Pt);
     driftTimeTree->Branch("eventID", &eventID);
-    driftTimeTree->Branch("layerID", &layerID);
-    driftTimeTree->Branch("trackID", &trackID);
-    driftTimeTree->Branch("Pt", &Pt);
+    driftTimeTree->Branch("trackID", &track_id);
+    driftTimeTree->Branch("layerID", &layer_id);
+    driftTimeTree->Branch("posX", &x);
+    driftTimeTree->Branch("posY", &y);
+    driftTimeTree->Branch("posZ", &z);
+    driftTimeTree->Branch("Pt", &pt);
+    driftTimeTree->Branch("nhits", &hits);
     // driftTimeTree->Branch("charge", &charge);
 
     for (int ie = 0; ie < events; ie++)
     {
+      layer_id.clear();
+      track_id.clear();
+      x.clear();
+      y.clear();
+      z.clear();
+      pt.clear();
       tMCEvent->GetEntry(ie);
       eventID = mcEvent->eventID();
       TClonesArray *ITDHits = mcEvent->itdHitList();
       int nhits = ITDHits->GetEntries();
+      hits = nhits;
       for (int it = 0; it < nhits; it++)
       {
         OSCAR::ITDHit *itdhit = (OSCAR::ITDHit *)(ITDHits->At(it));
@@ -75,10 +97,16 @@ int main()
         posZ = itdhit->Position().z();
         trackID = itdhit->trackid();
         Pt = itdhit->initialMom().Pt();
-        driftTimeFile->cd();
-        driftTimeTree->Fill();
+        layer_id.push_back(layerID);
+        track_id.push_back(trackID);
+        x.push_back(posX);
+        y.push_back(posY);
+        z.push_back(posZ);
+        pt.push_back(Pt);
         //}
       }
+      driftTimeFile->cd();
+      driftTimeTree->Fill();
     }
 
     file->Close();

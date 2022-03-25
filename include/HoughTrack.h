@@ -37,6 +37,7 @@ public:
     int NumTruePointsMulti(std::set<int> *events_id) const;
     bool ContainTrueTrack() const;
     bool ContainTrueTrackMulti(std::set<int> *events_id) const;
+    int GetEventID(std::set<int> *events_id) const;
     int GetSpin() const;
     std::set<int> *GetPointIDSet() const;
     void GetLayerDistribution(int *layer0, int *layer1, int *layer2) const;
@@ -230,11 +231,11 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz)
         }
     }
 
-    std::cout << "counts: " << _counts << std::endl;
-    std::cout << "number of points in each layer: "
-              << _nlayer0 << " "
-              << _nlayer1 << " "
-              << _nlayer2 << std::endl;
+    // std::cout << "counts: " << _counts << std::endl;
+    // std::cout << "number of points in each layer: "
+    //           << _nlayer0 << " "
+    //           << _nlayer1 << " "
+    //           << _nlayer2 << std::endl;
     double param[2];
     double a0, a1;
     double Q_swap, Qz_swap;
@@ -261,13 +262,13 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz)
     {
         return false;
     }
-    std::cout << "a0: " << a0 << "\t"
-              << "a1: " << a1 << "\t"
-              << "Qmin: " << *Qmin
-              << "Qz: " << *Qz << std::endl;
+    // std::cout << "a0: " << a0 << "\t"
+    //           << "a1: " << a1 << "\t"
+    //           << "Qmin: " << *Qmin
+    //           << "Qz: " << *Qz << std::endl;
     double d = abs(a0) / sqrt(1 + a1 * a1);
-    std::cout << "d: " << d << std::endl;
-    std::cout << "Pt: " << 0.3 / d << std::endl;
+    // std::cout << "d: " << d << std::endl;
+    // std::cout << "Pt: " << 0.3 / d << std::endl;
     *pt = 0.3 / d;
     _pt = *pt;
     return true;
@@ -402,5 +403,25 @@ int HoughTrack::NumTruePointsMulti(std::set<int> *events_id) const
         }
     }
     return max;
+}
+
+int HoughTrack::GetEventID(std::set<int> *event_id) const
+{
+    for (int n : *event_id)
+    {
+        int flag = 0;
+        for (auto point : *_ptr)
+        {
+            if (point->eventID() == n)
+            {
+                flag++;
+            }
+        }
+        if (flag >= 3)
+        {
+            return n;
+        }
+    }
+    return -1;
 }
 #endif

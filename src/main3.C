@@ -17,19 +17,6 @@
 
 using namespace std;
 
-const double AlphaMin = 0;
-const double AlphaMax = TMath::Pi();
-const double DMin = -0.05;
-const double DMax = 0.05;
-const int NAlpha = 100;
-const int ND = 100;
-const double AlphaBinWidth = (AlphaMax - AlphaMin) / NAlpha;
-const double DBinWidth = (DMax - DMin) / ND;
-
-const double MagFeild = 1.0;                       // 1.0 T
-const double PtMin = 0.3 * MagFeild * 165.11 / 2.; // 能击中三层探测器动量条件
-const double QCut = 1.;
-
 void find_peak(std::vector<std::vector<HoughGridArea *> *> *gridMatrix /*, std::vector<int> &PeakGridX, std::vector<int> &PeakGridY*/)
 {
     int flag = 0;
@@ -45,9 +32,9 @@ void find_peak(std::vector<std::vector<HoughGridArea *> *> *gridMatrix /*, std::
                 for (int ip = 0; ip < points->size(); ip++)
                 {
                     auto point = points->at(ip);
-                    std::cout << flag << " " << grid->counts() << " "
-                              << point->eventID() << " " << point->layerID()
-                              << " " << ia << " " << id << endl;
+                    // std::cout << flag << " " << grid->counts() << " "
+                    //           << point->eventID() << " " << point->layerID()
+                    //           << " " << ia << " " << id << endl;
                 }
                 flag++;
             }
@@ -114,7 +101,7 @@ std::vector<HoughTrack *> *find_track(std::vector<std::vector<HoughGridArea *> *
             }
         }
     }
-    std::cout << " Num of tracks: " << ptr->size() << std::endl;
+    // std::cout << " Num of tracks: " << ptr->size() << std::endl;
     return ptr;
 }
 
@@ -131,7 +118,7 @@ std::vector<std::vector<HoughGridArea *> *> *GridInit()
         }
         ptr1->push_back(ptr2);
     }
-    std::cout << "Init completed" << std::endl;
+    // std::cout << "Init completed" << std::endl;
     return ptr1;
 }
 
@@ -157,7 +144,7 @@ void FillGrid(std::vector<std::vector<HoughGridArea *> *> *gridMatrix, vector<Ho
                 }
             }
         }
-        std::cout << ip << " of " << pointsList.size() << endl;
+        // std::cout << ip << " of " << pointsList.size() << endl;
     }
 }
 
@@ -300,6 +287,8 @@ int main(int argc, char **argv)
     savetree->Branch("num_total", &num_total);
     savetree->Branch("Qe", &Qe);
     int counts_useful_events = 0;
+    std::cout << path << endl;
+    // std::cout << Pt_data << endl;
     while (eventIDs_toTest->size() >= n_tracks_in_event)
     {
         std::cout << "There are " << eventIDs_toTest->size() << " events left\n";
@@ -343,9 +332,8 @@ int main(int argc, char **argv)
         }
         AddNoise(n_noise, pointsList);
         npoints = pointsList.size();
-        std::cout << path << endl;
-        std::cout << Pt_data << endl;
-        std::cout << "number of points: " << npoints << endl;
+
+        // std::cout << "number of points: " << npoints << endl;
 
         auto houghGrid = GridInit();
         FillGrid(houghGrid, pointsList);
@@ -361,17 +349,17 @@ int main(int argc, char **argv)
             auto track = tracks->at(i);
             if (track->HitALayers())
             {
-                track->Print();
-                std::cout << boolalpha << track->ContainTrueTrack() << " "
-                          << noboolalpha << track->RatioTrues() << std::endl;
+                // track->Print();
+                // std::cout << boolalpha << track->ContainTrueTrack() << " "
+                //           << noboolalpha << track->RatioTrues() << std::endl;
                 bool fit_fine = track->FitLinear(&pt, &Q, &Qz);
 
                 if (fit_fine && (pt > PtMin) && (Q < QCut))
                 {
+                    event_id = track->GetEventID(test_set);
                     PtReContruction.push_back(pt);
                     QReContruction.push_back(Q);
 
-                    event_id = 0;
                     track_id = PtReContruction.size();
                     true_track = track->ContainTrueTrackMulti(test_set);
                     p_t = pt;
@@ -387,40 +375,15 @@ int main(int argc, char **argv)
                 }
             }
         }
-        std::cout << "number of good tracks: " << n_good_tracks << std::endl;
-
-        // output
-        // string outpath = "./PtRe";
-        // outpath += argv[1];
-        // outpath += ".txt";
-        // ofstream output(outpath.c_str(), ios::app);
-        // for (auto pt : PtReContruction)
-        // {
-        //     std::cout << pt << endl;
-        // }
-        // std::cout << "Track with the minimum Q: " << std::endl;
-        //  tracks->at(i_Qmin)->Print();
-        //  auto track = tracks->at(i_Qmin);
-        //  std::cout << track->GetSpin() << endl;
-        //  std::cout << eventIDTest << " " << n_noise << " "
-        //            << boolalpha << track->ContainTrueTrack() << " "
-        //            << track->NumTruePoints() << " " << track->Counts() << " "
-        //            << track->Pt() << std::endl;
-        //
+        // std::cout << "number of good tracks: " << n_good_tracks << std::endl;
 
         //
         //
         // delete
         for (auto ptr : pointsList)
         {
-            // ptr->Print();
             delete ptr;
         }
-        // for (int i = 0; i < tracks->size(); i++)
-        // {
-        //     delete tracks->at(i);
-        // }
-        // delete tracks;
         for (int i = 0; i < NAlpha; i++)
         {
             for (int j = 0; j < ND; j++)
@@ -435,8 +398,12 @@ int main(int argc, char **argv)
     savetree->Write();
     savefile->Write();
     savefile->Close();
-    std::cout << execMode << std::endl;
+    // delete file;
+    // delete tree;
+    // delete savetree;
+    // delete savefile;
     std::cout << "Save Path: " << savepath << std::endl;
-    std::cout << "totoal tarcks useful: " << counts_useful_events << endl;
+    std::cout << "totoal tarcks useful: " << counts_useful_events << endl
+              << endl;
     return 0;
 }

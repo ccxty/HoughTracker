@@ -2,6 +2,19 @@
 #define HOUGH_CXX_INCLUDE_ 1
 #include "HoughPoint.h"
 
+const double AlphaMin = 0;
+const double AlphaMax = TMath::Pi();
+const double DMin = -0.05;
+const double DMax = 0.05;
+const int NAlpha = 100;
+const int ND = 100;
+const double AlphaBinWidth = (AlphaMax - AlphaMin) / NAlpha;
+const double DBinWidth = (DMax - DMin) / ND;
+
+const double MagFeild = 1.0;                       // 1.0 T
+const double PtMin = 0.3 * MagFeild * 165.11 / 2.; // 能击中三层探测器动量条件
+const double QCut = 1.;
+
 void TherePointsLinearFit(HoughPoint *point1, HoughPoint *point2, HoughPoint *point3, double *Q, double *param)
 {
     double x[3] = {point1->xConformal(), point2->xConformal(), point3->xConformal()};

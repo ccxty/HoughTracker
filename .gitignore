@@ -7,3 +7,4 @@ graph_back2/
 data/
 root_data_source/
 *.txt
+nohup.out

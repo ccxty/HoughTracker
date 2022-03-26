@@ -194,16 +194,16 @@ std::set<int> *GetRandomSet(int n_tracks_in_event, std::set<int> &base)
     return set;
 }
 
-bool SetContain(std::set<int> *set, int num)
-{
-    bool contain = false;
-    for (auto e : *set)
-    {
-        if (e == num)
-            contain = true;
-    }
-    return contain;
-}
+// bool SetContain(std::set<int> *set, int num)
+// {
+//     bool contain = false;
+//     for (auto e : *set)
+//     {
+//         if (e == num)
+//             contain = true;
+//     }
+//     return contain;
+// }
 
 int main(int argc, char **argv)
 {

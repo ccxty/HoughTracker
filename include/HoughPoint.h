@@ -1,6 +1,7 @@
 #ifndef HOUGHPOINT_CXX
 #define HOUGHPOINT_CXX 1
 #include <cmath>
+#include <iostream>
 #include <vector>
 
 class HoughPoint {
@@ -13,7 +14,7 @@ class HoughPoint {
     int _eventID;
     double _xConformal;
     double _yConformal;
-    double _Pt;
+    double _pt;
     int _id;
 
  public:
@@ -32,7 +33,7 @@ class HoughPoint {
     inline int eventID() const;
     inline double Pt() const;
     inline void SetPt(double pt);
-    inline int id() const;
+    [[nodiscard]] inline int id() const;
     inline void SetId(int id);
     void TrackFlagChange(int flag);
     void TrackFlagAddOne();
@@ -40,28 +41,29 @@ class HoughPoint {
     void Print() const;
 };
 HoughPoint::HoughPoint(double x, double y, double z, int event, int track,
-                       int layer) {
-    _x = x;
-    _y = y;
-    _z = z;
-    _layerID = layer;
-    _trackID = track;
-    _eventID = event;
-    _xConformal = 2 * x / (x * x + y * y);
-    _yConformal = 2 * y / (y * y + x * x);
-}
+                       int layer)
+    : _x(x),
+      _y(y),
+      _z(z),
+      _layerID(layer),
+      _trackID(track),
+      _eventID(event),
+      _xConformal(2 * x / (x * x + y * y)),
+      _yConformal(2 * y / (y * y + x * x)),
+      _pt(0),
+      _id(-1) {}
 HoughPoint::HoughPoint(double x, double y, double z, int event, int track,
-                       int layer, double Pt) {
-    _x = x;
-    _y = y;
-    _z = z;
-    _layerID = layer;
-    _trackID = track;
-    _eventID = event;
-    _xConformal = 2 * x / (x * x + y * y);
-    _yConformal = 2 * y / (y * y + x * x);
-    _Pt = Pt;
-}
+                       int layer, double pt)
+    : _x(x),
+      _y(y),
+      _z(z),
+      _layerID(layer),
+      _trackID(track),
+      _eventID(event),
+      _xConformal(2 * x / (x * x + y * y)),
+      _yConformal(2 * y / (y * y + x * x)),
+      _pt(pt),
+      _id(-1) {}
 inline double HoughPoint::x() const { return _x; }
 inline double HoughPoint::y() const { return _y; }
 inline double HoughPoint::z() const { return _z; }
@@ -72,11 +74,11 @@ inline int HoughPoint::trackID() const { return _trackID; }
 inline int HoughPoint::layerID() const { return _layerID; }
 inline int HoughPoint::id() const { return _id; }
 inline void HoughPoint::SetId(int id) { _id = id; }
-inline void HoughPoint::SetPt(double pt) { _Pt = pt; }
-inline double HoughPoint::Pt() const { return _Pt; }
+inline void HoughPoint::SetPt(double pt) { _pt = pt; }
+inline double HoughPoint::Pt() const { return _pt; }
 void HoughPoint::Print() const {
     std::cout << "identity: " << _id << " "
-              << "Pt: " << _Pt << " "
+              << "Pt: " << _pt << " "
               << "eventID: " << _eventID << " "
               << "layerID: " << _layerID << " "
               << "trackID: " << _trackID << " " << _x << " " << _y << " " << _z

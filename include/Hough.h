@@ -1,6 +1,7 @@
 #ifndef HOUGH_CXX_INCLUDE_
 #define HOUGH_CXX_INCLUDE_ 1
 #include "HoughPoint.h"
+#include "TMath.h"
 
 const double AlphaMin = 0;
 const double AlphaMax = TMath::Pi();

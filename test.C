@@ -1,23 +1,21 @@
 #include <iostream>
-#include <set>
-#include "TRandom3.h"
 #include <random>
-#include "TMath.h"
-#include "TH1.h"
+#include <set>
+
 #include "TCanvas.h"
-std::set<int> *GetRandomSet(int n_tracks_in_event, std::set<int> &base)
-{
+#include "TH1.h"
+#include "TMath.h"
+#include "TRandom3.h"
+std::set<int> *GetRandomSet(int n_tracks_in_event, std::set<int> &base) {
     auto set = new std::set<int>;
-    while (set->size() < n_tracks_in_event)
-    {
+    while (set->size() < n_tracks_in_event) {
         auto it(base.begin());
         advance(it, rand() % base.size());
         set->insert(*it);
     }
     return set;
 }
-void test()
-{
+void test() {
     // std::set<int> base;
     // for (int i = 0; i < 100; i++)
     // {
@@ -48,8 +46,7 @@ void test()
     double cos_20 = cos(20 * TMath::Pi() / 180.);
     auto c1 = new TCanvas("c1", "c1");
     auto h = new TH1F("h", "h", 1000, -500, 500);
-    for (int i = 0; i < n_noise; i++)
-    {
+    for (int i = 0; i < n_noise; i++) {
         int layerID = rdm_layer->Integer(3);
         double x, y, cos_theta, z;
         rdm->Circle(x, y, r[layerID]);
@@ -60,4 +57,6 @@ void test()
     c1->cd();
     h->Draw();
     c1->Draw();
+    std::vector<int>::size_type i = 18;
+    std::cout << static_cast<int>(i);
 }

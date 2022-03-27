@@ -14,7 +14,7 @@ class HoughGridArea {
     double _yMax;
     MODE _mode;
     double _xMid;
-    std::vector<HoughPoint *> *_PointsHere;
+    std::vector<HoughPoint *> *_pointsHere;
     int _counts = 0;
 
  public:
@@ -40,26 +40,23 @@ class HoughGridArea {
     void Print();
 };
 
-HoughGridArea::HoughGridArea(double xmin, double xmax, double ymin,
-                             double ymax) {
-    _xMin = xmin;
-    _xMax = xmax;
-    _yMin = ymin;
-    _yMax = ymax;
-    _mode = GRID;
-    _PointsHere = new std::vector<HoughPoint *>;
-}
-HoughGridArea::HoughGridArea(double xmid, double ymin, double ymax) {
-    _xMid = xmid;
-    _yMin = ymin;
-    _yMax = ymax;
-    _mode = POINT;
-    _PointsHere = new std::vector<HoughPoint *>;
-}
-HoughGridArea::~HoughGridArea() { delete _PointsHere; }
+HoughGridArea::HoughGridArea(double xmin, double xmax, double ymin, double ymax)
+    : _xMin(xmin),
+      _xMax(xmax),
+      _yMin(ymin),
+      _yMax(ymax),
+      _mode(GRID),
+      _pointsHere(new std::vector<HoughPoint *>) {}
+HoughGridArea::HoughGridArea(double xmid, double ymin, double ymax)
+    : _yMin(ymin),
+      _yMax(ymax),
+      _mode(POINT),
+      _xMid(xmid),
+      _pointsHere(new std::vector<HoughPoint *>) {}
+HoughGridArea::~HoughGridArea() { delete _pointsHere; }
 void HoughGridArea::SetX(double xmin, double xmax) {
     if (_mode == GRID) {
-        if (_PointsHere == nullptr) {
+        if (_pointsHere == nullptr) {
             std::cout << "pointer null" << std::endl;
             return;
         }
@@ -69,7 +66,7 @@ void HoughGridArea::SetX(double xmin, double xmax) {
 }
 void HoughGridArea::SetX(double xmid) {
     if (_mode == POINT) {
-        if (_PointsHere == nullptr) {
+        if (_pointsHere == nullptr) {
             std::cout << "pointer null" << std::endl;
             return;
         }
@@ -77,7 +74,7 @@ void HoughGridArea::SetX(double xmid) {
     }
 }
 void HoughGridArea::SetY(double ymin, double ymax) {
-    if (_PointsHere == nullptr) {
+    if (_pointsHere == nullptr) {
         std::cout << "pointer null" << std::endl;
         return;
     }
@@ -86,7 +83,7 @@ void HoughGridArea::SetY(double ymin, double ymax) {
 }
 inline MODE HoughGridArea::mode() { return _mode; }
 inline std::vector<HoughPoint *> *HoughGridArea::GetPointsHere() {
-    return _PointsHere;
+    return _pointsHere;
 }
 inline int HoughGridArea::counts() { return _counts; }
 inline double HoughGridArea::xMin() { return _xMin; }
@@ -99,11 +96,11 @@ void HoughGridArea::CountsAddOne() { _counts += 1; }
 bool HoughGridArea::CountsZero() { return (_counts > 0) ? true : false; }
 void HoughGridArea::CountsReset() { _counts = 0; }
 void HoughGridArea::Print() {
-    if (_PointsHere == nullptr) {
+    if (_pointsHere == nullptr) {
         std::cout << "pointer null" << std::endl;
         return;
     }
-    if (_PointsHere->size() == 0) {
+    if (_pointsHere->size() == 0) {
         std::cout << "no points found" << std::endl;
         return;
     }
@@ -121,8 +118,8 @@ void HoughGridArea::Print() {
                   << "ymin: " << _yMin << "\t"
                   << "ymax: " << _yMax << std::endl;
     }
-    for (int i = 0; i < _PointsHere->size(); ++i) {
-        _PointsHere->at(i)->Print();
+    for (auto point : *_pointsHere) {
+        point->Print();
     }
 }
 

@@ -8,3 +8,7 @@ data/
 root_data_source/
 *.txt
 nohup.out
+.vscode/
+build/
+compile_commands.json
+.cache/

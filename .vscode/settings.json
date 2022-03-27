@@ -75,5 +75,6 @@
         "graph9.C": "cpp",
         "graph10.C": "cpp",
         "ReadRoot.C": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": true
 }

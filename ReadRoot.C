@@ -1,26 +1,25 @@
+#include <iostream>
+
+#include "Event/StcfMCEvent.h"
+#include "Event/StcfMCHeader.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TVector3.h"
-#include <iostream>
-#include "Event/StcfMCHeader.h"
-#include "Event/StcfMCEvent.h"
 using namespace std;
 
 // int ReadRoot()
-int main()
-{
+int main() {
   // gSystem->Load("libFullSim.so");
   // gSystem->Load("libStcfMCEvent.so");
 
   // string path = "/ustcfs/STCFUser/zhouh/20211018/20211206_lowPt/pi+/";
   //  path += "singlePiplus15.root";
-  string n_str[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8",
+  string n_str[] = {"0", "1",  "2",  "3",  "4",  "5",  "6",  "7",  "8",
                     "9", "10", "11", "12", "13", "14", "15", "16", "17"};
-  string pts[] = {"50", "55", "60", "65", "70", "75", "80", "85", "90",
+  string pts[] = {"50", "55",  "60",  "65",  "70",  "75",  "80",  "85",  "90",
                   "95", "100", "105", "110", "115", "120", "125", "130", "135"};
 
-  for (int i = 0; i < 18; i++)
-  {
+  for (int i = 0; i < 18; i++) {
     string path = "/ustcfs/STCFUser/zhouh/20220319/SingleElectron/";
     path += "singleEplus" + n_str[i] + ".root";
     string savepath = "./root_data_source/e+/posPt";
@@ -29,8 +28,7 @@ int main()
     std::cout << "path: " << path << std::endl;
     std::cout << "savepath: " << savepath << std::endl;
     bool status = file->cd("Event/StcfMCEvent");
-    if (!status)
-      return -1;
+    if (!status) return -1;
     TTree *theader = (TTree *)gDirectory->Get("header");
     TTree *tMCEvent = (TTree *)gDirectory->Get("StcfMCEvent");
 
@@ -74,8 +72,7 @@ int main()
     driftTimeTree->Branch("nhits", &hits);
     // driftTimeTree->Branch("charge", &charge);
 
-    for (int ie = 0; ie < events; ie++)
-    {
+    for (int ie = 0; ie < events; ie++) {
       layer_id.clear();
       track_id.clear();
       x.clear();
@@ -87,8 +84,7 @@ int main()
       TClonesArray *ITDHits = mcEvent->itdHitList();
       int nhits = ITDHits->GetEntries();
       hits = nhits;
-      for (int it = 0; it < nhits; it++)
-      {
+      for (int it = 0; it < nhits; it++) {
         OSCAR::ITDHit *itdhit = (OSCAR::ITDHit *)(ITDHits->At(it));
         // if(mdchit->parentid()==0&&mdchit->InitialMom().Pt()>150){
         layerID = itdhit->layerid();

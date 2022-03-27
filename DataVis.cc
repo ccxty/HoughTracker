@@ -1,65 +1,65 @@
 #include "DataVis/DataVis.h"
-#include "TClonesArray.h"
-#include "TH2D.h"
-#include "TRandom.h"
+
 #include <TCanvas.h>
+
+#include "TAxis.h"
+#include "TCanvas.h"
+#include "TClonesArray.h"
+#include "TEllipse.h"
+#include "TF1.h"
 #include "TH1.h"
 #include "TH2.h"
-#include "TMath.h"
-#include "TF1.h"
+#include "TH2D.h"
 #include "TLegend.h"
-#include "TCanvas.h"
-#include "TAxis.h"
-#include "TEllipse.h"
-#include "TROOT.h"
-#include "TStyle.h"
 #include "TMarker.h"
+#include "TMath.h"
+#include "TROOT.h"
+#include "TRandom.h"
+#include "TStyle.h"
 using namespace std;
 using namespace OSCAR;
 
 DECLARE_ALGORITHM(DataVis);
 
-int GetChargeFromPDG(int pdgcode)
-{
-  if (pdgcode == 11 || pdgcode == 13 || pdgcode == -211 || pdgcode == -2212 || pdgcode == -321)
+int GetChargeFromPDG(int pdgcode) {
+  if (pdgcode == 11 || pdgcode == 13 || pdgcode == -211 || pdgcode == -2212 ||
+      pdgcode == -321)
     return -1;
-  if (pdgcode == -11 || pdgcode == -13 || pdgcode == 211 || pdgcode == 2212 || pdgcode == 321)
+  if (pdgcode == -11 || pdgcode == -13 || pdgcode == 211 || pdgcode == 2212 ||
+      pdgcode == 321)
     return 1;
   return 0;
 }
 
-DataVis::DataVis(const std::string &name)
-    : AlgBase(name)
-{
+DataVis::DataVis(const std::string &name) : AlgBase(name) {
   declProp("SavePic", m_savepic = false);
   declProp("PicNum", m_picNum = -1);
   declProp("FileName", m_filename = "hits.csv");
   declProp("RunID", m_runID = 1);
 }
 
-DataVis::~DataVis()
-{
-}
+DataVis::~DataVis() {}
 
-bool DataVis::initialize()
-{
+bool DataVis::initialize() {
   savedPicNum = 0;
 
   SniperPtr<MdcGeomSvc> _svc(getParent(), "MdcGeomSvc");
-  if (_svc.valid())
-  {
+  if (_svc.valid()) {
     LogInfo << "the MdcGeomSvc instance is retrieved" << std::endl;
-  }
-  else
-  {
+  } else {
     LogError << "Failed to get the MdcGeomSvc instance!" << std::endl;
     return false;
   }
   m_MdcGeomSvc = _svc.data();
 
-  for (int i = 0; i < 11520; i++)
-  {
-    cout << m_MdcGeomSvc->Wire(i)->Layer() << "," << i << "," << m_MdcGeomSvc->Wire(i)->BWirePos().X() << "," << m_MdcGeomSvc->Wire(i)->BWirePos().Y() << "," << m_MdcGeomSvc->Wire(i)->BWirePos().Z() << "," << m_MdcGeomSvc->Wire(i)->FWirePos().X() << "," << m_MdcGeomSvc->Wire(i)->FWirePos().Y() << "," << m_MdcGeomSvc->Wire(i)->FWirePos().Z() << endl;
+  for (int i = 0; i < 11520; i++) {
+    cout << m_MdcGeomSvc->Wire(i)->Layer() << "," << i << ","
+         << m_MdcGeomSvc->Wire(i)->BWirePos().X() << ","
+         << m_MdcGeomSvc->Wire(i)->BWirePos().Y() << ","
+         << m_MdcGeomSvc->Wire(i)->BWirePos().Z() << ","
+         << m_MdcGeomSvc->Wire(i)->FWirePos().X() << ","
+         << m_MdcGeomSvc->Wire(i)->FWirePos().Y() << ","
+         << m_MdcGeomSvc->Wire(i)->FWirePos().Z() << endl;
   }
 
   long seed = time(NULL);
@@ -71,8 +71,7 @@ bool DataVis::initialize()
   LogDebug << "Sucessfully initialized." << std::endl;
   return true;
 }
-bool DataVis::execute()
-{
+bool DataVis::execute() {
   LogDebug << "Executing..." << std::endl;
 
   EvtDataPtr<StcfRawHeader> Edp(this->getRoot(), "/Event/StcfRawEvent");
@@ -89,25 +88,28 @@ bool DataVis::execute()
   int typeFlag = -1;
 
   vector<OSCAR::MdcRecHit *>::iterator iterhit = MdcHits.begin();
-  for (; iterhit != MdcHits.end(); iterhit++)
-  {
+  for (; iterhit != MdcHits.end(); iterhit++) {
     MdcRecHit *hit = (*iterhit);
     int type = hit->Type();
     if (type >= 8)
       type = type - 8;
     else
       type = type + 1000;
-    if (typeFlag != type && type < 1000)
-    {
-      m_fileout << -99 << "," << m_runID << "," << EventID << "," << hit->PdgCode() << "," << GetChargeFromPDG(hit->PdgCode()) << "," << hit->InitMomMC().X() << "," << hit->InitMomMC().Y() << "," << hit->InitMomMC().Z() << "," << hit->InitPosMC().X() << "," << hit->InitPosMC().Y() << "," << hit->InitPosMC().Z() << "," << type << endl;
+    if (typeFlag != type && type < 1000) {
+      m_fileout << -99 << "," << m_runID << "," << EventID << ","
+                << hit->PdgCode() << "," << GetChargeFromPDG(hit->PdgCode())
+                << "," << hit->InitMomMC().X() << "," << hit->InitMomMC().Y()
+                << "," << hit->InitMomMC().Z() << "," << hit->InitPosMC().X()
+                << "," << hit->InitPosMC().Y() << "," << hit->InitPosMC().Z()
+                << "," << type << endl;
     }
     typeFlag = type;
-    m_fileout << m_runID << "," << EventID << "," << hit->LayerId() << "," << hit->CellId() << "," << type << "," << hit->DriftDistanceLeft() << endl;
+    m_fileout << m_runID << "," << EventID << "," << hit->LayerId() << ","
+              << hit->CellId() << "," << type << "," << hit->DriftDistanceLeft()
+              << endl;
   }
 
-  if (m_savepic && (savedPicNum < m_picNum || m_picNum == -1))
-  {
-
+  if (m_savepic && (savedPicNum < m_picNum || m_picNum == -1)) {
     TString Ctitile = "Map" + to_string(EventID);
 
     TCanvas *canvas = new TCanvas("canvas", Ctitile, 1200, 1200);
@@ -146,8 +148,7 @@ bool DataVis::execute()
 
     int ii = 0;
     vector<OSCAR::MdcRecHit *>::iterator iter = MdcHits.begin();
-    for (; iter != MdcHits.end(); iter++)
-    {
+    for (; iter != MdcHits.end(); iter++) {
       MdcRecHit *hit = (*iter);
       double x1 = hit->WirePoint1().X();
       double y1 = hit->WirePoint1().Y();
@@ -159,8 +160,7 @@ bool DataVis::execute()
       cc->SetMarkerStyle(24);
       cc->SetMarkerSize(0.5);
       cc->SetMarkerColor(kRed);
-      if (hit->Type() < 8)
-      {
+      if (hit->Type() < 8) {
         cc->SetMarkerColor(kBlack);
       }
       // cc->SetMarkerStyle(20);
@@ -178,8 +178,7 @@ bool DataVis::execute()
 
   return true;
 }
-bool DataVis::finalize()
-{
+bool DataVis::finalize() {
   m_fileout.close();
   LogDebug << "Sucessfully finalized." << std::endl;
   return true;

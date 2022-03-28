@@ -10,5 +10,4 @@ root_data_source/
 nohup.out
 .vscode/
 build/
-compile_commands.json
 .cache/

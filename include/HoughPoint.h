@@ -33,7 +33,7 @@ class HoughPoint {
     inline int eventID() const;
     inline double Pt() const;
     inline void SetPt(double pt);
-    [[nodiscard]] inline int id() const;
+    inline int id() const;
     inline void SetId(int id);
     void TrackFlagChange(int flag);
     void TrackFlagAddOne();

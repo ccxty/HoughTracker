@@ -170,9 +170,9 @@ void AddNoise(int n_noise, std::vector<HoughPoint *> &points) {
 std::set<int> *GetRandomSet(int n_tracks_in_event, std::set<int> &base) {
     auto set = new std::set<int>;
     while (set->size() < n_tracks_in_event) {
-        auto it(base.begin());
-        advance(it, rand() % base.size());
-        set->insert(*it);
+        auto iter(base.begin());
+        advance(iter, rand() % base.size());
+        set->insert(*iter);
     }
     return set;
 }
@@ -294,7 +294,7 @@ int main(int argc, char **argv) {
                     auto *ptr = new HoughPoint(
                         posX->at(ip), posY->at(ip), posZ->at(ip), eventID,
                         trackID->at(ip), layerID->at(ip), Pt->at(ip));
-                    ptr->SetId(pointsList.size());
+                    ptr->SetId(static_cast<int>(pointsList.size()));
                     pointsList.push_back(ptr);
                     read_count++;
                 }
@@ -307,7 +307,7 @@ int main(int argc, char **argv) {
             continue;
         }
         AddNoise(n_noise, pointsList);
-        npoints = pointsList.size();
+        npoints = static_cast<int>(pointsList.size());
 
         // std::cout << "number of points: " << npoints << endl;
 
@@ -319,9 +319,8 @@ int main(int argc, char **argv) {
 
         double Qmin = 1.;
         int n_good_tracks = 0;
-        for (int i = 0; i < tracks->size(); i++) {
+        for (auto track : *tracks) {
             double pt, Q, Qz;
-            auto track = tracks->at(i);
             if (track->HitALayers()) {
                 // track->Print();
                 // std::cout << boolalpha << track->ContainTrueTrack() << " "
@@ -333,13 +332,13 @@ int main(int argc, char **argv) {
                     PtReContruction.push_back(pt);
                     QReContruction.push_back(Q);
 
-                    track_id = PtReContruction.size();
+                    track_id = static_cast<int>(PtReContruction.size());
                     true_track = track->ContainTrueTrackMulti(test_set);
                     p_t = pt;
                     Q_min = Q;
                     Q_z = Qz;
                     num_true = track->NumTruePointsMulti(test_set);
-                    num_total = track->Counts();
+                    num_total = static_cast<int>(track->Counts());
                     Qe = track->GetSpin();
                     savefile->cd();
                     savetree->Fill();

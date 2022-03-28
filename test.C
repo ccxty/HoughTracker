@@ -9,9 +9,9 @@
 std::set<int> *GetRandomSet(int n_tracks_in_event, std::set<int> &base) {
     auto set = new std::set<int>;
     while (set->size() < n_tracks_in_event) {
-        auto it(base.begin());
-        advance(it, rand() % base.size());
-        set->insert(*it);
+        auto iter(base.begin());
+        advance(iter, rand() % base.size());
+        set->insert(*iter);
     }
     return set;
 }

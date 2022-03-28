@@ -17,13 +17,14 @@
 #include "TMath.h"
 #include "TRandom3.h"
 #include "TTree.h"
-#include "clag.h"
+#include "clipp.h"
 
 using std::array;
 using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
+using namespace clipp;
 
 void find_peak(std::vector<std::vector<HoughGridArea *> *> *gridMatrix) {
     int flag = 0;
@@ -192,40 +193,78 @@ std::set<int> *GetRandomSet(int n_tracks_in_event, std::set<int> &base) {
 // }
 
 int main(int argc, char **argv) {
+    //
+    // Commandline Arguments Parser with include/clipp.h
+    //
+    enum class mode { all, single, help };
+    mode selected = mode::help;
+
+    string pt_str, noise_str, particle, n_track_str;
+
+    auto pt_arg = required("-pt") & value("pt", pt_str);
+    auto noise_arg = required("-noise") & value("noise", noise_str);
+    auto particle_arg = required("-particle") & value("particle", particle);
+    auto n_track_arg = required("-multi") & value("num-tracks", n_track_str);
+    auto all_mode =
+        (command("all").set(selected, mode::all),
+         pt_arg % "Pt of the data file", noise_arg % "number of noise points",
+         particle_arg % "the particle stored in the data file",
+         n_track_arg % "number of tracks in sigle event");
+    auto single_mode =
+        (command("single").set(selected, mode::single),
+         pt_arg % "Pt of the data file", noise_arg % "number of noise points",
+         particle_arg % "the particle stored in the data file",
+         n_track_arg % "number of tracks in sigle event");
+    auto cli =
+        ((all_mode | single_mode | command("help").set(selected, mode::help)),
+         option("-v", "--version")
+             .call([] { cout << "version 1.0\n\n"; })
+             .doc("show version"));
+    if (parse(argc, argv, cli)) {
+        switch (selected) {
+            case mode::all:
+                break;
+            case mode::single:
+                break;
+            case mode::help:
+                cout << make_man_page(cli, "HoughTracker");
+                return 0;
+        }
+    } else {
+        cout << usage_lines(cli, "HoughTracker") << '\n';
+        return 0;
+    }
     // ./program particle pt n_noise mode multi
     // argv:0        1    2     3     4     5
-    string particle(argv[1]);
-    double Pt_data = atof(argv[2]);
+    // string particle(argv[1]);
+    double Pt_data = atof(pt_str.c_str());
     // string path =
     //     "/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/root_data_source/";
     string path =
         "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/HoughTracker/"
         "root_data_source/";
     path += particle + "/posPt";
-    path += argv[2];
+    path += pt_str;
     path += ".root";
 
-    int n_noise = atoi(argv[3]);
-    string execMode(argv[4]);
-    int n_tracks_in_event = 1;
-
-    std::set<int> *eventIDs_toTest = nullptr;
-    std::set<int> eventIDs_all;
-    for (int i = 0; i < 10000; i++) {
-        eventIDs_all.insert(i);
-    }
-    if (execMode == "single_multi") {
-        n_tracks_in_event = atoi(argv[5]);
-        eventIDs_toTest = GetRandomSet(n_tracks_in_event, eventIDs_all);
-    } else if (execMode == "all_multi") {
-        n_tracks_in_event = atoi(argv[5]);
-        eventIDs_toTest = &eventIDs_all;
-    } else {
-        std::cout << "wrong usage" << endl;
-    }
+    int n_noise = atoi(noise_str.c_str());
+    int n_tracks_in_event = atoi(n_track_str.c_str());
 
     auto *file = new TFile(path.c_str());
     TTree *tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
+    const Long64_t nevents = tree->GetEntries();
+
+    std::set<int> *eventIDs_toTest = nullptr;
+    std::set<int> eventIDs_all;
+    for (auto i = 0; i < nevents; i++) {
+        eventIDs_all.insert(i);
+    }
+    if (selected == mode::single) {
+        eventIDs_toTest = GetRandomSet(n_tracks_in_event, eventIDs_all);
+    } else if (selected == mode::all) {
+        eventIDs_toTest = &eventIDs_all;
+    }
+
     std::vector<double> *posX = nullptr;
     std::vector<double> *posY = nullptr;
     std::vector<double> *posZ = nullptr;
@@ -248,8 +287,6 @@ int main(int argc, char **argv) {
     tree->SetBranchAddress("trackID", &trackID, &b_trackID);
     tree->SetBranchAddress("Pt", &P_t, &b_Pt);
     tree->SetBranchAddress("nhits", &nhits);
-
-    Long64_t nevents = tree->GetEntries();
 
     string savepath =
         "./trackdata_Pt" + string(argv[2]) + "_noise" + string(argv[3]);

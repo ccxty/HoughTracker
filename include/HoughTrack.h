@@ -24,7 +24,7 @@ class HoughTrack {
     ~HoughTrack();
     std::vector<HoughPoint *>::size_type Counts() const;
     void AddPoint(HoughPoint *point);
-    bool FitLinear(double *pt, double *Qmin, double *Qz);
+    bool FitLinear(double *p_t, double *Qmin, double *Q_z);
     double Pt() const;
     void Print() const;
     std::vector<HoughPoint *> *GetPoints() const;
@@ -166,14 +166,14 @@ bool HoughTrack::operator>(HoughTrack *other) const { return false; }
 
 // 先调用 HitALayers();
 bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
-    double x[_counts];
-    double y[_counts];
+    double posX[_counts];
+    double posY[_counts];
     HoughPoint *layer0[_nlayer0];
     HoughPoint *layer1[_nlayer1];
     HoughPoint *layer2[_nlayer2];
-    int i0 = 0;
-    int i1 = 0;
-    int i2 = 0;
+    int i_0 = 0;
+    int i_1 = 0;
+    int i_2 = 0;
     *Qmin = 1.0;
     *Qz = 1000;
     bool fit = false;
@@ -181,14 +181,14 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
         auto point = _ptr->at(i);
         int layer_id = point->layerID();
         if (layer_id == 0) {
-            layer0[i0] = point;
-            i0++;
+            layer0[i_0] = point;
+            i_0++;
         } else if (layer_id == 1) {
-            layer1[i1] = point;
-            i1++;
+            layer1[i_1] = point;
+            i_1++;
         } else if (layer_id == 2) {
-            layer2[i2] = point;
-            i2++;
+            layer2[i_2] = point;
+            i_2++;
         }
     }
 
@@ -198,7 +198,7 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
     //           << _nlayer1 << " "
     //           << _nlayer2 << std::endl;
     double param[2];
-    double a0, a1;
+    double param_a0, param_a1;
     double Q_swap, Qz_swap;
     for (auto point1 : layer0) {
         for (auto point2 : layer1) {
@@ -209,8 +209,8 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
                     fit = true;
                     *Qmin = Q_swap;
                     *Qz = Qz_swap;
-                    a0 = param[0];
-                    a1 = param[1];
+                    param_a0 = param[0];
+                    param_a1 = param[1];
                 }
             }
         }
@@ -222,10 +222,10 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
     //           << "a1: " << a1 << "\t"
     //           << "Qmin: " << *Qmin
     //           << "Qz: " << *Qz << std::endl;
-    double d = abs(a0) / sqrt(1 + a1 * a1);
+    double d_origin = abs(param_a0) / sqrt(1 + param_a1 * param_a1);
     // std::cout << "d: " << d << std::endl;
     // std::cout << "Pt: " << 0.3 / d << std::endl;
-    *pt = 0.3 / d;
+    *pt = 0.3 / d_origin;
     _pt = *pt;
     return true;
 }
@@ -335,15 +335,15 @@ int HoughTrack::NumTruePointsMulti(std::set<int> *events_id) const {
 }
 
 int HoughTrack::GetEventID(std::set<int> *event_id) const {
-    for (int n : *event_id) {
+    for (int eventID : *event_id) {
         int flag = 0;
         for (auto point : *_ptr) {
-            if (point->eventID() == n) {
+            if (point->eventID() == eventID) {
                 flag++;
             }
         }
         if (flag >= 3) {
-            return n;
+            return eventID;
         }
     }
     return -1;

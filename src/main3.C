@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <array>
 #include <fstream>
 #include <iostream>
 #include <random>
@@ -18,6 +19,7 @@
 #include "TTree.h"
 #include "clag.h"
 
+using std::array;
 using std::cout;
 using std::endl;
 using std::string;
@@ -101,9 +103,9 @@ std::vector<HoughTrack *> *find_track(
 
 std::vector<std::vector<HoughGridArea *> *> *GridInit() {
     auto ptr1 = new vector<vector<HoughGridArea *> *>;
-    for (int i = 0; i < NAlpha; i++) {
+    for (int i = 0; i < NumAlpha; i++) {
         auto ptr2 = new vector<HoughGridArea *>;
-        for (int j = 0; j < ND; j++) {
+        for (int j = 0; j < NumD; j++) {
             auto ptr3 = new HoughGridArea(AlphaMin + i * AlphaBinWidth,
                                           DMin + j * DBinWidth,
                                           DMin + (j + 1) * DBinWidth);
@@ -142,22 +144,23 @@ void AddNoise(int n_noise, std::vector<HoughPoint *> &points) {
         auto rdm = new TRandom3();
         auto rdm_layer = new TRandom3();
         auto rdm_z = new TRandom3();
-        std::random_device rd;
-        double r[] = {65.115, 115.11, 165.11};
+        std::random_device rd_device;
+        array<double, 3> radius = {65.115, 115.11, 165.11};
         auto len = points.size();
-        rdm->SetSeed(rd() % kMaxULong);
-        rdm_layer->SetSeed(rd() % kMaxULong);
-        rdm_z->SetSeed(rd() % kMaxULong);
+        rdm->SetSeed(rd_device() % kMaxULong);
+        rdm_layer->SetSeed(rd_device() % kMaxULong);
+        rdm_z->SetSeed(rd_device() % kMaxULong);
         double cos_20 = cos(20 * TMath::Pi() / 180.);
 
         for (int i = 0; i < n_noise; i++) {
             auto layerID = rdm_layer->Integer(3);
-            double x, y, z, cos_theta;
-            rdm->Circle(x, y, r[layerID]);
+            double posX, posY, posZ, cos_theta;
+            rdm->Circle(posX, posY, radius[layerID]);
             cos_theta = rdm_z->Rndm() * (2 * cos_20) - cos_20;
-            z = r[layerID] * cos_theta / sqrt(1 - cos_theta * cos_theta);
-            auto point =
-                new HoughPoint(x, y, z, -1, 1, static_cast<int>(layerID), 0);
+            posZ =
+                radius[layerID] * cos_theta / sqrt(1 - cos_theta * cos_theta);
+            auto point = new HoughPoint(posX, posY, posZ, -1, 1,
+                                        static_cast<int>(layerID), 0);
             point->SetId(static_cast<int>(len) + i - 1);
             points.push_back(point);
         }
@@ -228,7 +231,7 @@ int main(int argc, char **argv) {
     std::vector<double> *posZ = nullptr;
     std::vector<int> *trackID = nullptr;
     std::vector<int> *layerID = nullptr;
-    std::vector<double> *Pt = nullptr;
+    std::vector<double> *P_t = nullptr;
     TBranch *b_posX = nullptr;
     TBranch *b_posY = nullptr;
     TBranch *b_posZ = nullptr;
@@ -243,7 +246,7 @@ int main(int argc, char **argv) {
     tree->SetBranchAddress("eventID", &eventID);
     tree->SetBranchAddress("layerID", &layerID, &b_layerID);
     tree->SetBranchAddress("trackID", &trackID, &b_trackID);
-    tree->SetBranchAddress("Pt", &Pt, &b_Pt);
+    tree->SetBranchAddress("Pt", &P_t, &b_Pt);
     tree->SetBranchAddress("nhits", &nhits);
 
     Long64_t nevents = tree->GetEntries();
@@ -256,7 +259,7 @@ int main(int argc, char **argv) {
     savepath += ".root";
     auto savefile = new TFile(savepath.c_str(), "RECREATE");
     auto savetree = new TTree("tree1", "tree1");
-    int event_id, track_id, num_true, num_total, Qe;
+    int event_id, track_id, num_true, num_total, Q_e;
     double Q_min, p_t, Q_z;
     bool true_track;
     savetree->Branch("event_id", &event_id);
@@ -267,7 +270,7 @@ int main(int argc, char **argv) {
     savetree->Branch("Qz", &Q_z);
     savetree->Branch("num_true", &num_true);
     savetree->Branch("num_total", &num_total);
-    savetree->Branch("Qe", &Qe);
+    savetree->Branch("Qe", &Q_e);
     int counts_useful_events = 0;
     std::cout << path << endl;
     // std::cout << Pt_data << endl;
@@ -282,8 +285,8 @@ int main(int argc, char **argv) {
         std::vector<HoughPoint *> pointsList;
         int eventID_temp = -1;
         int eventID_skip = -1;
-        for (auto ie : *test_set) {
-            tree->GetEntry(ie);
+        for (auto i_event : *test_set) {
+            tree->GetEntry(i_event);
             if (nhits < 3) {
                 continue;
             }
@@ -293,7 +296,7 @@ int main(int argc, char **argv) {
                 if ((trackID->at(ip) == 1) && (eventID != eventID_skip)) {
                     auto *ptr = new HoughPoint(
                         posX->at(ip), posY->at(ip), posZ->at(ip), eventID,
-                        trackID->at(ip), layerID->at(ip), Pt->at(ip));
+                        trackID->at(ip), layerID->at(ip), P_t->at(ip));
                     ptr->SetId(static_cast<int>(pointsList.size()));
                     pointsList.push_back(ptr);
                     read_count++;
@@ -320,26 +323,26 @@ int main(int argc, char **argv) {
         double Qmin = 1.;
         int n_good_tracks = 0;
         for (auto track : *tracks) {
-            double pt, Q, Qz;
+            double p_t, Q_xy, Q_z;
             if (track->HitALayers()) {
                 // track->Print();
                 // std::cout << boolalpha << track->ContainTrueTrack() << " "
                 //           << noboolalpha << track->RatioTrues() << std::endl;
-                bool fit_fine = track->FitLinear(&pt, &Q, &Qz);
+                bool fit_fine = track->FitLinear(&p_t, &Q_xy, &Q_z);
 
-                if (fit_fine && (pt > PtMin) && (Q < QCut)) {
+                if (fit_fine && (p_t > PtMin) && (Q_xy < QCut)) {
                     event_id = track->GetEventID(test_set);
-                    PtReContruction.push_back(pt);
-                    QReContruction.push_back(Q);
+                    PtReContruction.push_back(p_t);
+                    QReContruction.push_back(Q_xy);
 
                     track_id = static_cast<int>(PtReContruction.size());
                     true_track = track->ContainTrueTrackMulti(test_set);
-                    p_t = pt;
-                    Q_min = Q;
-                    Q_z = Qz;
+                    p_t = p_t;
+                    Q_min = Q_xy;
+                    Q_z = Q_z;
                     num_true = track->NumTruePointsMulti(test_set);
                     num_total = static_cast<int>(track->Counts());
-                    Qe = track->GetSpin();
+                    Q_e = track->GetSpin();
                     savefile->cd();
                     savetree->Fill();
 
@@ -355,8 +358,8 @@ int main(int argc, char **argv) {
         for (auto ptr : pointsList) {
             delete ptr;
         }
-        for (int i = 0; i < NAlpha; i++) {
-            for (int j = 0; j < ND; j++) {
+        for (int i = 0; i < NumAlpha; i++) {
+            for (int j = 0; j < NumD; j++) {
                 delete houghGrid->at(i)->at(j);
             }
             delete houghGrid->at(i);
@@ -372,7 +375,7 @@ int main(int argc, char **argv) {
     // delete savetree;
     // delete savefile;
     std::cout << "Save Path: " << savepath << std::endl;
-    std::cout << "totoal tarcks useful: " << counts_useful_events << endl
+    std::cout << "total tracks useful: " << counts_useful_events << endl
               << endl;
     return 0;
 }

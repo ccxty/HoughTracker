@@ -19,10 +19,10 @@ class HoughPoint {
 
  public:
     HoughPoint();
-    HoughPoint(double x, double y, double z, int eventID, int trackID,
+    HoughPoint(double posX, double posY, double posZ, int eventID, int trackID,
                int layerID);
-    HoughPoint(double x, double y, double z, int eventID, int trackID,
-               int layerID, double Pt);
+    HoughPoint(double posX, double posY, double posZ, int eventID, int trackID,
+               int layerID, double P_t);
     inline double x() const;
     inline double y() const;
     inline double z() const;
@@ -32,9 +32,9 @@ class HoughPoint {
     inline int trackID() const;
     inline int eventID() const;
     inline double Pt() const;
-    inline void SetPt(double pt);
+    inline void SetPt(double p_t);
     inline int id() const;
-    inline void SetId(int id);
+    inline void SetId(int identity);
     void TrackFlagChange(int flag);
     void TrackFlagAddOne();
     void TrackFlagReset();
@@ -73,8 +73,8 @@ inline int HoughPoint::eventID() const { return _eventID; }
 inline int HoughPoint::trackID() const { return _trackID; }
 inline int HoughPoint::layerID() const { return _layerID; }
 inline int HoughPoint::id() const { return _id; }
-inline void HoughPoint::SetId(int id) { _id = id; }
-inline void HoughPoint::SetPt(double pt) { _pt = pt; }
+inline void HoughPoint::SetId(int identity) { _id = identity; }
+inline void HoughPoint::SetPt(double p_t) { _pt = p_t; }
 inline double HoughPoint::Pt() const { return _pt; }
 void HoughPoint::Print() const {
     std::cout << "identity: " << _id << " "

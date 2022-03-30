@@ -29,7 +29,7 @@ void analysis1() {
     string particle_str[] = {"e-", "e+"};
 
     int i_pt = 0;
-    int i_multi = 0;
+    int i_multi = 2;
     int i_particle = 0;
     double effs[10];
     double effs_err[10];

@@ -162,7 +162,7 @@ void AddNoise(int n_noise, std::vector<HoughPoint *> &points) {
                 radius[layerID] * cos_theta / sqrt(1 - cos_theta * cos_theta);
             auto point = new HoughPoint(posX, posY, posZ, -1, 1,
                                         static_cast<int>(layerID), 0);
-            point->SetId(static_cast<int>(len) + i - 1);
+            point->SetId(static_cast<int>(len) + i);
             points.push_back(point);
         }
         delete rdm;
@@ -234,10 +234,7 @@ int main(int argc, char **argv) {
         cout << usage_lines(cli, "HoughTracker") << '\n';
         return 0;
     }
-    // ./program particle pt n_noise mode multi
-    // argv:0        1    2     3     4     5
-    // string particle(argv[1]);
-    double Pt_data = atof(pt_str.c_str());
+
     // string path =
     //     "/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/root_data_source/";
     string path =
@@ -247,6 +244,7 @@ int main(int argc, char **argv) {
     path += pt_str;
     path += ".root";
 
+    double Pt_data = atof(pt_str.c_str());
     int n_noise = atoi(noise_str.c_str());
     int n_tracks_in_event = atoi(n_track_str.c_str());
 
@@ -288,23 +286,22 @@ int main(int argc, char **argv) {
     tree->SetBranchAddress("Pt", &P_t, &b_Pt);
     tree->SetBranchAddress("nhits", &nhits);
 
-    string savepath =
-        "./trackdata_Pt" + string(argv[2]) + "_noise" + string(argv[3]);
+    string savepath = "./trackdata_Pt" + pt_str + "_noise" + string(noise_str);
     if (n_tracks_in_event != 0) {
-        savepath += "_multi" + string(argv[5]);
+        savepath += "_multi" + n_track_str;
     }
     savepath += ".root";
     auto savefile = new TFile(savepath.c_str(), "RECREATE");
     auto savetree = new TTree("tree1", "tree1");
     int event_id, track_id, num_true, num_total, Q_e;
-    double Q_min, p_t, Q_z;
+    double Q_min, pt, Qz;
     bool true_track;
     savetree->Branch("event_id", &event_id);
     savetree->Branch("track_id", &track_id);
     savetree->Branch("true_track", &true_track);
-    savetree->Branch("Pt", &p_t);
+    savetree->Branch("Pt", &pt);
     savetree->Branch("Q", &Q_min);
-    savetree->Branch("Qz", &Q_z);
+    savetree->Branch("Qz", &Qz);
     savetree->Branch("num_true", &num_true);
     savetree->Branch("num_total", &num_total);
     savetree->Branch("Qe", &Q_e);
@@ -354,8 +351,7 @@ int main(int argc, char **argv) {
         auto houghGrid = GridInit();
         FillGrid(houghGrid, pointsList);
         auto tracks = find_track(houghGrid);
-        std::vector<double> PtReContruction;
-        std::vector<double> QReContruction;
+        int track_id_re = 0;
 
         double Qmin = 1.;
         int n_good_tracks = 0;
@@ -369,14 +365,13 @@ int main(int argc, char **argv) {
 
                 if (fit_fine && (p_t > PtMin) && (Q_xy < QCut)) {
                     event_id = track->GetEventID(test_set);
-                    PtReContruction.push_back(p_t);
-                    QReContruction.push_back(Q_xy);
 
-                    track_id = static_cast<int>(PtReContruction.size());
+                    track_id = track_id_re;
+                    track_id_re++;
                     true_track = track->ContainTrueTrackMulti(test_set);
-                    p_t = p_t;
+                    pt = p_t;
                     Q_min = Q_xy;
-                    Q_z = Q_z;
+                    Qz = Q_z;
                     num_true = track->NumTruePointsMulti(test_set);
                     num_total = static_cast<int>(track->Counts());
                     Q_e = track->GetSpin();
@@ -384,7 +379,23 @@ int main(int argc, char **argv) {
                     savetree->Fill();
 
                     n_good_tracks++;
+                    if (selected == mode::single) {
+                        std::ofstream out1("tracks.txt", std::ios::app);
+                        out1 << std::boolalpha << true_track << "\t";
+                        for (auto point : *track->GetPoints()) {
+                            out1 << point->id() << "\t";
+                        }
+                        out1 << "\n";
+                    }
                 }
+            }
+        }
+        if (selected == mode::single) {
+            std::ofstream out2("points.txt", std::ios::app);
+            for (auto point : pointsList) {
+                out2 << point->eventID() << "\t" << point->id() << "\t"
+                     << point->x() << "\t" << point->y() << "\t" << point->z()
+                     << "\n";
             }
         }
         // std::cout << "number of good tracks: " << n_good_tracks << std::endl;
@@ -395,11 +406,11 @@ int main(int argc, char **argv) {
         for (auto ptr : pointsList) {
             delete ptr;
         }
-        for (int i = 0; i < NumAlpha; i++) {
-            for (int j = 0; j < NumD; j++) {
-                delete houghGrid->at(i)->at(j);
+        for (auto row : *houghGrid) {
+            for (auto grid : *row) {
+                delete grid;
             }
-            delete houghGrid->at(i);
+            delete row;
         }
         delete houghGrid;
     }

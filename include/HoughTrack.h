@@ -191,26 +191,22 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
             i_2++;
         }
     }
-
-    // std::cout << "counts: " << _counts << std::endl;
-    // std::cout << "number of points in each layer: "
-    //           << _nlayer0 << " "
-    //           << _nlayer1 << " "
-    //           << _nlayer2 << std::endl;
     double param[2];
-    double param_a0, param_a1;
+    double param_a0, param_a1, param_R;
     double Q_swap, Qz_swap;
     for (auto point1 : layer0) {
         for (auto point2 : layer1) {
             for (auto point3 : layer2) {
                 TherePointsLinearFit(point1, point2, point3, &Q_swap, param);
-                FitZLinear(point1, point2, point3, &Qz_swap);
+                double R = sqrt(param[1] * param[1] + 1) / abs(param[0]);
+                FitZLinear(point1, point2, point3, R, &Qz_swap);
                 if ((Qz_swap < 2.0) && (Q_swap < *Qmin)) {
                     fit = true;
                     *Qmin = Q_swap;
                     *Qz = Qz_swap;
-                    param_a0 = param[0];
-                    param_a1 = param[1];
+                    // param_a0 = param[0];
+                    // param_a1 = param[1];
+                    param_R = R;
                 }
             }
         }
@@ -222,10 +218,10 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
     //           << "a1: " << a1 << "\t"
     //           << "Qmin: " << *Qmin
     //           << "Qz: " << *Qz << std::endl;
-    double d_origin = abs(param_a0) / sqrt(1 + param_a1 * param_a1);
+    // double d_origin = abs(param_a0) / sqrt(1 + param_a1 * param_a1);
     // std::cout << "d: " << d << std::endl;
     // std::cout << "Pt: " << 0.3 / d << std::endl;
-    *pt = 0.3 / d_origin;
+    *pt = 0.3 * param_R;
     _pt = *pt;
     return true;
 }

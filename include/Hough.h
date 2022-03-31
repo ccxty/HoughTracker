@@ -47,11 +47,12 @@ void TherePointsLinearFit(HoughPoint *point1, HoughPoint *point2,
 }
 
 void FitZLinear(HoughPoint *point1, HoughPoint *point2, HoughPoint *point3,
-                double *Q_z) {
-    double radius[3] = {
-        sqrt(point1->x() * point1->x() + point1->y() * point1->y()),
-        sqrt(point2->x() * point2->x() + point2->y() * point2->y()),
-        sqrt(point3->x() * point3->x() + point3->y() * point3->y())};
+                double R, double *Q_z) {
+    double l[3] = {sqrt(point1->x() * point1->x() + point1->y() * point1->y()),
+                   sqrt(point2->x() * point2->x() + point2->y() * point2->y()),
+                   sqrt(point3->x() * point3->x() + point3->y() * point3->y())};
+    double s[3] = {2 * R * asin(l[0] / (2 * R)), 2 * R * asin(l[1] / (2 * R)),
+                   2 * R * asin(l[2] / (2 * R))};
     double posZ[3] = {point1->z(), point2->z(), point3->z()};
     double sum_x = 0;
     double sum_y = 0;
@@ -59,18 +60,18 @@ void FitZLinear(HoughPoint *point1, HoughPoint *point2, HoughPoint *point3,
     double sum_xy = 0;
     int counts = 3;
     for (int i = 0; i < counts; i++) {
-        sum_x += radius[i];
+        sum_x += s[i];
         sum_y += posZ[i];
-        sum_xx += radius[i] * radius[i];
-        sum_xy += radius[i] * posZ[i];
+        sum_xx += s[i] * s[i];
+        sum_xy += s[i] * posZ[i];
     }
     double param_a1 =
         (counts * sum_xy - sum_x * sum_y) / (counts * sum_xx - sum_x * sum_x);
     double param_a0 = (sum_y - param_a1 * sum_x) / counts;
     *Q_z = 0;
     for (int i = 0; i < counts; i++) {
-        *Q_z += (posZ[i] - param_a0 - param_a1 * radius[i]) *
-                (posZ[i] - param_a0 - param_a1 * radius[i]);
+        *Q_z += (posZ[i] - param_a0 - param_a1 * s[i]) *
+                (posZ[i] - param_a0 - param_a1 * s[i]);
     }
     *Q_z = *Q_z / counts;
 }

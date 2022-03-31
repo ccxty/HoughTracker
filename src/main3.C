@@ -151,15 +151,13 @@ void AddNoise(int n_noise, std::vector<HoughPoint *> &points) {
         rdm->SetSeed(rd_device() % kMaxULong);
         rdm_layer->SetSeed(rd_device() % kMaxULong);
         rdm_z->SetSeed(rd_device() % kMaxULong);
-        double cos_20 = cos(20 * TMath::Pi() / 180.);
 
         for (int i = 0; i < n_noise; i++) {
             auto layerID = rdm_layer->Integer(3);
-            double posX, posY, posZ, cos_theta;
+            double posX, posY, posZ;
             rdm->Circle(posX, posY, radius[layerID]);
-            cos_theta = rdm_z->Rndm() * (2 * cos_20) - cos_20;
-            posZ =
-                radius[layerID] * cos_theta / sqrt(1 - cos_theta * cos_theta);
+            posZ = (radius[layerID] / tan(20 * TMath::Pi() / 180.)) *
+                   (-1 + 2 * rdm_z->Rndm());
             auto point = new HoughPoint(posX, posY, posZ, -1, 1,
                                         static_cast<int>(layerID), 0);
             point->SetId(static_cast<int>(len) + i);
@@ -235,11 +233,11 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    // string path =
-    //     "/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/root_data_source/";
     string path =
-        "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/HoughTracker/"
-        "root_data_source/";
+        "/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/root_data_source/";
+    // string path =
+    //     "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/HoughTracker/"
+    //     "root_data_source/";
     path += particle + "/posPt";
     path += pt_str;
     path += ".root";
@@ -286,7 +284,8 @@ int main(int argc, char **argv) {
     tree->SetBranchAddress("Pt", &P_t, &b_Pt);
     tree->SetBranchAddress("nhits", &nhits);
 
-    string savepath = "./trackdata_Pt" + pt_str + "_noise" + string(noise_str);
+    string savepath = "./data/" + particle + "/trackdata_Pt" + pt_str +
+                      "_noise" + string(noise_str);
     if (n_tracks_in_event != 0) {
         savepath += "_multi" + n_track_str;
     }

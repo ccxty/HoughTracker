@@ -14,5 +14,10 @@ build/
 log/
 err/
 out/
-condor/run[0-9]*.sh
+condor/run[a-z]*.sh
+condor/runem[0-9]*.sh
 condor/submit[0-9]*.cmd
+condor/submit[a-z]*.cmd
+condor/log/
+condor/err/
+condor/out/

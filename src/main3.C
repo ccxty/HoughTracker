@@ -233,11 +233,11 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    string path =
-        "/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/root_data_source/";
     // string path =
-    //     "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/HoughTracker/"
-    //     "root_data_source/";
+    //     "/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/root_data_source/";
+    string path =
+        "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/HoughTracker/"
+        "root_data_source/";
     path += particle + "/posPt";
     path += pt_str;
     path += ".root";

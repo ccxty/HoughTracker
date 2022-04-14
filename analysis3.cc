@@ -47,10 +47,12 @@ void analysis3() {
     int i_noise = 0;
     int i_particle = 0;
 
-    //------------------------------
-    // part 1
-    // 60 MeV 不同粒子的 eff/fake -- noise
-    // 3种粒子
+    /**
+     * @brief part 1
+     *60 MeV 不同粒子的 eff/fake -- noise
+     *3种粒子
+     *
+     */
     {
         i_pt = 2;
         i_multi = 0;
@@ -140,18 +142,21 @@ void analysis3() {
         g_1->GetYaxis()->SetTitle("eff");
         g_1->Draw("AC");
         c_1->BuildLegend();
-        c_1->SaveAs("eff_60MeV.png");
+        // c_1->SaveAs("eff_60MeV.png");
         c_2->cd();
         g_2->GetXaxis()->SetTitle("noise");
         g_2->GetYaxis()->SetTitle("fake rate");
         g_2->Draw("AC");
         c_2->BuildLegend();
-        c_2->SaveAs("fake_60MeV.png");
+        // c_2->SaveAs("fake_60MeV.png");
     }
-    //------------------------------
-    // part 2
-    // e- 的 eff/fake 50MeV
-    // 不同的 multi 随noise变化
+
+    /**
+     * @brief part 2
+     *e- 的 eff/fake 50MeV
+     *不同的 multi 随noise变化
+     *
+     */
     {
         i_particle = 0;
         i_pt = 0;
@@ -241,19 +246,21 @@ void analysis3() {
         g_1->GetYaxis()->SetTitle("eff");
         g_1->Draw("AC");
         c_1->BuildLegend();
-        c_1->SaveAs("eff_multi_50MeV.png");
+        // c_1->SaveAs("eff_multi_50MeV.png");
         c_2->cd();
         g_2->GetXaxis()->SetTitle("noise");
         g_2->GetYaxis()->SetTitle("fake rate");
         g_2->Draw("AC");
         c_2->BuildLegend();
-        c_2->SaveAs("fake_multi_50MeV.png");
+        // c_2->SaveAs("fake_multi_50MeV.png");
     }
 
-    //------------------------------
-    // part 3
-    // e- 的 eff/fake noise 30
-    // 不同的 multi 随pt变化
+    /**
+     * @brief part 3
+     * e- 的 eff/fake noise 30
+     *  不同的 multi 随pt变化
+     *
+     */
     {
         i_particle = 0;
         i_noise = 5;
@@ -344,19 +351,21 @@ void analysis3() {
         g_1->GetYaxis()->SetTitle("eff");
         g_1->Draw("AC");
         c_1->BuildLegend();
-        c_1->SaveAs("eff_multi_30noise.png");
+        // c_1->SaveAs("eff_multi_30noise.png");
         c_2->cd();
         g_2->GetXaxis()->SetTitle("Pt [MeV/c]");
         g_2->GetYaxis()->SetTitle("fake rate");
         g_2->Draw("AC");
         c_2->BuildLegend();
-        c_2->SaveAs("fake_multi_30noise.png");
+        // c_2->SaveAs("fake_multi_30noise.png");
     }
 
-    //------------------------------
-    // part 4
-    // e- 的 eff/fake
-    // 不同的 pt 随noise变化
+    /**
+     * @brief part 4
+     * e- 的 eff/fake
+     * 不同的 pt 随noise变化
+     *
+     */
     {
         i_particle = 0;
         i_multi = 0;
@@ -446,21 +455,23 @@ void analysis3() {
         g_1->GetYaxis()->SetTitle("eff");
         g_1->Draw("AC");
         c_1->BuildLegend();
-        c_1->SaveAs("eff_noise_pt.png");
+        // c_1->SaveAs("eff_noise_pt.png");
         c_2->cd();
         g_2->GetXaxis()->SetTitle("noise");
         g_2->GetYaxis()->SetTitle("fake rate");
         g_2->Draw("AC");
         c_2->BuildLegend();
-        c_2->SaveAs("fake_noise_pt.png");
+        // c_2->SaveAs("fake_noise_pt.png");
     }
 
-    //------------------------------
-    // part 5
-    // e- 的 eff/fake multi=1
-    // 不同的 noise随pt变化
+    /**
+     * @brief part 5
+     * e- 的 eff/fake multi=1
+     * 不同的 noise随pt变化
+     *
+     */
     {
-        i_particle = 0;
+        i_particle = 2;
         i_multi = 0;
         auto c_1 = new TCanvas("c_1", "eff");
         auto c_2 = new TCanvas("c_2", "fake");
@@ -526,7 +537,13 @@ void analysis3() {
                     }
                 }
                 eff[i_pt] = n_eff / total;
+                if (n_eff == 0) {
+                    eff[i_pt] = 0;
+                }
                 fake[i_pt] = 1 - n_true / static_cast<double>(n_all);
+                if (n_true == 0) {
+                    fake[i_pt] = 1;
+                }
                 eff_err[i_pt] =
                     sqrt(eff[i_pt] * (1 - eff[i_pt]) * total) / total;
                 fake_err[i_pt] = sqrt(fake[i_pt] * (1 - fake[i_pt]) *

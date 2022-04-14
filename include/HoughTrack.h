@@ -199,8 +199,8 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
             for (auto point3 : layer2) {
                 TherePointsLinearFit(point1, point2, point3, &Q_swap, param);
                 double R = sqrt(param[1] * param[1] + 1) / abs(param[0]);
-                FitZLinear(point1, point2, point3, R, &Qz_swap);
-                if ((Qz_swap < 2.0) && (Q_swap < *Qmin)) {
+                double a1_z = FitZLinear(point1, point2, point3, R, &Qz_swap);
+                if ((Qz_swap < 2.0) && (Q_swap < *Qmin) && (a1_z > -0.5)) {
                     fit = true;
                     *Qmin = Q_swap;
                     *Qz = Qz_swap;

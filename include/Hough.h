@@ -1,3 +1,4 @@
+#include <cmath>
 #ifndef HOUGH_CXX_INCLUDE_
 #define HOUGH_CXX_INCLUDE_ 1
 #include "HoughPoint.h"
@@ -46,8 +47,8 @@ void TherePointsLinearFit(HoughPoint *point1, HoughPoint *point2,
     param[1] = param_a1;
 }
 
-void FitZLinear(HoughPoint *point1, HoughPoint *point2, HoughPoint *point3,
-                double R, double *Q_z) {
+double FitZLinear(HoughPoint *point1, HoughPoint *point2, HoughPoint *point3,
+                  double R, double *Q_z) {
     double l[3] = {sqrt(point1->x() * point1->x() + point1->y() * point1->y()),
                    sqrt(point2->x() * point2->x() + point2->y() * point2->y()),
                    sqrt(point3->x() * point3->x() + point3->y() * point3->y())};
@@ -74,5 +75,7 @@ void FitZLinear(HoughPoint *point1, HoughPoint *point2, HoughPoint *point3,
                 (posZ[i] - param_a0 - param_a1 * s[i]);
     }
     *Q_z = *Q_z / counts;
+    return fabs(point2->z()) - fabs(point1->z());
+    // return point1->z() * param_a1;
 }
 #endif

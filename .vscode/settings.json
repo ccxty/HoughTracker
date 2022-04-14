@@ -76,5 +76,8 @@
         "graph10.C": "cpp",
         "ReadRoot.C": "cpp"
     },
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "cSpell.words": [
+        "Yaxis"
+    ]
 }

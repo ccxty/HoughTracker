@@ -20,6 +20,7 @@
 #include "clipp.h"
 
 using std::array;
+using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -221,8 +222,10 @@ int main(int argc, char **argv) {
     if (parse(argc, argv, cli)) {
         switch (selected) {
             case mode::all:
+                cout << "all mode" << endl;
                 break;
             case mode::single:
+                cout << "single mode" << endl;
                 break;
             case mode::help:
                 cout << make_man_page(cli, "HoughTracker");
@@ -247,6 +250,10 @@ int main(int argc, char **argv) {
     int n_tracks_in_event = atoi(n_track_str.c_str());
 
     auto *file = new TFile(path.c_str());
+    if (!file->IsOpen()) {
+        cerr << "File not found" << endl;
+        return 0;
+    }
     TTree *tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
     const Long64_t nevents = tree->GetEntries();
 
@@ -355,7 +362,7 @@ int main(int argc, char **argv) {
         double Qmin = 1.;
         int n_good_tracks = 0;
         for (auto track : *tracks) {
-            double p_t, Q_xy, Q_z;
+            double p_t = NAN, Q_xy = NAN, Q_z = NAN;
             if (track->HitALayers()) {
                 // track->Print();
                 // std::cout << boolalpha << track->ContainTrueTrack() << " "

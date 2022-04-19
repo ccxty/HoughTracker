@@ -1,8 +1,16 @@
+#include <algorithm>
+#include <array>
+#include <functional>
 #include <iostream>
+#include <iterator>
+#include <limits>
+#include <numeric>
 #include <random>
 #include <set>
+#include <utility>
 
 #include "TCanvas.h"
+#include "TFile.h"
 #include "TH1.h"
 #include "TMath.h"
 #include "TRandom3.h"
@@ -38,7 +46,7 @@ void test() {
     auto rdm_layer = new TRandom3();
     auto rdm_z = new TRandom3();
     std::random_device rd;
-    double r[] = {65.115, 115.11, 165.11};
+    std::array<double, 3> r = {65.115, 115.11, 165.11};
     rdm->SetSeed(rd() % kMaxULong);
     rdm_layer->SetSeed(rd() % kMaxULong);
     rdm_z->SetSeed(rd() % kMaxULong);
@@ -57,6 +65,12 @@ void test() {
     c1->cd();
     h->Draw();
     c1->Draw();
+    std::array<double, 3> test_array = {1, 2, 3};
     std::vector<int>::size_type i = 18;
-    std::cout << static_cast<int>(i);
+    std::cout << static_cast<int>(i) << "\n\n";
+    std::cout << std::accumulate(test_array.begin(), test_array.end(), 0)
+              << std::endl;
+
+    auto file = new TFile("data/e-/track125x125_Pt100_noise66_multi1.root");
+    std::cout << file->IsOpen() << std::endl;
 }

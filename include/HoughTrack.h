@@ -1,5 +1,6 @@
 #ifndef HOUGHTRACK_CXX
 #define HOUGHTRACK_CXX 1
+#include <array>
 #include <iostream>
 #include <set>
 #include <vector>
@@ -22,6 +23,8 @@ class HoughTrack {
     explicit HoughTrack(std::vector<HoughPoint *> *ptr);
     explicit HoughTrack(HoughPoint *point);
     ~HoughTrack();
+    // HoughTrack &operator=(const HoughTrack &track);
+    // HoughTrack(const HoughTrack &track);
     std::vector<HoughPoint *>::size_type Counts() const;
     void AddPoint(HoughPoint *point);
     bool FitLinear(double *p_t, double *Qmin, double *Q_z);
@@ -50,8 +53,7 @@ HoughTrack::~HoughTrack() { delete _ptr; }
 HoughTrack::HoughTrack(std::vector<HoughPoint *> *ptr)
     : _ptr(ptr), _counts(ptr->size()) {
     if (_counts > 0) {
-        for (int i = 0; i < _counts; i++) {
-            HoughPoint *point = _ptr->at(i);
+        for (auto point : *_ptr) {
             int layerID = point->layerID();
             if (layerID == 0) {
                 _nlayer0++;
@@ -116,7 +118,7 @@ double HoughTrack::Pt() const { return _pt; }
 
 void HoughTrack::Print() const {
     if (_ptr == nullptr) {
-        std::cout << "Not Inited correctly" << std::endl;
+        std::cout << "Not Initialed correctly" << std::endl;
         return;
     }
     if (_ptr->size() == 0) {
@@ -166,8 +168,6 @@ bool HoughTrack::operator>(HoughTrack *other) const { return false; }
 
 // 先调用 HitALayers();
 bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
-    double posX[_counts];
-    double posY[_counts];
     HoughPoint *layer0[_nlayer0];
     HoughPoint *layer1[_nlayer1];
     HoughPoint *layer2[_nlayer2];
@@ -254,20 +254,20 @@ bool HoughTrack::ContainTrueTrack() const { return this->NumTruePoints() == 3; }
 std::set<int> *HoughTrack::GetPointIDSet() const {
     auto ptr = new std::set<int>;
     if (_counts > 0) {
-        for (int i = 0; i < _counts; i++) {
-            ptr->insert(_ptr->at(i)->id());
+        for (auto point : *_ptr) {
+            ptr->insert(point->id());
         }
     }
     return ptr;
 }
 
-int HoughTrack::GetSpin() const {
+int HoughTrack::GetSpin() const {  // TODO(tyxiao): 需要改变计算的方式
     if (_counts < 3) {
         return 0;
     } else {
-        int i_point_layer0;
-        int i_point_layer1;
-        int i_point_layer2;
+        int i_point_layer0 = 0;
+        int i_point_layer1 = 0;
+        int i_point_layer2 = 0;
         for (int i = 0; i < _counts; i++) {
             int layerID = _ptr->at(i)->layerID();
             if (layerID == 0) {
@@ -312,19 +312,16 @@ bool HoughTrack::ContainTrueTrackMulti(std::set<int> *events_id) const {
 }
 
 int HoughTrack::NumTruePointsMulti(std::set<int> *events_id) const {
-    int flag[events_id->size()]{0};
-    int i = 0;
-    for (auto it = events_id->begin(); it != events_id->end(); it++, i++) {
+    int max = 0;
+    for (int eventID : *events_id) {
+        int flag = 0;
         for (auto point : *_ptr) {
-            if (point->eventID() == *it) {
-                flag[i]++;
+            if (eventID == point->eventID()) {
+                flag++;
             }
         }
-    }
-    int max = 0;
-    for (auto n : flag) {
-        if (n >= max) {
-            max = n;
+        if (flag > max) {
+            max = flag;
         }
     }
     return max;

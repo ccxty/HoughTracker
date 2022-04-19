@@ -475,7 +475,7 @@ void analysis3() {
      *
      */
     {
-        i_particle = 0;
+        i_particle = 2;
         i_multi = 0;
         auto c_1 = new TCanvas("c_1", "eff");
         auto c_2 = new TCanvas("c_2", "fake");
@@ -503,7 +503,7 @@ void analysis3() {
                 string path =
                     "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/HoughTracker/"
                     "data/";
-                path += particle_str[i_particle] + "/track400x400_Pt" +
+                path += particle_str[i_particle] + "/trackdata_Pt" +
                         pt_str[i_pt] + "_noise" + noise_select_str[i_noise] +
                         "_multi" + multi_str[i_multi] + ".root";
                 auto file = new TFile(path.c_str());

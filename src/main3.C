@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <random>
@@ -83,8 +84,8 @@ std::vector<HoughTrack *> *find_track(
                             // ptr_temp->Print();
                         } else {
                             bool is_equal = false;
-                            for (auto exsitingTrack : *ptr) {
-                                if (exsitingTrack->operator==(ptr_temp)) {
+                            for (auto existingTrack : *ptr) {
+                                if (existingTrack->operator==(ptr_temp)) {
                                     is_equal = true;
                                     break;
                                 }
@@ -143,30 +144,27 @@ void AddNoise(int n_noise, std::vector<HoughPoint *> &points) {
     if (n_noise <= 0) {
         return;
     } else {
-        auto rdm = new TRandom3();
-        auto rdm_layer = new TRandom3();
-        auto rdm_z = new TRandom3();
+        auto rdm = TRandom3();
+        auto rdm_layer = TRandom3();
+        auto rdm_z = TRandom3();
         std::random_device rd_device;
         array<double, 3> radius = {65.115, 115.11, 165.11};
         auto len = points.size();
-        rdm->SetSeed(rd_device() % kMaxULong);
-        rdm_layer->SetSeed(rd_device() % kMaxULong);
-        rdm_z->SetSeed(rd_device() % kMaxULong);
+        rdm.SetSeed(rd_device() % kMaxULong);
+        rdm_layer.SetSeed(rd_device() % kMaxULong);
+        rdm_z.SetSeed(rd_device() % kMaxULong);
 
         for (int i = 0; i < n_noise; i++) {
-            auto layerID = rdm_layer->Integer(3);
-            double posX, posY, posZ;
-            rdm->Circle(posX, posY, radius[layerID]);
+            auto layerID = rdm_layer.Integer(3);
+            double posX = NAN, posY = NAN, posZ = NAN;
+            rdm.Circle(posX, posY, radius[layerID]);
             posZ = (radius[layerID] / tan(20 * TMath::Pi() / 180.)) *
-                   (-1 + 2 * rdm_z->Rndm());
+                   (-1 + 2 * rdm_z.Rndm());
             auto point = new HoughPoint(posX, posY, posZ, -1, 1,
                                         static_cast<int>(layerID), 0);
             point->SetId(static_cast<int>(len) + i);
             points.push_back(point);
         }
-        delete rdm;
-        delete rdm_layer;
-        delete rdm_z;
     }
 }
 
@@ -208,12 +206,12 @@ int main(int argc, char **argv) {
         (command("all").set(selected, mode::all),
          pt_arg % "Pt of the data file", noise_arg % "number of noise points",
          particle_arg % "the particle stored in the data file",
-         n_track_arg % "number of tracks in sigle event");
+         n_track_arg % "number of tracks in single event");
     auto single_mode =
         (command("single").set(selected, mode::single),
          pt_arg % "Pt of the data file", noise_arg % "number of noise points",
          particle_arg % "the particle stored in the data file",
-         n_track_arg % "number of tracks in sigle event");
+         n_track_arg % "number of tracks in single event");
     auto cli =
         ((all_mode | single_mode | command("help").set(selected, mode::help)),
          option("-v", "--version")
@@ -280,8 +278,8 @@ int main(int argc, char **argv) {
     TBranch *b_trackID = nullptr;
     TBranch *b_Pt = nullptr;
     TBranch *b_layerID = nullptr;
-    int eventID;
-    int npoints, nhits;
+    int eventID = 0;
+    int npoints = 0, nhits = 0;
     tree->SetBranchAddress("posX", &posX, &b_posX);
     tree->SetBranchAddress("posY", &posY, &b_posY);
     tree->SetBranchAddress("posZ", &posZ, &b_posZ);
@@ -299,9 +297,9 @@ int main(int argc, char **argv) {
     savepath += ".root";
     auto savefile = new TFile(savepath.c_str(), "RECREATE");
     auto savetree = new TTree("tree1", "tree1");
-    int event_id, track_id, num_true, num_total, Q_e;
+    int event_id = 0, track_id = 0, num_true = 0, num_total = 0, Q_e = 0;
     double Q_min, pt, Qz;
-    bool true_track;
+    bool true_track = false;
     savetree->Branch("event_id", &event_id);
     savetree->Branch("track_id", &track_id);
     savetree->Branch("true_track", &true_track);

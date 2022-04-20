@@ -110,8 +110,8 @@ std::vector<std::vector<HoughGridArea *> *> *GridInit() {
         auto ptr2 = new vector<HoughGridArea *>;
         for (int j = 0; j < NumD; j++) {
             auto ptr3 = new HoughGridArea(AlphaMin + i * AlphaBinWidth,
-                                          DMin + j * DBinWidth,
-                                          DMin + (j + 1) * DBinWidth);
+                                          DMin + (j - 0.5) * DBinWidth,
+                                          DMin + (j + 0.5) * DBinWidth);
             ptr2->push_back(ptr3);
         }
         ptr1->push_back(ptr2);

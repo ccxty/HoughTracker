@@ -77,7 +77,4 @@
         "ReadRoot.C": "cpp"
     },
     "cmake.configureOnOpen": false,
-    "cSpell.words": [
-        "Yaxis"
-    ]
 }

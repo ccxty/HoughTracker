@@ -6,6 +6,7 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <random>
 #include <set>
 #include <vector>
@@ -24,11 +25,14 @@ using std::array;
 using std::cerr;
 using std::cout;
 using std::endl;
+using std::make_unique;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 using namespace clipp;
 
-void find_peak(std::vector<std::vector<HoughGridArea *> *> *gridMatrix) {
+// not to use
+void find_peak(vector<vector<HoughGridArea *> *> *gridMatrix) {
     int flag = 0;
     for (auto row : *gridMatrix) {
         for (auto grid : *row) {
@@ -45,7 +49,7 @@ void find_peak(std::vector<std::vector<HoughGridArea *> *> *gridMatrix) {
     }
 }
 
-std::vector<HoughTrack *> *find_track(
+vector<HoughTrack *> *find_track(
     std::vector<std::vector<HoughGridArea *> *> *gridMatrix) {
     auto ptr = new std::vector<HoughTrack *>;
     for (int ia = 0; ia < gridMatrix->size(); ia++) {
@@ -104,42 +108,61 @@ std::vector<HoughTrack *> *find_track(
     return ptr;
 }
 
-std::vector<std::vector<HoughGridArea *> *> *GridInit() {
-    auto ptr1 = new vector<vector<HoughGridArea *> *>;
-    for (int i = 0; i < NumAlpha; i++) {
+/**
+ * @brief Initialize the grids
+ *
+ * @param NAlpha Grid number in the alpha direction, default NumAlpha
+ * @param NRho Grid number in the rho direction, default NumD
+ * @return vector<vector<HoughGridArea *> *>
+ */
+auto GridInit(const int NAlpha = NumAlpha, const int NRho = NumD) {
+    auto ptr1 = vector<vector<HoughGridArea *> *>();
+    for (int i = 0; i < NAlpha; i++) {
         auto ptr2 = new vector<HoughGridArea *>;
-        for (int j = 0; j < NumD; j++) {
-            auto ptr3 = new HoughGridArea(AlphaMin + i * AlphaBinWidth,
-                                          DMin + (j - 0.5) * DBinWidth,
-                                          DMin + (j + 0.5) * DBinWidth);
+        for (int j = 0; j < NRho; j++) {
+            auto ptr3 =
+                new HoughGridArea(AlphaMin + i * AlphaBinWidth,
+                                  DMin + (j - 0.25) * DBinWidth,   // shift
+                                  DMin + (j + 0.75) * DBinWidth);  // shift
             ptr2->push_back(ptr3);
         }
-        ptr1->push_back(ptr2);
+        ptr1.push_back(ptr2);
     }
     // std::cout << "Init completed" << std::endl;
     return ptr1;
 }
 
+/**
+ * @brief Fill the grids (Hough transformation)
+ *
+ * @param gridMatrix the grids
+ * @param pointsList all points, including true points and noise
+ */
 void FillGrid(std::vector<std::vector<HoughGridArea *> *> *gridMatrix,
               vector<HoughPoint *> &pointsList) {
     for (auto point : pointsList) {
         for (auto row : *gridMatrix) {
             for (auto grid : *row) {
                 double alpha = grid->xMid();
-                double d = point->xConformal() * cos(alpha) +
-                           point->yConformal() * sin(alpha);
+                double rho = point->xConformal() * cos(alpha) +
+                             point->yConformal() * sin(alpha);
 
-                if ((d >= grid->yMin()) && (d < grid->yMax())) {
+                if ((rho >= grid->yMin()) && (rho < grid->yMax())) {
                     // cout << d << endl;
                     grid->CountsAddOne();
                     grid->GetPointsHere()->push_back(point);
                 }
             }
         }
-        // std::cout << ip << " of " << pointsList.size() << endl;
     }
 }
 
+/**
+ * @brief Add noise to existing pointsVector
+ *
+ * @param n_noise Number of noise points in all 3 layers
+ * @param points Vector existing to add the noise points
+ */
 void AddNoise(int n_noise, std::vector<HoughPoint *> &points) {
     if (n_noise <= 0) {
         return;
@@ -168,26 +191,22 @@ void AddNoise(int n_noise, std::vector<HoughPoint *> &points) {
     }
 }
 
-std::set<int> *GetRandomSet(int n_tracks_in_event, std::set<int> &base) {
-    auto set = new std::set<int>;
-    while (set->size() < n_tracks_in_event) {
+/**
+ * @brief Get the Random eventID Set to test
+ *
+ * @param n_tracks_in_event Number of tracks in single test
+ * @param base Set of all eventID
+ * @return unique_ptr<std::set<int>>
+ */
+auto GetRandomSet(int n_tracks_in_event, std::set<int> &base) {
+    auto set_test = make_unique<std::set<int>>();
+    while (set_test->size() < n_tracks_in_event) {
         auto iter(base.begin());
         advance(iter, rand() % base.size());
-        set->insert(*iter);
+        set_test->insert(*iter);
     }
-    return set;
+    return set_test;
 }
-
-// bool SetContain(std::set<int> *set, int num)
-// {
-//     bool contain = false;
-//     for (auto e : *set)
-//     {
-//         if (e == num)
-//             contain = true;
-//     }
-//     return contain;
-// }
 
 int main(int argc, char **argv) {
     //
@@ -255,7 +274,7 @@ int main(int argc, char **argv) {
     TTree *tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
     const Long64_t nevents = tree->GetEntries();
 
-    std::set<int> *eventIDs_toTest = nullptr;
+    unique_ptr<std::set<int>> eventIDs_toTest;
     std::set<int> eventIDs_all;
     for (auto i = 0; i < nevents; i++) {
         eventIDs_all.insert(i);
@@ -263,7 +282,7 @@ int main(int argc, char **argv) {
     if (selected == mode::single) {
         eventIDs_toTest = GetRandomSet(n_tracks_in_event, eventIDs_all);
     } else if (selected == mode::all) {
-        eventIDs_toTest = &eventIDs_all;
+        eventIDs_toTest.reset(&eventIDs_all);
     }
 
     std::vector<double> *posX = nullptr;
@@ -353,8 +372,8 @@ int main(int argc, char **argv) {
         // std::cout << "number of points: " << npoints << endl;
 
         auto houghGrid = GridInit();
-        FillGrid(houghGrid, pointsList);
-        auto tracks = find_track(houghGrid);
+        FillGrid(&houghGrid, pointsList);
+        auto tracks = find_track(&houghGrid);
         int track_id_re = 0;
 
         double Qmin = 1.;
@@ -368,15 +387,15 @@ int main(int argc, char **argv) {
                 bool fit_fine = track->FitLinear(&p_t, &Q_xy, &Q_z);
 
                 if (fit_fine && (p_t > PtMin) && (Q_xy < QCut)) {
-                    event_id = track->GetEventID(test_set);
+                    event_id = track->GetEventID(test_set.get());
 
                     track_id = track_id_re;
                     track_id_re++;
-                    true_track = track->ContainTrueTrackMulti(test_set);
+                    true_track = track->ContainTrueTrackMulti(test_set.get());
                     pt = p_t;
                     Q_min = Q_xy;
                     Qz = Q_z;
-                    num_true = track->NumTruePointsMulti(test_set);
+                    num_true = track->NumTruePointsMulti(test_set.get());
                     num_total = static_cast<int>(track->Counts());
                     Q_e = track->GetSpin();
                     savefile->cd();
@@ -410,13 +429,12 @@ int main(int argc, char **argv) {
         for (auto ptr : pointsList) {
             delete ptr;
         }
-        for (auto row : *houghGrid) {
+        for (auto row : houghGrid) {
             for (auto grid : *row) {
                 delete grid;
             }
             delete row;
         }
-        delete houghGrid;
     }
     savefile->cd();
     savetree->Write();

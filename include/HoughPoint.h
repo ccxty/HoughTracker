@@ -12,8 +12,6 @@ class HoughPoint {
     int _layerID;
     int _trackID;
     int _eventID;
-    double _xConformal;
-    double _yConformal;
     double _pt;
     int _id;
 
@@ -48,8 +46,6 @@ HoughPoint::HoughPoint(double x, double y, double z, int event, int track,
       _layerID(layer),
       _trackID(track),
       _eventID(event),
-      _xConformal(2 * x / (x * x + y * y)),
-      _yConformal(2 * y / (y * y + x * x)),
       _pt(0),
       _id(-1) {}
 HoughPoint::HoughPoint(double x, double y, double z, int event, int track,
@@ -60,15 +56,17 @@ HoughPoint::HoughPoint(double x, double y, double z, int event, int track,
       _layerID(layer),
       _trackID(track),
       _eventID(event),
-      _xConformal(2 * x / (x * x + y * y)),
-      _yConformal(2 * y / (y * y + x * x)),
       _pt(pt),
       _id(-1) {}
 inline double HoughPoint::x() const { return _x; }
 inline double HoughPoint::y() const { return _y; }
 inline double HoughPoint::z() const { return _z; }
-inline double HoughPoint::xConformal() const { return _xConformal; }
-inline double HoughPoint::yConformal() const { return _yConformal; }
+inline double HoughPoint::xConformal() const {
+    return 2 * _x / (_x * _x + _y * _y);
+}
+inline double HoughPoint::yConformal() const {
+    return 2 * _y / (_y * _y + _x * _x);
+}
 inline int HoughPoint::eventID() const { return _eventID; }
 inline int HoughPoint::trackID() const { return _trackID; }
 inline int HoughPoint::layerID() const { return _layerID; }
@@ -82,6 +80,6 @@ void HoughPoint::Print() const {
               << "eventID: " << _eventID << " "
               << "layerID: " << _layerID << " "
               << "trackID: " << _trackID << " " << _x << " " << _y << " " << _z
-              << " " << _xConformal << " " << _yConformal << std::endl;
+              << std::endl;
 }
 #endif

@@ -1,3 +1,4 @@
+#include <cmath>
 #ifndef HOUGHGRIDAREA_CXX
 #define HOUGHGRIDAREA_CXX 1
 
@@ -13,7 +14,7 @@ class HoughGridArea {
     double _yMin;
     double _yMax;
     GridMode _mode;
-    double _xMid;
+    double _xMid{};
     std::vector<HoughPoint *> *_pointsHere;
     int _counts = 0;
 
@@ -46,6 +47,7 @@ HoughGridArea::HoughGridArea(double x_min, double x_max, double y_min,
       _xMax(x_max),
       _yMin(y_min),
       _yMax(y_max),
+      _xMid(NAN),
       _mode(GridMode::GRID),
       _pointsHere(new std::vector<HoughPoint *>) {}
 HoughGridArea::HoughGridArea(double x_mid, double y_min, double y_max)
@@ -53,6 +55,8 @@ HoughGridArea::HoughGridArea(double x_mid, double y_min, double y_max)
       _yMax(y_max),
       _mode(GridMode::POINT),
       _xMid(x_mid),
+      _xMin(NAN),
+      _xMax(NAN),
       _pointsHere(new std::vector<HoughPoint *>) {}
 HoughGridArea::~HoughGridArea() { delete _pointsHere; }
 void HoughGridArea::SetX(double x_min, double x_max) {

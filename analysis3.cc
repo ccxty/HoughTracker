@@ -475,7 +475,7 @@ void analysis3() {
      *
      */
     {
-        i_particle = 2;
+        i_particle = 0;
         i_multi = 0;
         auto c_1 = new TCanvas("c_1", "eff");
         auto c_2 = new TCanvas("c_2", "fake");

@@ -201,7 +201,8 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
                                      param.data());
                 double R = sqrt(param[1] * param[1] + 1) / abs(param[0]);
                 double a1_z = FitZLinear(point1, point2, point3, R, &Qz_swap);
-                if ((Qz_swap < 2.0) && (Q_swap < *Qmin) && (a1_z > -0.5)) {
+                if ((Qz_swap < QzCut) &&
+                    (Q_swap < *Qmin) /*&& (a1_z > -0.5)*/) {
                     fit = true;
                     *Qmin = Q_swap;
                     *Qz = Qz_swap;

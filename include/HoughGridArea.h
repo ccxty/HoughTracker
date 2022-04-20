@@ -5,14 +5,14 @@
 #include <vector>
 
 #include "HoughPoint.h"
-enum MODE { POINT, GRID };
+enum class GridMode { POINT, GRID };
 class HoughGridArea {
  private:
     double _xMin;
     double _xMax;
     double _yMin;
     double _yMax;
-    MODE _mode;
+    GridMode _mode;
     double _xMid;
     std::vector<HoughPoint *> *_pointsHere;
     int _counts = 0;
@@ -20,11 +20,11 @@ class HoughGridArea {
  public:
     HoughGridArea();
     ~HoughGridArea();
-    HoughGridArea(double xmin, double xmax, double ymin, double ymax);
-    HoughGridArea(double xmid, double ymin, double ymax);
-    void SetX(double xmin, double xmax);
-    void SetX(double xmid);
-    void SetY(double ymin, double ymax);
+    HoughGridArea(double x_min, double x_max, double y_min, double y_max);
+    HoughGridArea(double x_mid, double y_min, double y_max);
+    void SetX(double x_min, double x_max);
+    void SetX(double x_mid);
+    void SetY(double y_min, double y_max);
     inline std::vector<HoughPoint *> *GetPointsHere();
     inline int counts();
     inline double xMin();
@@ -32,7 +32,7 @@ class HoughGridArea {
     inline double yMin();
     inline double yMax();
     inline double xMid();
-    MODE mode();
+    GridMode mode();
     void CountsChange(int counts);
     void CountsAddOne();
     bool CountsZero();
@@ -40,48 +40,49 @@ class HoughGridArea {
     void Print();
 };
 
-HoughGridArea::HoughGridArea(double xmin, double xmax, double ymin, double ymax)
-    : _xMin(xmin),
-      _xMax(xmax),
-      _yMin(ymin),
-      _yMax(ymax),
-      _mode(GRID),
+HoughGridArea::HoughGridArea(double x_min, double x_max, double y_min,
+                             double y_max)
+    : _xMin(x_min),
+      _xMax(x_max),
+      _yMin(y_min),
+      _yMax(y_max),
+      _mode(GridMode::GRID),
       _pointsHere(new std::vector<HoughPoint *>) {}
-HoughGridArea::HoughGridArea(double xmid, double ymin, double ymax)
-    : _yMin(ymin),
-      _yMax(ymax),
-      _mode(POINT),
-      _xMid(xmid),
+HoughGridArea::HoughGridArea(double x_mid, double y_min, double y_max)
+    : _yMin(y_min),
+      _yMax(y_max),
+      _mode(GridMode::POINT),
+      _xMid(x_mid),
       _pointsHere(new std::vector<HoughPoint *>) {}
 HoughGridArea::~HoughGridArea() { delete _pointsHere; }
-void HoughGridArea::SetX(double xmin, double xmax) {
-    if (_mode == GRID) {
+void HoughGridArea::SetX(double x_min, double x_max) {
+    if (_mode == GridMode::GRID) {
         if (_pointsHere == nullptr) {
             std::cout << "pointer null" << std::endl;
             return;
         }
-        _xMin = xmin;
-        _xMax = xmax;
+        _xMin = x_min;
+        _xMax = x_max;
     }
 }
-void HoughGridArea::SetX(double xmid) {
-    if (_mode == POINT) {
+void HoughGridArea::SetX(double x_mid) {
+    if (_mode == GridMode::POINT) {
         if (_pointsHere == nullptr) {
             std::cout << "pointer null" << std::endl;
             return;
         }
-        _xMid = xmid;
+        _xMid = x_mid;
     }
 }
-void HoughGridArea::SetY(double ymin, double ymax) {
+void HoughGridArea::SetY(double y_min, double y_max) {
     if (_pointsHere == nullptr) {
         std::cout << "pointer null" << std::endl;
         return;
     }
-    _yMin = ymin;
-    _yMax = ymax;
+    _yMin = y_min;
+    _yMax = y_max;
 }
-inline MODE HoughGridArea::mode() { return _mode; }
+inline GridMode HoughGridArea::mode() { return _mode; }
 inline std::vector<HoughPoint *> *HoughGridArea::GetPointsHere() {
     return _pointsHere;
 }
@@ -105,18 +106,22 @@ void HoughGridArea::Print() {
         return;
     }
 
-    if (_mode == GRID) {
-        std::cout << "mode: " << _mode << "counts: " << _counts << std::endl
-                  << "xmin: " << _xMin << "\t"
-                  << "xmax: " << _xMax << std::endl
-                  << "ymin: " << _yMin << "\t"
-                  << "ymax: " << _yMax << std::endl;
+    if (_mode == GridMode::GRID) {
+        std::cout << "mode: "
+                  << "Grid\t"
+                  << "counts: " << _counts << std::endl
+                  << "x_min: " << _xMin << "\t"
+                  << "x_max: " << _xMax << std::endl
+                  << "y_min: " << _yMin << "\t"
+                  << "y_max: " << _yMax << std::endl;
     }
-    if (_mode == POINT) {
-        std::cout << "mode: " << _mode << "counts: " << _counts << std::endl
-                  << "xmid: " << _xMid << std::endl
-                  << "ymin: " << _yMin << "\t"
-                  << "ymax: " << _yMax << std::endl;
+    if (_mode == GridMode::POINT) {
+        std::cout << "mode: "
+                  << "Point\t"
+                  << "counts: " << _counts << std::endl
+                  << "x_mid: " << _xMid << std::endl
+                  << "y_min: " << _yMin << "\t"
+                  << "y_max: " << _yMax << std::endl;
     }
     for (auto point : *_pointsHere) {
         point->Print();

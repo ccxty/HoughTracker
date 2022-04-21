@@ -222,7 +222,7 @@ double HoughTrack::RatioTrues() const {
 bool HoughTrack::ContainTrueTrack() const { return this->NumTruePoints() == 3; }
 
 auto HoughTrack::GetPointIDSet() const {
-    auto ptr = std::make_unique<std::set<int>>();
+    auto ptr = std::unique_ptr<std::set<int>>(new std::set<int>);
     if (_counts > 0) {
         for (auto point : *_ptr) {
             ptr->insert(point->id());

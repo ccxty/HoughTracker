@@ -25,7 +25,6 @@ using std::array;
 using std::cerr;
 using std::cout;
 using std::endl;
-using std::make_unique;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -199,7 +198,7 @@ void AddNoise(int n_noise, std::vector<HoughPoint *> &points) {
  * @return unique_ptr<std::set<int>>
  */
 auto GetRandomSet(int n_tracks_in_event, std::set<int> &base) {
-    auto set_test = make_unique<std::set<int>>();
+    auto set_test = unique_ptr<std::set<int>>(new std::set<int>);
     while (set_test->size() < n_tracks_in_event) {
         auto iter(base.begin());
         advance(iter, rand() % base.size());

@@ -6,7 +6,7 @@ graph_back/
 graph_back2/
 data/
 root_data_source/
-*.txt
+total*.txt
 nohup.out
 .vscode/
 build/

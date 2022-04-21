@@ -160,23 +160,22 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
             i_2++;
         }
     }
-    std::tuple<double, double> param;
+    std::tuple<double, double> param_xy;
+    std::tuple<double, double> param_z;
     double param_a0 = NAN, param_a1 = NAN, param_R = NAN;
     double Q_swap = NAN, Qz_swap = NAN;
     for (auto *point1 : layer0) {
         for (auto *point2 : layer1) {
             for (auto *point3 : layer2) {
-                TherePointsLinearFit(point1, point2, point3, &Q_swap, param);
-                double R = sqrt(std::get<1>(param) * std::get<1>(param) + 1) /
-                           abs(std::get<0>(param));
-                double a1_z = FitZLinear(point1, point2, point3, R, &Qz_swap);
-                if ((Qz_swap < QzCut) &&
-                    (Q_swap < *Qmin) /*&& (a1_z > -0.5)*/) {
+                TherePointsLinearFit(point1, point2, point3, &Q_swap, param_xy);
+                double R =
+                    sqrt(std::get<1>(param_xy) * std::get<1>(param_xy) + 1) /
+                    abs(std::get<0>(param_xy));
+                FitZLinear(point1, point2, point3, R, &Qz_swap, param_z);
+                if ((Qz_swap < QzCut) && (Q_swap < *Qmin)) {
                     fit = true;
                     *Qmin = Q_swap;
                     *Qz = Qz_swap;
-                    // param_a0 = param[0];
-                    // param_a1 = param[1];
                     param_R = R;
                 }
             }
@@ -185,13 +184,6 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
     if (!fit) {
         return false;
     }
-    // std::cout << "a0: " << a0 << "\t"
-    //           << "a1: " << a1 << "\t"
-    //           << "Qmin: " << *Qmin
-    //           << "Qz: " << *Qz << std::endl;
-    // double d_origin = abs(param_a0) / sqrt(1 + param_a1 * param_a1);
-    // std::cout << "d: " << d << std::endl;
-    // std::cout << "Pt: " << 0.3 / d << std::endl;
     *pt = 0.3 * param_R;
     _pt = *pt;
     return true;

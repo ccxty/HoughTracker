@@ -22,6 +22,16 @@ constexpr double PtMin = 0.3 * MagFeild * 165.11 / 2.;  // 击中三层动量条
 constexpr double QCut = 1.;
 constexpr double QzCut = 2.;
 
+/**
+ * @brief Linear fit algorithm with three points, y=a1*x+a0
+ *
+ * @param point1 point
+ * @param point2 point
+ * @param point3 point
+ * @param Q Q/3
+ * @param param tuple<a0, a1>
+ *
+ */
 void TherePointsLinearFit(HoughPoint *point1, HoughPoint *point2,
                           HoughPoint *point3, double *Q,
                           std::tuple<double, double> &param) {
@@ -51,8 +61,8 @@ void TherePointsLinearFit(HoughPoint *point1, HoughPoint *point2,
     std::get<1>(param) = param_a1;
 }
 
-double FitZLinear(HoughPoint *point1, HoughPoint *point2, HoughPoint *point3,
-                  double Radius, double *Q_z) {
+void FitZLinear(HoughPoint *point1, HoughPoint *point2, HoughPoint *point3,
+                double Radius, double *Q_z, std::tuple<double, double> &param) {
     std::array<double, 3> r_xy = {
         sqrt(point1->x() * point1->x() + point1->y() * point1->y()),
         sqrt(point2->x() * point2->x() + point2->y() * point2->y()),
@@ -80,7 +90,7 @@ double FitZLinear(HoughPoint *point1, HoughPoint *point2, HoughPoint *point3,
                 (posZ[i] - param_a0 - param_a1 * s_xy[i]);
     }
     *Q_z = *Q_z / counts;
-    return fabs(point2->z()) - fabs(point1->z());
-    // return point1->z() * param_a1;
+    std::get<0>(param) = param_a0;
+    std::get<1>(param) = param_a1;
 }
 #endif

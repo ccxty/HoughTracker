@@ -64,13 +64,13 @@ void TherePointsLinearFit(HoughPoint *point1, HoughPoint *point2,
 void FitZLinear(HoughPoint *point1, HoughPoint *point2, HoughPoint *point3,
                 double Radius, double *Q_z, std::tuple<double, double> &param) {
     std::array<double, 3> r_xy = {
-        sqrt(point1->x() * point1->x() + point1->y() * point1->y()),
-        sqrt(point2->x() * point2->x() + point2->y() * point2->y()),
-        sqrt(point3->x() * point3->x() + point3->y() * point3->y())};
+        sqrt(point1->x * point1->x + point1->y * point1->y),
+        sqrt(point2->x * point2->x + point2->y * point2->y),
+        sqrt(point3->x * point3->x + point3->y * point3->y)};
     std::array<double, 3> s_xy = {2 * Radius * asin(r_xy[0] / (2 * Radius)),
                                   2 * Radius * asin(r_xy[1] / (2 * Radius)),
                                   2 * Radius * asin(r_xy[2] / (2 * Radius))};
-    std::array<double, 3> posZ = {point1->z(), point2->z(), point3->z()};
+    std::array<double, 3> posZ = {point1->z, point2->z, point3->z};
     double sum_x = std::accumulate(s_xy.begin(), s_xy.end(), 0.0);
     double sum_y = std::accumulate(posZ.begin(), posZ.end(), 0.0);
     double sum_xx = 0;

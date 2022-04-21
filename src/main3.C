@@ -26,19 +26,21 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::make_unique;
+using std::move;
 using std::string;
 using std::unique_ptr;
 using std::vector;
 using namespace clipp;
+using HoughGrid = vector<unique_ptr<vector<unique_ptr<HoughGridArea>>>>;
 
 // not to use
-void find_peak(vector<vector<HoughGridArea *> *> *gridMatrix) {
+void find_peak(HoughGrid &gridMatrix) {
     int flag = 0;
-    for (auto *row : *gridMatrix) {
-        for (auto *grid : *row) {
+    for (auto &row : gridMatrix) {
+        for (auto &grid : *row) {
             if (grid->counts() >= 3) {
-                auto *points = grid->GetPointsHere();
-                for (auto *point : *points) {
+                auto points = grid->GetPointsHere();
+                for (auto *point : points) {
                     // std::cout << flag << " " << grid->counts() << " "
                     //           << point->eventID() << " " << point->layerID()
                     //           << " " << ia << " " << id << endl;
@@ -49,31 +51,24 @@ void find_peak(vector<vector<HoughGridArea *> *> *gridMatrix) {
     }
 }
 
-vector<HoughTrack *> *find_track(
-    std::vector<std::vector<HoughGridArea *> *> *gridMatrix) {
-    auto *ptr = new std::vector<HoughTrack *>;
-    for (int ia = 0; ia < gridMatrix->size(); ia++) {
-        auto *row = gridMatrix->at(ia);
+vector<unique_ptr<HoughTrack>> find_track(HoughGrid &gridMatrix) {
+    auto ptr = std::vector<unique_ptr<HoughTrack>>();
+    for (int ia = 0; ia < gridMatrix.size(); ia++) {
+        auto &row = gridMatrix.at(ia);
         for (int id = 0; id < row->size(); id++) {
-            auto *grid = row->at(id);
+            auto &grid = row->at(id);
             if (grid->counts() >= 3) {
-                auto *points = grid->GetPointsHere();
-                // for (int ip = 0; ip < points->size(); ip++) {
-                //     auto point = points->at(ip);
-                //     // cout << flag1 << " " << grid->counts() << " "
-                //     //      << point->eventID() << " " << point->layerID()
-                //     //      << " " << ia << " " << id << endl;
-                // }
-                if ((ia > 0) && (id > 0) && (ia + 1 < gridMatrix->size()) &&
+                auto points = grid->GetPointsHere();
+                if ((ia > 0) && (id > 0) && (ia + 1 < gridMatrix.size()) &&
                     (id + 1 < row->size())) {
-                    int counts1 = gridMatrix->at(ia - 1)->at(id - 1)->counts();
-                    int counts2 = gridMatrix->at(ia - 1)->at(id)->counts();
-                    int counts3 = gridMatrix->at(ia - 1)->at(id + 1)->counts();
-                    int counts4 = gridMatrix->at(ia)->at(id - 1)->counts();
-                    int counts5 = gridMatrix->at(ia)->at(id + 1)->counts();
-                    int counts6 = gridMatrix->at(ia + 1)->at(id - 1)->counts();
-                    int counts7 = gridMatrix->at(ia + 1)->at(id)->counts();
-                    int counts8 = gridMatrix->at(ia + 1)->at(id + 1)->counts();
+                    int counts1 = gridMatrix.at(ia - 1)->at(id - 1)->counts();
+                    int counts2 = gridMatrix.at(ia - 1)->at(id)->counts();
+                    int counts3 = gridMatrix.at(ia - 1)->at(id + 1)->counts();
+                    int counts4 = gridMatrix.at(ia)->at(id - 1)->counts();
+                    int counts5 = gridMatrix.at(ia)->at(id + 1)->counts();
+                    int counts6 = gridMatrix.at(ia + 1)->at(id - 1)->counts();
+                    int counts7 = gridMatrix.at(ia + 1)->at(id)->counts();
+                    int counts8 = gridMatrix.at(ia + 1)->at(id + 1)->counts();
                     if ((grid->counts() >= counts1) &&
                         (grid->counts() >= counts2) &&
                         (grid->counts() >= counts3) &&
@@ -82,21 +77,19 @@ vector<HoughTrack *> *find_track(
                         (grid->counts() >= counts6) &&
                         (grid->counts() >= counts7) &&
                         (grid->counts() >= counts8)) {
-                        auto *ptr_temp = new HoughTrack(points);
-                        if (ptr->empty()) {
-                            ptr->push_back(ptr_temp);
-                            // ptr_temp->Print();
+                        auto ptr_temp = make_unique<HoughTrack>(points);
+                        if (ptr.empty()) {
+                            ptr.push_back(move(ptr_temp));
                         } else {
                             bool is_equal = false;
-                            for (auto *existingTrack : *ptr) {
-                                if (existingTrack->operator==(ptr_temp)) {
+                            for (auto &existingTrack : ptr) {
+                                if (existingTrack->operator==(*ptr_temp)) {
                                     is_equal = true;
                                     break;
                                 }
                             }
                             if (!is_equal && (ptr_temp->HitALayers())) {
-                                ptr->push_back(ptr_temp);
-                                // ptr_temp->Print();
+                                ptr.push_back(move(ptr_temp));
                             }
                         }
                     }
@@ -105,7 +98,7 @@ vector<HoughTrack *> *find_track(
         }
     }
     // std::cout << " Num of tracks: " << ptr->size() << std::endl;
-    return ptr;
+    return move(ptr);
 }
 
 /**
@@ -116,20 +109,20 @@ vector<HoughTrack *> *find_track(
  * @return vector<vector<HoughGridArea *> *>
  */
 auto GridInit(const int NAlpha = NumAlpha, const int NRho = NumD) {
-    auto ptr1 = vector<vector<HoughGridArea *> *>();
+    auto ptr1 = vector<unique_ptr<vector<unique_ptr<HoughGridArea>>>>();
     for (int i = 0; i < NAlpha; i++) {
-        auto *ptr2 = new vector<HoughGridArea *>;
+        auto ptr2 = make_unique<vector<unique_ptr<HoughGridArea>>>();
         for (int j = 0; j < NRho; j++) {
-            auto *ptr3 =
-                new HoughGridArea(AlphaMin + i * AlphaBinWidth,
-                                  DMin + (j - 0.25) * DBinWidth,   // shift
-                                  DMin + (j + 0.75) * DBinWidth);  // shift
-            ptr2->push_back(ptr3);
+            auto ptr3 = make_unique<HoughGridArea>(
+                AlphaMin + i * AlphaBinWidth,
+                DMin + (j - 0.25) * DBinWidth,   // shift
+                DMin + (j + 0.75) * DBinWidth);  // shift
+            ptr2->push_back(move(ptr3));
         }
-        ptr1.push_back(ptr2);
+        ptr1.push_back(move(ptr2));
     }
     // std::cout << "Init completed" << std::endl;
-    return ptr1;
+    return move(ptr1);
 }
 
 /**
@@ -138,19 +131,17 @@ auto GridInit(const int NAlpha = NumAlpha, const int NRho = NumD) {
  * @param gridMatrix the grids
  * @param pointsList all points, including true points and noise
  */
-void FillGrid(std::vector<std::vector<HoughGridArea *> *> *gridMatrix,
-              vector<HoughPoint *> &pointsList) {
+void FillGrid(HoughGrid &gridMatrix, vector<HoughPoint *> &pointsList) {
     for (auto *point : pointsList) {
-        for (auto *row : *gridMatrix) {
-            for (auto *grid : *row) {
+        for (auto &row : gridMatrix) {
+            for (auto &grid : *row) {
                 double alpha = grid->xMid();
                 double rho = point->xConformal() * cos(alpha) +
                              point->yConformal() * sin(alpha);
 
                 if ((rho >= grid->yMin()) && (rho < grid->yMax())) {
-                    // cout << d << endl;
                     grid->CountsAddOne();
-                    grid->GetPointsHere()->push_back(point);
+                    grid->GetPointsHere().push_back(point);
                 }
             }
         }
@@ -264,8 +255,8 @@ int main(int argc, char **argv) {
     int n_noise = atoi(noise_str.c_str());
     int n_tracks_in_event = atoi(n_track_str.c_str());
 
-    auto *file = new TFile(path.c_str());
-    if (!file->IsOpen()) {
+    TFile file(path.c_str());
+    if (!file.IsOpen()) {
         cerr << "File not found" << endl;
         return 0;
     }
@@ -312,20 +303,20 @@ int main(int argc, char **argv) {
         savepath += "_multi" + n_track_str;
     }
     savepath += ".root";
-    auto *savefile = new TFile(savepath.c_str(), "RECREATE");
-    auto *savetree = new TTree("tree1", "tree1");
+    TFile savefile(savepath.c_str(), "RECREATE");
+    TTree savetree("tree1", "tree1");
     int event_id = 0, track_id = 0, num_true = 0, num_total = 0, Q_e = 0;
     double Q_min = NAN, pt = NAN, Qz = NAN;
     bool true_track = false;
-    savetree->Branch("event_id", &event_id);
-    savetree->Branch("track_id", &track_id);
-    savetree->Branch("true_track", &true_track);
-    savetree->Branch("Pt", &pt);
-    savetree->Branch("Q", &Q_min);
-    savetree->Branch("Qz", &Qz);
-    savetree->Branch("num_true", &num_true);
-    savetree->Branch("num_total", &num_total);
-    savetree->Branch("Qe", &Q_e);
+    savetree.Branch("event_id", &event_id);
+    savetree.Branch("track_id", &track_id);
+    savetree.Branch("true_track", &true_track);
+    savetree.Branch("Pt", &pt);
+    savetree.Branch("Q", &Q_min);
+    savetree.Branch("Qz", &Qz);
+    savetree.Branch("num_true", &num_true);
+    savetree.Branch("num_total", &num_total);
+    savetree.Branch("Qe", &Q_e);
     int counts_useful_events = 0;
     std::cout << path << endl;
     // std::cout << Pt_data << endl;
@@ -370,13 +361,13 @@ int main(int argc, char **argv) {
         // std::cout << "number of points: " << npoints << endl;
 
         auto houghGrid = GridInit();
-        FillGrid(&houghGrid, pointsList);
-        auto *tracks = find_track(&houghGrid);
+        FillGrid(houghGrid, pointsList);
+        auto tracks = find_track(houghGrid);
         int track_id_re = 0;
 
         double Qmin = 1.;
         int n_good_tracks = 0;
-        for (auto *track : *tracks) {
+        for (auto &track : tracks) {
             double p_t = NAN, Q_xy = NAN, Q_z = NAN;
             if (track->HitALayers()) {
                 // track->Print();
@@ -396,14 +387,14 @@ int main(int argc, char **argv) {
                     num_true = track->NumTruePointsMulti(test_set.get());
                     num_total = static_cast<int>(track->Counts());
                     Q_e = track->GetSpin();
-                    savefile->cd();
-                    savetree->Fill();
+                    savefile.cd();
+                    savetree.Fill();
 
                     n_good_tracks++;
                     if (selected == mode::single) {
                         std::ofstream out1("tracks.txt", std::ios::app);
                         out1 << std::boolalpha << true_track << "\t";
-                        for (auto *point : *track->GetPoints()) {
+                        for (auto *point : track->GetPoints()) {
                             out1 << point->id() << "\t";
                         }
                         out1 << "\n";
@@ -414,8 +405,8 @@ int main(int argc, char **argv) {
         if (selected == mode::single) {
             std::ofstream out2("points.txt", std::ios::app);
             for (auto *point : pointsList) {
-                out2 << point->eventID() << "\t" << point->id() << "\t"
-                     << point->x() << "\t" << point->y() << "\t" << point->z()
+                out2 << point->eventID << "\t" << point->id() << "\t"
+                     << point->x << "\t" << point->y << "\t" << point->z
                      << "\n";
             }
         }
@@ -427,21 +418,11 @@ int main(int argc, char **argv) {
         for (auto *ptr : pointsList) {
             delete ptr;
         }
-        for (auto *row : houghGrid) {
-            for (auto *grid : *row) {
-                delete grid;
-            }
-            delete row;
-        }
     }
-    savefile->cd();
-    savetree->Write();
-    savefile->Write();
-    savefile->Close();
-    // delete file;
-    // delete tree;
-    // delete savetree;
-    // delete savefile;
+    savefile.cd();
+    savetree.Write();
+    savefile.Write();
+    savefile.Close();
     std::cout << "Save Path: " << savepath << std::endl;
     std::cout << "total tracks useful: " << counts_useful_events << endl
               << endl;

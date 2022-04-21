@@ -1,20 +1,18 @@
-#include <cmath>
-#include <memory>
-#ifndef HOUGHTRACK_CXX
-#define HOUGHTRACK_CXX 1
 #include <array>
+#include <cmath>
 #include <iostream>
+#include <memory>
 #include <set>
 #include <tuple>
 #include <vector>
+#ifndef HOUGHTRACK_CXX
+#define HOUGHTRACK_CXX 1
 
 #include "Hough.h"
 #include "HoughPoint.h"
-#include "TF1.h"
-#include "TLinearFitter.h"
 class HoughTrack {
  private:
-    std::vector<HoughPoint *> *_ptr;
+    std::vector<HoughPoint *> _ptr;
     double _pt{0};
     std::vector<HoughPoint *>::size_type _counts{0};
     int _nlayer0{0};
@@ -23,9 +21,8 @@ class HoughTrack {
 
  public:
     HoughTrack();
-    explicit HoughTrack(std::vector<HoughPoint *> *ptr);
+    explicit HoughTrack(std::vector<HoughPoint *> ptr);
     explicit HoughTrack(HoughPoint *point);
-    ~HoughTrack();
     // HoughTrack &operator=(const HoughTrack &track);
     // HoughTrack(const HoughTrack &track);
     std::vector<HoughPoint *>::size_type Counts() const;
@@ -33,10 +30,10 @@ class HoughTrack {
     bool FitLinear(double *pt, double *Qmin, double *Qz);
     double Pt() const;
     void Print() const;
-    std::vector<HoughPoint *> *GetPoints() const;
-    bool operator==(HoughTrack *other) const;
-    bool operator!=(HoughTrack *other) const;
-    bool operator>(HoughTrack *other) const;
+    std::vector<HoughPoint *> &GetPoints();
+    bool operator==(HoughTrack &other) const;
+    bool operator!=(HoughTrack &other) const;
+    bool operator>(HoughTrack &other) const;
     bool HitALayers();
     double RatioTrues() const;
     int NumTruePoints() const;
@@ -50,36 +47,29 @@ class HoughTrack {
     void LayerDistribution();
 };
 
-HoughTrack::HoughTrack() : _ptr(new std::vector<HoughPoint *>) {}
+HoughTrack::HoughTrack() = default;
 
-HoughTrack::~HoughTrack() { delete _ptr; }
+HoughTrack::HoughTrack(std::vector<HoughPoint *> ptr)
+    : _ptr(std::move(ptr)), _counts(_ptr.size()) {}
 
-HoughTrack::HoughTrack(std::vector<HoughPoint *> *ptr)
-    : _ptr(ptr), _counts(ptr->size()) {}
-
-HoughTrack::HoughTrack(HoughPoint *point)
-    : _ptr(new std::vector<HoughPoint *>), _counts(1) {
-    _ptr->push_back(point);
+HoughTrack::HoughTrack(HoughPoint *point) : _counts(1) {
+    _ptr.push_back(point);
 }
 
 void HoughTrack::AddPoint(HoughPoint *point) {
-    if (_ptr == nullptr) {
-        _ptr = new std::vector<HoughPoint *>;
-        _ptr->push_back(point);
-        _counts = 1;
-    } else if (_ptr->empty()) {
-        _ptr->push_back(point);
+    if (_ptr.empty()) {
+        _ptr.push_back(point);
         _counts = 1;
     } else {
         bool exist = false;
-        for (auto *p_exist : *_ptr) {
+        for (auto *p_exist : _ptr) {
             if (p_exist == point) {
                 exist = true;
                 break;
             }
         }
         if (!exist) {
-            _ptr->push_back(point);
+            _ptr.push_back(point);
             _counts += 1;
         }
     }
@@ -92,32 +82,28 @@ std::vector<HoughPoint *>::size_type HoughTrack::Counts() const {
 double HoughTrack::Pt() const { return _pt; }
 
 void HoughTrack::Print() const {
-    if (_ptr == nullptr) {
-        std::cout << "Not Initialed correctly" << std::endl;
-        return;
-    }
-    if (_ptr->empty()) {
+    if (_ptr.empty()) {
         std::cout << "Empty" << std::endl;
         return;
     }
     std::cout << "counts: " << _counts << std::endl;
-    for (auto *point : *_ptr) {
+    for (auto *point : _ptr) {
         point->Print();
     }
 }
 
-std::vector<HoughPoint *> *HoughTrack::GetPoints() const { return _ptr; }
+std::vector<HoughPoint *> &HoughTrack::GetPoints() { return _ptr; }
 
-bool HoughTrack::operator!=(HoughTrack *other) const {
+bool HoughTrack::operator!=(HoughTrack &other) const {
     return !this->operator==(other);
 }
 
-bool HoughTrack::operator==(HoughTrack *other) const {
-    if (this->_counts == other->_counts) {
+bool HoughTrack::operator==(HoughTrack &other) const {
+    if (this->_counts == other._counts) {
         if (this->_counts != 0) {
-            for (auto *point1 : *_ptr) {
+            for (auto *point1 : _ptr) {
                 bool find = false;
-                for (auto *point2 : *other->_ptr) {
+                for (auto *point2 : other._ptr) {
                     if (point1->id() == point2->id()) {
                         find = true;
                         break;
@@ -133,7 +119,7 @@ bool HoughTrack::operator==(HoughTrack *other) const {
     return false;
 }
 
-bool HoughTrack::operator>(HoughTrack *other) const { return false; }
+bool HoughTrack::operator>(HoughTrack &other) const { return false; }
 
 // 需先调用 HitALayers();
 bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
@@ -146,8 +132,8 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
     *Qz = 1000;
     bool fit = false;
     for (int i = 0; i < _counts; i++) {
-        auto *point = _ptr->at(i);
-        int layer_id = point->layerID();
+        auto *point = _ptr.at(i);
+        int layer_id = point->layerID;
         if (layer_id == 0) {
             layer0[i_0] = point;
             i_0++;
@@ -195,8 +181,8 @@ bool HoughTrack::HitALayers() {
 
 int HoughTrack::NumTruePoints() const {
     int trues = 0;
-    for (auto *point : *_ptr) {
-        if (point->eventID() != -1) {
+    for (auto *point : _ptr) {
+        if (point->eventID != -1) {
             trues++;
         }
     }
@@ -212,7 +198,7 @@ bool HoughTrack::ContainTrueTrack() const { return this->NumTruePoints() == 3; }
 auto HoughTrack::GetPointIDSet() const {
     auto ptr = std::make_unique<std::set<int>>();
     if (_counts > 0) {
-        for (auto *point : *_ptr) {
+        for (auto *point : _ptr) {
             ptr->insert(point->id());
         }
     }
@@ -227,7 +213,7 @@ int HoughTrack::GetSpin() const {  // TODO(tyxiao): 需要改变计算的方式
     int i_point_layer1 = 0;
     int i_point_layer2 = 0;
     for (int i = 0; i < _counts; i++) {
-        int layerID = _ptr->at(i)->layerID();
+        int layerID = _ptr.at(i)->layerID;
         if (layerID == 0) {
             i_point_layer0 = i;
         } else if (layerID == 1) {
@@ -236,19 +222,19 @@ int HoughTrack::GetSpin() const {  // TODO(tyxiao): 需要改变计算的方式
             i_point_layer2 = i;
         }
     }
-    auto *point0 = _ptr->at(i_point_layer0);
-    auto *point1 = _ptr->at(i_point_layer1);
-    auto *point2 = _ptr->at(i_point_layer2);
-    double theta0 = atan2(point0->y(), point0->x());
-    double theta1 = atan2(point1->y(), point1->x());
-    double theta2 = atan2(point2->y(), point2->x());
+    auto *point0 = _ptr.at(i_point_layer0);
+    auto *point1 = _ptr.at(i_point_layer1);
+    auto *point2 = _ptr.at(i_point_layer2);
+    double theta0 = atan2(point0->y, point0->x);
+    double theta1 = atan2(point1->y, point1->x);
+    double theta2 = atan2(point2->y, point2->x);
     if (theta0 * theta1 > 0) {
         if (theta0 > theta1) {
             return 1;
         }
         return -1;
     }
-    if (point0->x() * point0->y() > 0) {
+    if (point0->x * point0->y > 0) {
         return 1;
     }
     return -1;
@@ -269,8 +255,8 @@ int HoughTrack::NumTruePointsMulti(std::set<int> *events_id) const {
     int max = 0;
     for (int eventID : *events_id) {
         int flag = 0;
-        for (auto *point : *_ptr) {
-            if (eventID == point->eventID()) {
+        for (auto *point : _ptr) {
+            if (eventID == point->eventID) {
                 flag++;
             }
         }
@@ -284,8 +270,8 @@ int HoughTrack::NumTruePointsMulti(std::set<int> *events_id) const {
 int HoughTrack::GetEventID(std::set<int> *events_id) const {
     for (int eventID : *events_id) {
         int flag = 0;
-        for (auto *point : *_ptr) {
-            if (point->eventID() == eventID) {
+        for (auto *point : _ptr) {
+            if (point->eventID == eventID) {
                 flag++;
             }
         }
@@ -300,8 +286,11 @@ void HoughTrack::LayerDistribution() {
     _nlayer0 = 0;
     _nlayer1 = 0;
     _nlayer2 = 0;
-    for (auto *point : *_ptr) {
-        int layerID = point->layerID();
+    if (_ptr.empty()) {
+        return;
+    }
+    for (auto *point : _ptr) {
+        int layerID = point->layerID;
         if (layerID == 0) {
             _nlayer0++;
         } else if (layerID == 1) {

@@ -11,8 +11,9 @@ Diagnostics:
         performance-*,
         bugprone-*,
         modernize-*,
+        google-*,
         clang-analyzer-*,
-        readability-identifier*,
+        readability-*,
       ]
       CheckOptions:
         readability-identifier-naming.VariableCase: snakeCase

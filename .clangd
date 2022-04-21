@@ -4,16 +4,3 @@ CompileFlags:
         -std=c++14,
         -Wno-missing-prototypes,
       ]
-Diagnostics:
-    ClangTidy:
-      Add:
-      [
-        performance-*,
-        bugprone-*,
-        modernize-*,
-        google-*,
-        clang-analyzer-*,
-        readability-*,
-      ]
-      CheckOptions:
-        readability-identifier-naming.VariableCase: snakeCase

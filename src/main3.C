@@ -34,11 +34,11 @@ using namespace clipp;
 // not to use
 void find_peak(vector<vector<HoughGridArea *> *> *gridMatrix) {
     int flag = 0;
-    for (auto row : *gridMatrix) {
-        for (auto grid : *row) {
+    for (auto *row : *gridMatrix) {
+        for (auto *grid : *row) {
             if (grid->counts() >= 3) {
-                auto points = grid->GetPointsHere();
-                for (auto point : *points) {
+                auto *points = grid->GetPointsHere();
+                for (auto *point : *points) {
                     // std::cout << flag << " " << grid->counts() << " "
                     //           << point->eventID() << " " << point->layerID()
                     //           << " " << ia << " " << id << endl;
@@ -51,13 +51,13 @@ void find_peak(vector<vector<HoughGridArea *> *> *gridMatrix) {
 
 vector<HoughTrack *> *find_track(
     std::vector<std::vector<HoughGridArea *> *> *gridMatrix) {
-    auto ptr = new std::vector<HoughTrack *>;
+    auto *ptr = new std::vector<HoughTrack *>;
     for (int ia = 0; ia < gridMatrix->size(); ia++) {
-        auto row = gridMatrix->at(ia);
+        auto *row = gridMatrix->at(ia);
         for (int id = 0; id < row->size(); id++) {
-            auto grid = row->at(id);
+            auto *grid = row->at(id);
             if (grid->counts() >= 3) {
-                auto points = grid->GetPointsHere();
+                auto *points = grid->GetPointsHere();
                 // for (int ip = 0; ip < points->size(); ip++) {
                 //     auto point = points->at(ip);
                 //     // cout << flag1 << " " << grid->counts() << " "
@@ -82,13 +82,13 @@ vector<HoughTrack *> *find_track(
                         (grid->counts() >= counts6) &&
                         (grid->counts() >= counts7) &&
                         (grid->counts() >= counts8)) {
-                        auto ptr_temp = new HoughTrack(points);
-                        if (ptr->size() == 0) {
+                        auto *ptr_temp = new HoughTrack(points);
+                        if (ptr->empty()) {
                             ptr->push_back(ptr_temp);
                             // ptr_temp->Print();
                         } else {
                             bool is_equal = false;
-                            for (auto existingTrack : *ptr) {
+                            for (auto *existingTrack : *ptr) {
                                 if (existingTrack->operator==(ptr_temp)) {
                                     is_equal = true;
                                     break;
@@ -118,9 +118,9 @@ vector<HoughTrack *> *find_track(
 auto GridInit(const int NAlpha = NumAlpha, const int NRho = NumD) {
     auto ptr1 = vector<vector<HoughGridArea *> *>();
     for (int i = 0; i < NAlpha; i++) {
-        auto ptr2 = new vector<HoughGridArea *>;
+        auto *ptr2 = new vector<HoughGridArea *>;
         for (int j = 0; j < NRho; j++) {
-            auto ptr3 =
+            auto *ptr3 =
                 new HoughGridArea(AlphaMin + i * AlphaBinWidth,
                                   DMin + (j - 0.25) * DBinWidth,   // shift
                                   DMin + (j + 0.75) * DBinWidth);  // shift
@@ -140,9 +140,9 @@ auto GridInit(const int NAlpha = NumAlpha, const int NRho = NumD) {
  */
 void FillGrid(std::vector<std::vector<HoughGridArea *> *> *gridMatrix,
               vector<HoughPoint *> &pointsList) {
-    for (auto point : pointsList) {
-        for (auto row : *gridMatrix) {
-            for (auto grid : *row) {
+    for (auto *point : pointsList) {
+        for (auto *row : *gridMatrix) {
+            for (auto *grid : *row) {
                 double alpha = grid->xMid();
                 double rho = point->xConformal() * cos(alpha) +
                              point->yConformal() * sin(alpha);
@@ -166,28 +166,26 @@ void FillGrid(std::vector<std::vector<HoughGridArea *> *> *gridMatrix,
 void AddNoise(int n_noise, std::vector<HoughPoint *> &points) {
     if (n_noise <= 0) {
         return;
-    } else {
-        auto rdm = TRandom3();
-        auto rdm_layer = TRandom3();
-        auto rdm_z = TRandom3();
-        std::random_device rd_device;
-        array<double, 3> radius = {65.115, 115.11, 165.11};
-        auto len = points.size();
-        rdm.SetSeed(rd_device() % kMaxULong);
-        rdm_layer.SetSeed(rd_device() % kMaxULong);
-        rdm_z.SetSeed(rd_device() % kMaxULong);
+    }
+    auto rdm = TRandom3();
+    auto rdm_layer = TRandom3();
+    auto rdm_z = TRandom3();
+    std::random_device rd_device;
+    array<double, 3> radius = {65.115, 115.11, 165.11};
+    auto len = points.size();
+    rdm.SetSeed(rd_device() % kMaxULong);
+    rdm_layer.SetSeed(rd_device() % kMaxULong);
+    rdm_z.SetSeed(rd_device() % kMaxULong);
 
-        for (int i = 0; i < n_noise; i++) {
-            auto layerID = rdm_layer.Integer(3);
-            double posX = NAN, posY = NAN, posZ = NAN;
-            rdm.Circle(posX, posY, radius[layerID]);
-            posZ = (radius[layerID] / tan(20 * TMath::Pi() / 180.)) *
-                   (-1 + 2 * rdm_z.Rndm());
-            auto point = new HoughPoint(posX, posY, posZ, -1, 1,
-                                        static_cast<int>(layerID), 0);
-            point->SetId(static_cast<int>(len) + i);
-            points.push_back(point);
-        }
+    for (int i = 0; i < n_noise; i++) {
+        int layerID = static_cast<int>(rdm_layer.Integer(3));
+        double posX = NAN, posY = NAN, posZ = NAN;
+        rdm.Circle(posX, posY, radius[layerID]);
+        posZ = (radius[layerID] / tan(20 * TMath::Pi() / 180.)) *
+               (-1 + 2 * rdm_z.Rndm());
+        auto *point = new HoughPoint(posX, posY, posZ, -1, 1, layerID, 0);
+        point->SetId(static_cast<int>(len) + i);
+        points.push_back(point);
     }
 }
 
@@ -314,10 +312,10 @@ int main(int argc, char **argv) {
         savepath += "_multi" + n_track_str;
     }
     savepath += ".root";
-    auto savefile = new TFile(savepath.c_str(), "RECREATE");
-    auto savetree = new TTree("tree1", "tree1");
+    auto *savefile = new TFile(savepath.c_str(), "RECREATE");
+    auto *savetree = new TTree("tree1", "tree1");
     int event_id = 0, track_id = 0, num_true = 0, num_total = 0, Q_e = 0;
-    double Q_min, pt, Qz;
+    double Q_min = NAN, pt = NAN, Qz = NAN;
     bool true_track = false;
     savetree->Branch("event_id", &event_id);
     savetree->Branch("track_id", &track_id);
@@ -373,12 +371,12 @@ int main(int argc, char **argv) {
 
         auto houghGrid = GridInit();
         FillGrid(&houghGrid, pointsList);
-        auto tracks = find_track(&houghGrid);
+        auto *tracks = find_track(&houghGrid);
         int track_id_re = 0;
 
         double Qmin = 1.;
         int n_good_tracks = 0;
-        for (auto track : *tracks) {
+        for (auto *track : *tracks) {
             double p_t = NAN, Q_xy = NAN, Q_z = NAN;
             if (track->HitALayers()) {
                 // track->Print();
@@ -405,7 +403,7 @@ int main(int argc, char **argv) {
                     if (selected == mode::single) {
                         std::ofstream out1("tracks.txt", std::ios::app);
                         out1 << std::boolalpha << true_track << "\t";
-                        for (auto point : *track->GetPoints()) {
+                        for (auto *point : *track->GetPoints()) {
                             out1 << point->id() << "\t";
                         }
                         out1 << "\n";
@@ -415,7 +413,7 @@ int main(int argc, char **argv) {
         }
         if (selected == mode::single) {
             std::ofstream out2("points.txt", std::ios::app);
-            for (auto point : pointsList) {
+            for (auto *point : pointsList) {
                 out2 << point->eventID() << "\t" << point->id() << "\t"
                      << point->x() << "\t" << point->y() << "\t" << point->z()
                      << "\n";
@@ -426,11 +424,11 @@ int main(int argc, char **argv) {
         //
         //
         // delete
-        for (auto ptr : pointsList) {
+        for (auto *ptr : pointsList) {
             delete ptr;
         }
-        for (auto row : houghGrid) {
-            for (auto grid : *row) {
+        for (auto *row : houghGrid) {
+            for (auto *grid : *row) {
                 delete grid;
             }
             delete row;

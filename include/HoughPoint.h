@@ -20,7 +20,7 @@ class HoughPoint {
     HoughPoint(double posX, double posY, double posZ, int eventID, int trackID,
                int layerID);
     HoughPoint(double posX, double posY, double posZ, int eventID, int trackID,
-               int layerID, double P_t);
+               int layerID, double pt);
     inline double x() const;
     inline double y() const;
     inline double z() const;

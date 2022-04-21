@@ -1,6 +1,7 @@
 #include <array>
 #include <cmath>
 #include <numeric>
+#include <tuple>
 #ifndef HOUGH_CXX_INCLUDE_
 #define HOUGH_CXX_INCLUDE_ 1
 
@@ -22,7 +23,8 @@ constexpr double QCut = 1.;
 constexpr double QzCut = 2.;
 
 void TherePointsLinearFit(HoughPoint *point1, HoughPoint *point2,
-                          HoughPoint *point3, double *Q, double *param) {
+                          HoughPoint *point3, double *Q,
+                          std::tuple<double, double> &param) {
     std::array<double, 3> posX = {point1->xConformal(), point2->xConformal(),
                                   point3->xConformal()};
     std::array<double, 3> posY = {point1->yConformal(), point2->yConformal(),
@@ -45,8 +47,8 @@ void TherePointsLinearFit(HoughPoint *point1, HoughPoint *point2,
               (posY[i] - param_a0 - param_a1 * posX[i]);
     }
     *Q = *Q / counts;
-    param[0] = param_a0;
-    param[1] = param_a1;
+    std::get<0>(param) = param_a0;
+    std::get<1>(param) = param_a1;
 }
 
 double FitZLinear(HoughPoint *point1, HoughPoint *point2, HoughPoint *point3,

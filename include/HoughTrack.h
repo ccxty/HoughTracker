@@ -37,7 +37,7 @@ class HoughTrack {
     bool operator==(HoughTrack *other) const;
     bool operator!=(HoughTrack *other) const;
     bool operator>(HoughTrack *other) const;
-    bool HitALayers() const;
+    bool HitALayers();
     double RatioTrues() const;
     int NumTruePoints() const;
     int NumTruePointsMulti(std::set<int> *events_id) const;
@@ -47,6 +47,7 @@ class HoughTrack {
     int GetSpin() const;
     auto GetPointIDSet() const;
     std::tuple<int, int, int> GetLayerDistribution();
+    void LayerDistribution();
 };
 
 HoughTrack::HoughTrack() : _ptr(new std::vector<HoughPoint *>) {}
@@ -112,26 +113,24 @@ bool HoughTrack::operator!=(HoughTrack *other) const {
 }
 
 bool HoughTrack::operator==(HoughTrack *other) const {
-    if (this->_counts != other->_counts) {
-        return false;
-    }
-    if (this->_counts != 0) {
-        auto *ptr1 = this->GetPoints();
-        auto *ptr2 = other->GetPoints();
-        for (auto *point1 : *ptr1) {
-            bool find = false;
-            for (auto *point2 : *ptr2) {
-                if (point1->id() == point2->id()) {
-                    find = true;
-                    break;
+    if (this->_counts == other->_counts) {
+        if (this->_counts != 0) {
+            for (auto *point1 : *_ptr) {
+                bool find = false;
+                for (auto *point2 : *other->_ptr) {
+                    if (point1->id() == point2->id()) {
+                        find = true;
+                        break;
+                    }
+                }
+                if (!find) {
+                    return false;
                 }
             }
-            if (!find) {
-                return false;
-            }
         }
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool HoughTrack::operator>(HoughTrack *other) const { return false; }
@@ -189,7 +188,8 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
     return true;
 }
 
-bool HoughTrack::HitALayers() const {
+bool HoughTrack::HitALayers() {
+    this->LayerDistribution();
     return (_nlayer0 > 0) && (_nlayer1 > 0) && (_nlayer2 > 0);
 }
 
@@ -200,7 +200,6 @@ int HoughTrack::NumTruePoints() const {
             trues++;
         }
     }
-    // std::cout << "NumberTrue: " << trues << std::endl;
     return trues;
 }
 
@@ -257,16 +256,7 @@ int HoughTrack::GetSpin() const {  // TODO(tyxiao): 需要改变计算的方式
 
 std::tuple<int, int, int> HoughTrack::GetLayerDistribution() {
     if ((_nlayer0 + _nlayer1 + _nlayer2) != _counts) {
-        for (auto *point : *_ptr) {
-            int layerID = point->layerID();
-            if (layerID == 0) {
-                _nlayer0++;
-            } else if (layerID == 1) {
-                _nlayer1++;
-            } else if (layerID == 2) {
-                _nlayer2++;
-            }
-        }
+        this->LayerDistribution();
     }
     return std::make_tuple(_nlayer0, _nlayer1, _nlayer2);
 }
@@ -305,4 +295,21 @@ int HoughTrack::GetEventID(std::set<int> *events_id) const {
     }
     return -1;
 }
+
+void HoughTrack::LayerDistribution() {
+    _nlayer0 = 0;
+    _nlayer1 = 0;
+    _nlayer2 = 0;
+    for (auto *point : *_ptr) {
+        int layerID = point->layerID();
+        if (layerID == 0) {
+            _nlayer0++;
+        } else if (layerID == 1) {
+            _nlayer1++;
+        } else if (layerID == 2) {
+            _nlayer2++;
+        }
+    }
+}
+
 #endif

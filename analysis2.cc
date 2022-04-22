@@ -23,7 +23,7 @@ void analysis2() {
         std::ofstream out(savepath, std::ios::app);
         for (int j = 0; j < 18; j++) {
             string path =
-                "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/HoughTracker/"
+                "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/"
                 "root_data_source/";
             path += particle_str[i] + "/posPt" + pt_str[j] + ".root";
             auto *file = new TFile(path.c_str());

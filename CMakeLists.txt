@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
-project(HoughTracker LANGUAGES CXX)
+project(Tracker LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++14 standard to use")
 set(CMAKE_CXX_STANDARD 14)

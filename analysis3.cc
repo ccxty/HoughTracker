@@ -76,7 +76,7 @@ void analysis3() {
     //         array<double, 10> fake_err{};
     //         for (i_noise = 0; i_noise < 10; i_noise++) {
     //             string path =
-    //                 "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/HoughTracker/"
+    //                 "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/"
     //                 "data/";
     //             path += particle_str[i_particle] + "/trackdata_Pt" +
     //                     pt_str[i_pt] + "_noise" + noise_str[i_noise] +
@@ -181,7 +181,7 @@ void analysis3() {
     //         array<double, 10> fake_err{};
     //         for (i_noise = 0; i_noise < 10; i_noise++) {
     //             string path =
-    //                 "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/HoughTracker/"
+    //                 "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/"
     //                 "data/";
     //             path += particle_str[i_particle] + "/trackdata_Pt" +
     //                     pt_str[i_pt] + "_noise" + noise_str[i_noise] +
@@ -289,7 +289,7 @@ void analysis3() {
     //                 }
     //             }
     //             string path =
-    //                 "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/HoughTracker/"
+    //                 "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/"
     //                 "data/";
     //             path += particle_str[i_particle] + "/trackdata_Pt" +
     //                     pt_str[i_pt] + "_noise" + noise_str[i_noise] +
@@ -393,7 +393,7 @@ void analysis3() {
     //         array<double, 10> fake_err{};
     //         for (i_noise = 0; i_noise < 10; i_noise++) {
     //             string path =
-    //                 "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/HoughTracker/"
+    //                 "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/"
     //                 "data/";
     //             path += particle_str[i_particle] + "/trackdata_Pt" +
     //                     pt_select_str[i_pt] + "_noise" + noise_str[i_noise] +
@@ -501,7 +501,7 @@ void analysis3() {
                     }
                 }
                 string path =
-                    "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/HoughTracker/"
+                    "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/"
                     "data/";
                 path += particle_str[i_particle] + "/trackdata_Pt" +
                         pt_str[i_pt] + "_noise" + noise_select_str[i_noise] +

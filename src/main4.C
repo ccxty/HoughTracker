@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
     // string path =
     //     "/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/root_data_source/";
     string path =
-        "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/HoughTracker/"
+        "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/"
         "root_data_source/";
     path += args.particle + "/posPt";
     path += args.pt_str;

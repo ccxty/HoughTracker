@@ -10,37 +10,12 @@
 
 enum class ExecMode { all, single, help, json };
 
-std::string to_string(ExecMode mode) {
-    std::string mode_str;
-    switch (mode) {
-        case ExecMode::all:
-            mode_str = "all";
-            break;
-        case ExecMode::single:
-            mode_str = "single";
-        case ExecMode::help:
-            mode_str = "help";
-        case ExecMode::json:
-            mode_str = "json";
-    }
-    return std::move(mode_str);
-}
-
-ExecMode to_mode(const std::string &mode) {
-    if (mode == "all") {
-        return ExecMode::all;
-    }
-    if (mode == "single") {
-        return ExecMode::single;
-    }
-    if (mode == "help") {
-        return ExecMode::help;
-    }
-    if (mode == "json") {
-        return ExecMode::json;
-    }
-    throw std::runtime_error("invalid mode");
-}
+NLOHMANN_JSON_SERIALIZE_ENUM(ExecMode, {
+                                           {ExecMode::all, "all"},
+                                           {ExecMode::single, "single"},
+                                           {ExecMode::help, "help"},
+                                           {ExecMode::json, "json"},
+                                       });
 
 struct Args {
     std::string pt_str;
@@ -56,20 +31,23 @@ void args_out_json(Args &args) {
     args_json["n_noise"] = args.n_noise_str;
     args_json["n_track"] = args.n_track_str;
     args_json["particle"] = args.particle;
-    args_json["mode"] = to_string(args.mode);
+    args_json["mode"] = args.mode;
     std::ofstream out("args_exec.json");
     out << std::setw(4) << args_json << std::endl;
 }
 
-void args_parse_json(Args &args) {
-    std::ifstream in("args.json");
+void args_parse_json(Args &args, std::string &json_file) {
+    if (json_file.empty()) {
+        json_file = "args.json";
+    }
+    std::ifstream in(json_file);
     nlohmann::json args_json;
     in >> args_json;
     args.pt_str = args_json["pt"];
     args.n_noise_str = args_json["n_noise"];
     args.n_track_str = args_json["n_track"];
     args.particle = args_json["particle"];
-    args.mode = to_mode(args_json["mode"]);
+    args.mode = args_json.get<ExecMode>();
 }
 
 void args_parse(int argc, char **argv, Args &args) {
@@ -78,6 +56,7 @@ void args_parse(int argc, char **argv, Args &args) {
     using clipp::required;
     using clipp::usage_lines;
     using clipp::value;
+    std::string file_json;
     auto pt_arg = required("-pt") & value("pt", args.pt_str);
     auto noise_arg = required("-noise") & value("noise", args.n_noise_str);
     auto particle_arg =
@@ -94,7 +73,9 @@ void args_parse(int argc, char **argv, Args &args) {
          pt_arg % "Pt of the data file", noise_arg % "number of noise points",
          particle_arg % "the particle stored in the data file",
          n_track_arg % "number of tracks in single event");
-    auto json_mode = (command("json").set(args.mode, ExecMode::json));
+    auto json_mode =
+        (command("json").set(args.mode, ExecMode::json),
+         value("config_file", file_json) % "json file with arguments");
     auto cli = ((all_mode | single_mode | json_mode |
                  command("help").set(args.mode, ExecMode::help)),
                 option("-v", "--version")
@@ -110,7 +91,7 @@ void args_parse(int argc, char **argv, Args &args) {
                 break;
             case ExecMode::json:
                 std::cout << "json mode" << std::endl;
-                args_parse_json(args);
+                args_parse_json(args, file_json);
                 break;
             case ExecMode::help:
                 std::cout << make_man_page(cli, "HoughTracker");

@@ -50,7 +50,8 @@ void args_parse_json(Args &args, std::string &json_file) {
     args.mode = args_json.get<ExecMode>();
 }
 
-void args_parse(int argc, char **argv, Args &args) {
+void args_parse(int argc, char **argv, const std::string &program_name,
+                Args &args) {
     using clipp::command;
     using clipp::option;
     using clipp::required;
@@ -98,7 +99,7 @@ void args_parse(int argc, char **argv, Args &args) {
                 exit(0);
         }
     } else {
-        std::cout << usage_lines(cli, "HoughTracker") << '\n';
+        std::cout << usage_lines(cli, program_name) << '\n';
         exit(1);
     }
 }

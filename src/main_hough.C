@@ -1,4 +1,9 @@
+#include <TVector3.h>
+#include <unistd.h>
+
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -7,6 +12,8 @@
 #include <vector>
 
 #include "HitPoint.h"
+#include "Hough.h"
+#include "HoughGridArea.h"
 #include "TFile.h"
 #include "TMath.h"
 #include "TRandom3.h"
@@ -14,27 +21,24 @@
 #include "Track.h"
 #include "TreeRead.h"
 #include "args.h"
-#include "clipp.h"
-#include "global.h"
 
+using std::array;
 using std::cerr;
 using std::cout;
 using std::endl;
+using std::make_unique;
+using std::move;
 using std::set;
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
 
-// sigma(Pt)/Pt ~= 1.0e-4 * Pt
-// sigma(Pt) ~= 1.0e-4* Pt * Pt
-// 20 -> 0.04 ; 100 -> 1 ; 135 -> 1.82 ; 200 -> 4
 int main(int argc, char **argv) {
     /**
      * @brief Commandline Arguments Parser with include/clipp.h
      */
     Args args;
-    args_parse(argc, argv, args);
+    args_parse(argc, argv, "HoughTracker", args);
     args_out_json(args);
     double Pt_data = atof(args.pt_str.c_str());
     int n_noise = atoi(args.n_noise_str.c_str());
@@ -151,27 +155,74 @@ int main(int argc, char **argv) {
          * @brief Hough transform
          *
          */
-        std::vector<Track> tracks;
+        auto houghGrid = GridInit();
+        FillGrid(houghGrid, pointsList);
+        auto tracks = find_track(houghGrid);
+
+        /**
+         * @brief track filter
+         */
         int track_id_re = 0;
-        for (const auto &track : tracks) {
-            event_id = track.GetEventID(test_set.get());
-            track_id = track_id_re;
-            track_id_re++;
-            true_track = track.ContainTrueTrackMulti(test_set.get());
-            pt = track.Pt();
-            Qz = track.Qz();
-            Q_e = 0;
-            Q_min = track->DOrigin();
-            num_true = track.NumTruePointsMulti(test_set.get());
-            // savefile->cd();
-            savetree.Fill();
+        double Qmin = 1.;
+        int n_good_tracks = 0;
+        for (auto &track : tracks) {
+            double p_t = NAN, Q_xy = NAN, Q_z = NAN;
+            if (track->HitALayers()) {
+                // track->Print();
+                // std::cout << boolalpha << track->ContainTrueTrack() << " "
+                //           << noboolalpha << track->RatioTrues() << std::endl;
+                bool fit_fine = track->FitLinear(&p_t, &Q_xy, &Q_z);
+
+                if (fit_fine && (p_t > PtMin) && (Q_xy < QCut)) {
+                    event_id = track->GetEventID(test_set.get());
+
+                    track_id = track_id_re;
+                    track_id_re++;
+                    true_track = track->ContainTrueTrackMulti(test_set.get());
+                    pt = p_t;
+                    Q_min = Q_xy;
+                    Qz = Q_z;
+                    num_true = track->NumTruePointsMulti(test_set.get());
+                    num_total = static_cast<int>(track->Counts());
+                    Q_e = track->GetSpin();
+                    savefile.cd();
+                    savetree.Fill();
+
+                    n_good_tracks++;
+                    if (args.mode == ExecMode::single) {
+                        std::ofstream out1("tracks.txt", std::ios::app);
+                        out1 << std::boolalpha << true_track << "\t";
+                        for (auto *point : track->GetPoints()) {
+                            out1 << point->id() << "\t";
+                        }
+                        out1 << "\n";
+                    }
+                }
+            }
+        }
+        if (args.mode == ExecMode::single) {
+            std::ofstream out2("points.txt", std::ios::app);
+            for (auto *point : pointsList) {
+                out2 << point->eventID << "\t" << point->id() << "\t"
+                     << point->x << "\t" << point->y << "\t" << point->z
+                     << "\n";
+            }
+        }
+        // std::cout << "number of good tracks: " << n_good_tracks << std::endl;
+
+        //
+        //
+        // delete
+        for (auto *ptr : pointsList) {
+            delete ptr;
         }
     }
     savefile.cd();
     savetree.Write();
     savefile.Write();
     savefile.Close();
-    cout << "Save Path: " << savepath << endl;
-    cout << "total tracks useful: " << counts_useful_events << endl << endl;
+    cout << "Save Path: " << savepath << endl
+         << "total tracks useful: " << counts_useful_events << endl
+         << endl;
     return 0;
 }

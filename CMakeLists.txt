@@ -17,13 +17,13 @@ include(${ROOT_USE_FILE})
 include_directories(include)
 
 separate_arguments(ROOT_EXE_LINKER_FLAGS)
-add_executable(HoughTracker src/main3.C)
+add_executable(HoughTracker src/main_hough.C)
 target_link_libraries(HoughTracker PUBLIC ${ROOT_LIBRARIES}
                                           ${ROOT_EXE_LINKER_FLAGS}
 #                                          benchmark::benchmark
                                           )
 
-add_executable(LocalTracker src/main4.C)
+add_executable(LocalTracker src/main_local.C)
 target_link_libraries(LocalTracker PUBLIC ${ROOT_LIBRARIES}
                                           ${ROOT_EXE_LINKER_FLAGS}
 #                                          benchmark::benchmark

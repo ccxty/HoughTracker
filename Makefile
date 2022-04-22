@@ -1,10 +1,8 @@
-./bin/ReadRoot: ReadRoot.C
+./bin/ReadRoot: ./src/ReadRoot.C
 	g++ `root-config --cflags --libs` -lMinuit -L/software/STCF/OSCAR/2.0.0/sniper/InstallArea/Linux-x86_64/lib -L/home/zhouh/STCF_Oscar2.0.0/InstallArea/Linux-x86_64/lib -L/software/STCF/OSCAR/2.0.0/offline/InstallArea/Linux-x86_64/lib -I/software/STCF/OSCAR/2.0.0/offline/InstallArea/include -I/home/zhouh/STCF_Oscar2.0.0/InstallArea/include -I/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/include -lBaseEvent -lEDMUtil -lStcfMCEvent $^ -o $@
-./bin/Test: ./src/test.C
-	g++ `root-config --cflags --libs` -lMinuit -L/software/STCF/OSCAR/2.0.0/sniper/InstallArea/Linux-x86_64/lib -L/home/zhouh/STCF_Oscar2.0.0/InstallArea/Linux-x86_64/lib -L/software/STCF/OSCAR/2.0.0/offline/InstallArea/Linux-x86_64/lib -I/software/STCF/OSCAR/2.0.0/offline/InstallArea/include -I/home/zhouh/STCF_Oscar2.0.0/InstallArea/include -I/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/include -lBaseEvent -lEDMUtil -lStcfMCEvent $^ -o $@
-./bin/Test2: ./src/test2.C
-	g++ `root-config --cflags --libs` -lMinuit -L/software/STCF/OSCAR/2.0.0/sniper/InstallArea/Linux-x86_64/lib -L/home/zhouh/STCF_Oscar2.0.0/InstallArea/Linux-x86_64/lib -L/software/STCF/OSCAR/2.0.0/offline/InstallArea/Linux-x86_64/lib -I/software/STCF/OSCAR/2.0.0/offline/InstallArea/include -I/home/zhouh/STCF_Oscar2.0.0/InstallArea/include -I/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/include -lBaseEvent -lEDMUtil -lStcfMCEvent $^ -o $@
-./bin/HoughFinder_noise: ./src/main2.C
-	g++ -pthread -std=c++11 -m64 -I/software/STCF/OSCAR/ExternalLibs/ROOT/6.20.04/include -lMinuit -L/software/STCF/OSCAR/2.0.0/sniper/InstallArea/Linux-x86_64/lib -L/home/zhouh/STCF_Oscar2.0.0/InstallArea/Linux-x86_64/lib -L/software/STCF/OSCAR/2.0.0/offline/InstallArea/Linux-x86_64/lib -I/software/STCF/OSCAR/2.0.0/offline/InstallArea/include -I/home/zhouh/STCF_Oscar2.0.0/InstallArea/include -I/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/include -lBaseEvent -lEDMUtil -lStcfMCEvent -O2 $^ -o $@
-./bin/HoughFinder: ./src/main3.C ./include/Hough.h
+./bin/HoughTracker: ./src/main_hough.C ./include/Hough.h
 	g++ `root-config --cflags --libs` -std=c++14 -lMinuit -L/software/STCF/OSCAR/2.0.0/sniper/InstallArea/Linux-x86_64/lib -L/home/zhouh/STCF_Oscar2.0.0/InstallArea/Linux-x86_64/lib -L/software/STCF/OSCAR/2.0.0/offline/InstallArea/Linux-x86_64/lib -I/software/STCF/OSCAR/2.0.0/offline/InstallArea/include -I/home/zhouh/STCF_Oscar2.0.0/InstallArea/include -I/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/include -lBaseEvent -lEDMUtil -lStcfMCEvent -O2 $^ -o $@
+./bin/LocalTracker: ./src/main_local.C ./include/Hough.h
+	g++ `root-config --cflags --libs` -std=c++14 -lMinuit -L/software/STCF/OSCAR/2.0.0/sniper/InstallArea/Linux-x86_64/lib -L/home/zhouh/STCF_Oscar2.0.0/InstallArea/Linux-x86_64/lib -L/software/STCF/OSCAR/2.0.0/offline/InstallArea/Linux-x86_64/lib -I/software/STCF/OSCAR/2.0.0/offline/InstallArea/include -I/home/zhouh/STCF_Oscar2.0.0/InstallArea/include -I/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/include -lBaseEvent -lEDMUtil -lStcfMCEvent -O2 $^ -o $@
+clean:
+	rm -f ./bin/*

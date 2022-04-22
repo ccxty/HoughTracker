@@ -1,5 +1,3 @@
-#include <benchmark/benchmark.h>
-
 #include <array>
 #include <cmath>
 #include <numeric>

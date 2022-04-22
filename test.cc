@@ -25,6 +25,7 @@ using std::string;
 using std::tuple;
 using std::unique_ptr;
 using std::vector;
+
 std::set<int>* GetRandomSet(int n_tracks_in_event, std::set<int>& base) {
     auto* set = new std::set<int>;
     while (set->size() < n_tracks_in_event) {

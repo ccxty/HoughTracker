@@ -8,8 +8,9 @@
 #ifndef HOUGHTRACK_CXX
 #define HOUGHTRACK_CXX 1
 
-#include "Hough.h"
+#include "HoughGlobal.h"
 #include "HoughPoint.h"
+#include "line.h"
 class HoughTrack {
  private:
     std::vector<HoughPoint *> _ptr;

@@ -1,96 +1,192 @@
 #include <array>
 #include <cmath>
+#include <memory>
 #include <numeric>
+#include <random>
+#include <set>
 #include <tuple>
+
+#include "TRandom3.h"
 #ifndef HOUGH_CXX_INCLUDE_
 #define HOUGH_CXX_INCLUDE_ 1
 
+#include "HoughGlobal.h"
+#include "HoughGridArea.h"
 #include "HoughPoint.h"
+#include "HoughTrack.h"
 #include "TMath.h"
 
-constexpr double AlphaMin = 0;
-constexpr double AlphaMax = TMath::Pi();
-constexpr double DMin = -0.05;
-constexpr double DMax = 0.05;
-constexpr int NumAlpha = 100;
-constexpr int NumD = 100;
-constexpr double AlphaBinWidth = (AlphaMax - AlphaMin) / NumAlpha;
-constexpr double DBinWidth = (DMax - DMin) / NumD;
+using HoughGrid =
+    std::vector<std::unique_ptr<std::vector<std::unique_ptr<HoughGridArea>>>>;
 
-constexpr double MagFeild = 1.0;                        // 1.0 T
-constexpr double PtMin = 0.3 * MagFeild * 165.11 / 2.;  // 击中三层动量条件
-constexpr double QCut = 1.;
-constexpr double QzCut = 2.;
+// not to use
+void find_peak(HoughGrid &gridMatrix) {
+    int flag = 0;
+    for (auto &row : gridMatrix) {
+        for (auto &grid : *row) {
+            if (grid->counts() >= 3) {
+                auto points = grid->GetPointsHere();
+                for (auto *point : points) {
+                    // std::cout << flag << " " << grid->counts() << " "
+                    //           << point->eventID() << " " << point->layerID()
+                    //           << " " << ia << " " << id << endl;
+                }
+                flag++;
+            }
+        }
+    }
+}
+
+std::vector<std::unique_ptr<HoughTrack>> find_track(HoughGrid &gridMatrix) {
+    using std::make_unique;
+    using std::unique_ptr;
+    using std::vector;
+    auto ptr = std::vector<unique_ptr<HoughTrack>>();
+    for (int ia = 0; ia < gridMatrix.size(); ia++) {
+        auto &row = gridMatrix.at(ia);
+        for (int id = 0; id < row->size(); id++) {
+            auto &grid = row->at(id);
+            if (grid->counts() >= 3) {
+                auto points = grid->GetPointsHere();
+                if ((ia > 0) && (id > 0) && (ia + 1 < gridMatrix.size()) &&
+                    (id + 1 < row->size())) {
+                    int counts1 = gridMatrix.at(ia - 1)->at(id - 1)->counts();
+                    int counts2 = gridMatrix.at(ia - 1)->at(id)->counts();
+                    int counts3 = gridMatrix.at(ia - 1)->at(id + 1)->counts();
+                    int counts4 = gridMatrix.at(ia)->at(id - 1)->counts();
+                    int counts5 = gridMatrix.at(ia)->at(id + 1)->counts();
+                    int counts6 = gridMatrix.at(ia + 1)->at(id - 1)->counts();
+                    int counts7 = gridMatrix.at(ia + 1)->at(id)->counts();
+                    int counts8 = gridMatrix.at(ia + 1)->at(id + 1)->counts();
+                    if ((grid->counts() >= counts1) &&
+                        (grid->counts() >= counts2) &&
+                        (grid->counts() >= counts3) &&
+                        (grid->counts() >= counts4) &&
+                        (grid->counts() >= counts5) &&
+                        (grid->counts() >= counts6) &&
+                        (grid->counts() >= counts7) &&
+                        (grid->counts() >= counts8)) {
+                        auto ptr_temp = make_unique<HoughTrack>(points);
+                        if (ptr.empty()) {
+                            ptr.push_back(move(ptr_temp));
+                        } else {
+                            bool is_equal = false;
+                            for (auto &existingTrack : ptr) {
+                                if (existingTrack->operator==(*ptr_temp)) {
+                                    is_equal = true;
+                                    break;
+                                }
+                            }
+                            if (!is_equal && (ptr_temp->HitALayers())) {
+                                ptr.push_back(move(ptr_temp));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // std::cout << " Num of tracks: " << ptr->size() << std::endl;
+    return move(ptr);
+}
 
 /**
- * @brief Linear fit algorithm with three points, y=a1*x+a0
+ * @brief Initialize the grids
  *
- * @param point1 point
- * @param point2 point
- * @param point3 point
- * @param Q Q/3
- * @param param tuple<a0, a1>
- *
+ * @param NAlpha Grid number in the alpha direction, default NumAlpha
+ * @param NRho Grid number in the rho direction, default NumD
+ * @return vector<vector<HoughGridArea *> *>
  */
-void TherePointsLinearFit(HoughPoint *point1, HoughPoint *point2,
-                          HoughPoint *point3, double *Q,
-                          std::tuple<double, double> &param) {
-    std::array<double, 3> posX = {point1->xConformal(), point2->xConformal(),
-                                  point3->xConformal()};
-    std::array<double, 3> posY = {point1->yConformal(), point2->yConformal(),
-                                  point3->yConformal()};
-    double sum_x = std::accumulate(posX.begin(), posX.end(), 0.0);
-    double sum_y = std::accumulate(posY.begin(), posY.end(), 0.0);
-    double sum_xx = 0;
-    double sum_xy = 0;
-    int counts = 3;
-    for (int i = 0; i < counts; i++) {
-        sum_xx += posX[i] * posX[i];
-        sum_xy += posX[i] * posY[i];
+auto GridInit(const int NAlpha = NumAlpha, const int NRho = NumD) {
+    using std::make_unique;
+    using std::unique_ptr;
+    using std::vector;
+    auto ptr1 = vector<unique_ptr<vector<unique_ptr<HoughGridArea>>>>();
+    for (int i = 0; i < NAlpha; i++) {
+        auto ptr2 = make_unique<vector<unique_ptr<HoughGridArea>>>();
+        for (int j = 0; j < NRho; j++) {
+            auto ptr3 = make_unique<HoughGridArea>(
+                AlphaMin + i * AlphaBinWidth,
+                DMin + (j - 0.25) * DBinWidth,   // shift
+                DMin + (j + 0.75) * DBinWidth);  // shift
+            ptr2->push_back(move(ptr3));
+        }
+        ptr1.push_back(move(ptr2));
     }
-    double param_a1 =
-        (counts * sum_xy - sum_x * sum_y) / (counts * sum_xx - sum_x * sum_x);
-    double param_a0 = (sum_y - param_a1 * sum_x) / counts;
-    *Q = 0;
-    for (int i = 0; i < counts; i++) {
-        *Q += (posY[i] - param_a0 - param_a1 * posX[i]) *
-              (posY[i] - param_a0 - param_a1 * posX[i]);
-    }
-    *Q = *Q / counts;
-    std::get<0>(param) = param_a0;
-    std::get<1>(param) = param_a1;
+    // std::cout << "Init completed" << std::endl;
+    return move(ptr1);
 }
 
-void FitZLinear(HoughPoint *point1, HoughPoint *point2, HoughPoint *point3,
-                double Radius, double *Q_z, std::tuple<double, double> &param) {
-    std::array<double, 3> r_xy = {
-        sqrt(point1->x * point1->x + point1->y * point1->y),
-        sqrt(point2->x * point2->x + point2->y * point2->y),
-        sqrt(point3->x * point3->x + point3->y * point3->y)};
-    std::array<double, 3> s_xy = {2 * Radius * asin(r_xy[0] / (2 * Radius)),
-                                  2 * Radius * asin(r_xy[1] / (2 * Radius)),
-                                  2 * Radius * asin(r_xy[2] / (2 * Radius))};
-    std::array<double, 3> posZ = {point1->z, point2->z, point3->z};
-    double sum_x = std::accumulate(s_xy.begin(), s_xy.end(), 0.0);
-    double sum_y = std::accumulate(posZ.begin(), posZ.end(), 0.0);
-    double sum_xx = 0;
-    double sum_xy = 0;
-    int counts = 3;
-    for (int i = 0; i < counts; i++) {
-        sum_xx += s_xy[i] * s_xy[i];
-        sum_xy += s_xy[i] * posZ[i];
-    }
+/**
+ * @brief Fill the grids (Hough transformation)
+ *
+ * @param gridMatrix the grids
+ * @param pointsList all points, including true points and noise
+ */
+void FillGrid(HoughGrid &gridMatrix, std::vector<HoughPoint *> &pointsList) {
+    for (auto *point : pointsList) {
+        for (auto &row : gridMatrix) {
+            for (auto &grid : *row) {
+                double alpha = grid->xMid();
+                double rho = point->xConformal() * cos(alpha) +
+                             point->yConformal() * sin(alpha);
 
-    double param_a1 =
-        (counts * sum_xy - sum_x * sum_y) / (counts * sum_xx - sum_x * sum_x);
-    double param_a0 = (sum_y - param_a1 * sum_x) / counts;
-    *Q_z = 0;
-    for (int i = 0; i < counts; i++) {
-        *Q_z += (posZ[i] - param_a0 - param_a1 * s_xy[i]) *
-                (posZ[i] - param_a0 - param_a1 * s_xy[i]);
+                if ((rho >= grid->yMin()) && (rho < grid->yMax())) {
+                    grid->CountsAddOne();
+                    grid->GetPointsHere().push_back(point);
+                }
+            }
+        }
     }
-    *Q_z = *Q_z / counts;
-    std::get<0>(param) = param_a0;
-    std::get<1>(param) = param_a1;
 }
+
+/**
+ * @brief Add noise to existing pointsVector
+ *
+ * @param n_noise Number of noise points in all 3 layers
+ * @param points Vector existing to add the noise points
+ */
+void AddNoise(int n_noise, std::vector<HoughPoint *> &points) {
+    if (n_noise <= 0) {
+        return;
+    }
+    auto rdm = TRandom3();
+    auto rdm_layer = TRandom3();
+    auto rdm_z = TRandom3();
+    std::random_device rd_device;
+    std::array<double, 3> radius = {65.115, 115.11, 165.11};
+    auto len = points.size();
+    rdm.SetSeed(rd_device() % kMaxULong);
+    rdm_layer.SetSeed(rd_device() % kMaxULong);
+    rdm_z.SetSeed(rd_device() % kMaxULong);
+
+    for (int i = 0; i < n_noise; i++) {
+        int layerID = static_cast<int>(rdm_layer.Integer(3));
+        double posX = NAN, posY = NAN, posZ = NAN;
+        rdm.Circle(posX, posY, radius[layerID]);
+        posZ = (radius[layerID] / tan(20 * TMath::Pi() / 180.)) *
+               (-1 + 2 * rdm_z.Rndm());
+        auto *point = new HoughPoint(posX, posY, posZ, -1, 1, layerID, 0);
+        point->SetId(static_cast<int>(len) + i);
+        points.push_back(point);
+    }
+}
+
+/**
+ * @brief Get the Random eventID Set to test
+ *
+ * @param n_tracks_in_event Number of tracks in single test
+ * @param base Set of all eventID
+ * @return unique_ptr<std::set<int>>
+ */
+auto GetRandomSet(int n_tracks_in_event, std::set<int> &base) {
+    auto set_test = std::make_unique<std::set<int>>();
+    while (set_test->size() < n_tracks_in_event) {
+        auto iter(base.begin());
+        advance(iter, rand() % base.size());
+        set_test->insert(*iter);
+    }
+    return set_test;
+}
+
 #endif

@@ -14,6 +14,7 @@
 #include "TH1.h"
 #include "TMath.h"
 #include "TRandom3.h"
+#include "include/args.h"
 
 using std::accumulate;
 using std::array;
@@ -72,6 +73,16 @@ auto test_unique_ptr2() {
         ptr.push_back(move(ptr2));
     }
     return std::move(move(ptr));
+}
+
+void test_json_out() {
+    Args args;
+    args.mode = ExecMode::all;
+    args.n_noise_str = "39";
+    args.n_track_str = "1";
+    args.particle = "e-";
+    args.pt_str = "50";
+    args_out_json(args);
 }
 
 void test() {
@@ -141,4 +152,5 @@ void test() {
         }
     }
     cout << endl;
+    test_json_out();
 }

@@ -38,7 +38,8 @@ int main(int argc, char **argv) {
      * @brief Commandline Arguments Parser with include/clipp.h
      */
     Args args;
-    arg_parse_cmd(argc, argv, args);
+    args_parse(argc, argv, args);
+    args_out_json(args);
     double Pt_data = atof(args.pt_str.c_str());
     int n_noise = atoi(args.n_noise_str.c_str());
     int n_tracks_in_event = atoi(args.n_track_str.c_str());

@@ -21,3 +21,4 @@ condor/submit[a-z]*.cmd
 condor/log/
 condor/err/
 condor/out/
+args_exec.json

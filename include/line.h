@@ -3,7 +3,7 @@
 #include <numeric>
 #ifndef __LINE_INCLUDE_CXX__
 #define __LINE_INCLUDE_CXX__ 1
-#include "HoughPoint.h"
+#include "HitPoint.h"
 template <int N>
 struct Line {
     std::array<double, N> x;
@@ -77,8 +77,8 @@ inline void LinearFit(std::array<double, N> &x, std::array<double, N> &y,
  * @param param Polynomial<2>
  *
  */
-inline void TherePointsLinearFit(HoughPoint *point1, HoughPoint *point2,
-                                 HoughPoint *point3, double *Q,
+inline void TherePointsLinearFit(HitPoint *point1, HitPoint *point2,
+                                 HitPoint *point3, double *Q,
                                  Polynomial<2> &line) {
     std::array<double, 3> posX = {point1->xConformal(), point2->xConformal(),
                                   point3->xConformal()};
@@ -87,9 +87,8 @@ inline void TherePointsLinearFit(HoughPoint *point1, HoughPoint *point2,
     LinearFit<3>(posX, posY, Q, line);
 }
 
-inline void FitZLinear(HoughPoint *point1, HoughPoint *point2,
-                       HoughPoint *point3, double Radius, double *Qz,
-                       Polynomial<2> &line) {
+inline void FitZLinear(HitPoint *point1, HitPoint *point2, HitPoint *point3,
+                       double Radius, double *Qz, Polynomial<2> &line) {
     std::array<double, 3> r_xy = {
         sqrt(point1->x * point1->x + point1->y * point1->y),
         sqrt(point2->x * point2->x + point2->y * point2->y),

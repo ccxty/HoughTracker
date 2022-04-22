@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 
-#include "HoughPoint.h"
+#include "HitPoint.h"
 enum class GridMode { POINT, GRID };
 class HoughGridArea {
  private:
@@ -15,7 +15,7 @@ class HoughGridArea {
     double _yMax;
     GridMode _mode;
     double _xMid{};
-    std::vector<HoughPoint *> _points;
+    std::vector<HitPoint *> _points;
     int _counts = 0;
 
  public:
@@ -25,7 +25,7 @@ class HoughGridArea {
     void SetX(double x_min, double x_max);
     void SetX(double x_mid);
     void SetY(double y_min, double y_max);
-    inline std::vector<HoughPoint *> &GetPointsHere();
+    inline std::vector<HitPoint *> &GetPointsHere();
     inline int counts() const;
     inline double xMin() const;
     inline double xMax() const;
@@ -71,7 +71,7 @@ void HoughGridArea::SetY(double y_min, double y_max) {
     _yMax = y_max;
 }
 inline GridMode HoughGridArea::mode() { return _mode; }
-inline std::vector<HoughPoint *> &HoughGridArea::GetPointsHere() {
+inline std::vector<HitPoint *> &HoughGridArea::GetPointsHere() {
     return _points;
 }
 inline int HoughGridArea::counts() const { return _counts; }

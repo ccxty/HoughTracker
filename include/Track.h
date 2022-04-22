@@ -7,33 +7,34 @@
 #ifndef HOUGHTRACK_CXX
 #define HOUGHTRACK_CXX 1
 
+#include "HitPoint.h"
 #include "HoughGlobal.h"
-#include "HoughPoint.h"
+#include "global.h"
 #include "line.h"
-class HoughTrack {
+class Track {
  private:
-    std::vector<HoughPoint *> _ptr;
+    std::vector<HitPoint *> _ptr;
     double _pt{0};
-    std::vector<HoughPoint *>::size_type _counts{0};
+    std::vector<HitPoint *>::size_type _counts{0};
     int _nlayer0{0};
     int _nlayer1{0};
     int _nlayer2{0};
 
  public:
-    HoughTrack();
-    explicit HoughTrack(std::vector<HoughPoint *> ptr);
-    explicit HoughTrack(HoughPoint *point);
+    Track();
+    explicit Track(std::vector<HitPoint *> ptr);
+    explicit Track(HitPoint *point);
     // HoughTrack &operator=(const HoughTrack &track);
     // HoughTrack(const HoughTrack &track);
-    std::vector<HoughPoint *>::size_type Counts() const;
-    void AddPoint(HoughPoint *point);
+    std::vector<HitPoint *>::size_type Counts() const;
+    void AddPoint(HitPoint *point);
     bool FitLinear(double *pt, double *Qmin, double *Qz);
     double Pt() const;
     void Print() const;
-    std::vector<HoughPoint *> &GetPoints();
-    bool operator==(HoughTrack &other) const;
-    bool operator!=(HoughTrack &other) const;
-    bool operator>(HoughTrack &other) const;
+    std::vector<HitPoint *> &GetPoints();
+    bool operator==(Track &other) const;
+    bool operator!=(Track &other) const;
+    bool operator>(Track &other) const;
     bool HitALayers();
     double RatioTrues() const;
     int NumTruePoints() const;
@@ -47,16 +48,14 @@ class HoughTrack {
     void LayerDistribution();
 };
 
-HoughTrack::HoughTrack() = default;
+Track::Track() = default;
 
-HoughTrack::HoughTrack(std::vector<HoughPoint *> ptr)
+Track::Track(std::vector<HitPoint *> ptr)
     : _ptr(std::move(ptr)), _counts(_ptr.size()) {}
 
-HoughTrack::HoughTrack(HoughPoint *point) : _counts(1) {
-    _ptr.push_back(point);
-}
+Track::Track(HitPoint *point) : _counts(1) { _ptr.push_back(point); }
 
-void HoughTrack::AddPoint(HoughPoint *point) {
+void Track::AddPoint(HitPoint *point) {
     if (_ptr.empty()) {
         _ptr.push_back(point);
         _counts = 1;
@@ -75,13 +74,11 @@ void HoughTrack::AddPoint(HoughPoint *point) {
     }
 }
 
-std::vector<HoughPoint *>::size_type HoughTrack::Counts() const {
-    return _counts;
-}
+std::vector<HitPoint *>::size_type Track::Counts() const { return _counts; }
 
-double HoughTrack::Pt() const { return _pt; }
+double Track::Pt() const { return _pt; }
 
-void HoughTrack::Print() const {
+void Track::Print() const {
     if (_ptr.empty()) {
         std::cout << "Empty" << std::endl;
         return;
@@ -92,13 +89,11 @@ void HoughTrack::Print() const {
     }
 }
 
-std::vector<HoughPoint *> &HoughTrack::GetPoints() { return _ptr; }
+std::vector<HitPoint *> &Track::GetPoints() { return _ptr; }
 
-bool HoughTrack::operator!=(HoughTrack &other) const {
-    return !this->operator==(other);
-}
+bool Track::operator!=(Track &other) const { return !this->operator==(other); }
 
-bool HoughTrack::operator==(HoughTrack &other) const {
+bool Track::operator==(Track &other) const {
     if (this->_counts == other._counts) {
         if (this->_counts != 0) {
             for (auto *point1 : _ptr) {
@@ -119,14 +114,14 @@ bool HoughTrack::operator==(HoughTrack &other) const {
     return false;
 }
 
-bool HoughTrack::operator>(HoughTrack &other) const { return false; }
+bool Track::operator>(Track &other) const { return false; }
 
 // 需先调用 HitALayers();
-bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
+bool Track::FitLinear(double *pt, double *Qmin, double *Qz) {
     auto nlayer = this->GetLayerDistribution();
-    HoughPoint *layer0[std::get<0>(nlayer)];
-    HoughPoint *layer1[std::get<1>(nlayer)];
-    HoughPoint *layer2[std::get<2>(nlayer)];
+    HitPoint *layer0[std::get<0>(nlayer)];
+    HitPoint *layer1[std::get<1>(nlayer)];
+    HitPoint *layer2[std::get<2>(nlayer)];
     int i_0 = 0, i_1 = 0, i_2 = 0;
     *Qmin = 1.0;
     *Qz = 1000;
@@ -173,12 +168,12 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
     return true;
 }
 
-bool HoughTrack::HitALayers() {
+bool Track::HitALayers() {
     this->LayerDistribution();
     return (_nlayer0 > 0) && (_nlayer1 > 0) && (_nlayer2 > 0);
 }
 
-int HoughTrack::NumTruePoints() const {
+int Track::NumTruePoints() const {
     int trues = 0;
     for (auto *point : _ptr) {
         if (point->eventID != -1) {
@@ -188,13 +183,13 @@ int HoughTrack::NumTruePoints() const {
     return trues;
 }
 
-double HoughTrack::RatioTrues() const {
+double Track::RatioTrues() const {
     return this->NumTruePoints() / static_cast<double>(_counts);
 }
 
-bool HoughTrack::ContainTrueTrack() const { return this->NumTruePoints() == 3; }
+bool Track::ContainTrueTrack() const { return this->NumTruePoints() == 3; }
 
-auto HoughTrack::GetPointIDSet() const {
+auto Track::GetPointIDSet() const {
     auto ptr = std::make_unique<std::set<int>>();
     if (_counts > 0) {
         for (auto *point : _ptr) {
@@ -204,7 +199,7 @@ auto HoughTrack::GetPointIDSet() const {
     return ptr;
 }
 
-int HoughTrack::GetSpin() const {  // TODO(tyxiao): 需要改变计算的方式
+int Track::GetSpin() const {  // TODO(tyxiao): 需要改变计算的方式
     if (_counts < 3) {
         return 0;
     }
@@ -239,18 +234,18 @@ int HoughTrack::GetSpin() const {  // TODO(tyxiao): 需要改变计算的方式
     return -1;
 }
 
-std::tuple<int, int, int> HoughTrack::GetLayerDistribution() {
+std::tuple<int, int, int> Track::GetLayerDistribution() {
     if ((_nlayer0 + _nlayer1 + _nlayer2) != _counts) {
         this->LayerDistribution();
     }
     return std::make_tuple(_nlayer0, _nlayer1, _nlayer2);
 }
 
-bool HoughTrack::ContainTrueTrackMulti(std::set<int> *events_id) const {
+bool Track::ContainTrueTrackMulti(std::set<int> *events_id) const {
     return this->NumTruePointsMulti(events_id) == 3;
 }
 
-int HoughTrack::NumTruePointsMulti(std::set<int> *events_id) const {
+int Track::NumTruePointsMulti(std::set<int> *events_id) const {
     int max = 0;
     for (int eventID : *events_id) {
         int flag = 0;
@@ -266,7 +261,7 @@ int HoughTrack::NumTruePointsMulti(std::set<int> *events_id) const {
     return max;
 }
 
-int HoughTrack::GetEventID(std::set<int> *events_id) const {
+int Track::GetEventID(std::set<int> *events_id) const {
     for (int eventID : *events_id) {
         int flag = 0;
         for (auto *point : _ptr) {
@@ -281,7 +276,7 @@ int HoughTrack::GetEventID(std::set<int> *events_id) const {
     return -1;
 }
 
-void HoughTrack::LayerDistribution() {
+void Track::LayerDistribution() {
     _nlayer0 = 0;
     _nlayer1 = 0;
     _nlayer2 = 0;

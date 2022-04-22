@@ -22,3 +22,9 @@ target_link_libraries(HoughTracker PUBLIC ${ROOT_LIBRARIES}
                                           ${ROOT_EXE_LINKER_FLAGS}
 #                                          benchmark::benchmark
                                           )
+
+add_executable(LocalTracker src/main4.C)
+target_link_libraries(LocalTracker PUBLIC ${ROOT_LIBRARIES}
+                                          ${ROOT_EXE_LINKER_FLAGS}
+#                                          benchmark::benchmark
+                                          )

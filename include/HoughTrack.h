@@ -3,7 +3,6 @@
 #include <iostream>
 #include <memory>
 #include <set>
-#include <tuple>
 #include <vector>
 #ifndef HOUGHTRACK_CXX
 #define HOUGHTRACK_CXX 1
@@ -146,18 +145,17 @@ bool HoughTrack::FitLinear(double *pt, double *Qmin, double *Qz) {
             i_2++;
         }
     }
-    std::tuple<double, double> param_xy;
-    std::tuple<double, double> param_z;
+    Polynomial<2> line_xy;
+    Polynomial<2> line_z;
     double param_a0 = NAN, param_a1 = NAN, param_R = NAN;
     double Q_swap = NAN, Qz_swap = NAN;
     for (auto *point1 : layer0) {
         for (auto *point2 : layer1) {
             for (auto *point3 : layer2) {
-                TherePointsLinearFit(point1, point2, point3, &Q_swap, param_xy);
-                double R =
-                    sqrt(std::get<1>(param_xy) * std::get<1>(param_xy) + 1) /
-                    abs(std::get<0>(param_xy));
-                FitZLinear(point1, point2, point3, R, &Qz_swap, param_z);
+                TherePointsLinearFit(point1, point2, point3, &Q_swap, line_xy);
+                double R = sqrt(line_xy.eff[1] * line_xy.eff[1] + 1) /
+                           abs(line_xy.eff[0]);
+                FitZLinear(point1, point2, point3, R, &Qz_swap, line_z);
                 if ((Qz_swap < QzCut) && (Q_swap < *Qmin)) {
                     fit = true;
                     *Qmin = Q_swap;

@@ -1,23 +1,6 @@
-#include <TVector3.h>
-#include <unistd.h>
-
-#include <algorithm>
-#include <array>
-#include <cmath>
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <random>
-#include <set>
-#include <vector>
-
 #include "HitPoint.h"
 #include "Hough.h"
 #include "HoughGridArea.h"
-#include "TFile.h"
-#include "TMath.h"
-#include "TRandom3.h"
-#include "TTree.h"
 #include "Track.h"
 #include "TreeRead.h"
 #include "args.h"
@@ -28,41 +11,29 @@ using std::cout;
 using std::endl;
 using std::make_unique;
 using std::move;
+using std::ofstream;
 using std::set;
 using std::string;
 using std::unique_ptr;
 using std::vector;
 
 int main(int argc, char **argv) {
-    /**
-     * @brief Commandline Arguments Parser with include/clipp.h
-     */
     Args args;
     args_parse(argc, argv, "HoughTracker", args);
     args_out_json(args);
-    double Pt_data = atof(args.pt_str.c_str());
-    int n_noise = atoi(args.n_noise_str.c_str());
-    int n_tracks_in_event = atoi(args.n_track_str.c_str());
 
     /**
      *  @brief Initialize the source data
      */
-    // string path =
-    //     "/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/root_data_source/";
-    string path =
-        "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/"
-        "root_data_source/";
-    path += args.particle + "/posPt";
-    path += args.pt_str;
-    path += ".root";
-    TreeData data = TreeData(path.c_str());
+    TreeData data = TreeData(args.data_file.c_str());
+    cout << args.data_file << endl;
     if (data.isEmpty()) {
         cerr << "Data not found" << endl;
         return 0;
     }
 
     /**
-     * @brief Initialize the test eventIDs
+     * @brief Initialize the eventIDs to test
      */
     const Long64_t nevents = data.GetEntries();
     unique_ptr<set<int>> eventIDs_toTest;
@@ -71,7 +42,7 @@ int main(int argc, char **argv) {
         eventIDs_all.insert(i);
     }
     if (args.mode == ExecMode::single) {
-        eventIDs_toTest = GetRandomSet(n_tracks_in_event, eventIDs_all);
+        eventIDs_toTest = GetRandomSet(args.n_track, eventIDs_all);
     } else if (args.mode == ExecMode::all) {
         eventIDs_toTest.reset(&eventIDs_all);
     }
@@ -79,37 +50,30 @@ int main(int argc, char **argv) {
     /**
      *  @brief Initialize the output file
      */
-    string savepath = "./data/" + args.particle + "/trackdata_Pt" +
-                      args.pt_str + "_noise" + args.n_noise_str;
-    if (n_tracks_in_event != 0) {
-        savepath += "_multi" + args.n_track_str;
-    }
-    savepath += ".root";
-    TFile savefile(savepath.c_str(), "RECREATE");
+    TFile savefile(args.output_file.c_str(), "RECREATE");
     TTree savetree("tree1", "tree1");
-    int event_id = 0, track_id = 0, num_true = 0, num_total = 0, Q_e = 0;
-    double Q_min = NAN, pt = NAN, Qz = NAN;
+    int event_id = 0, track_id = 0, num_true = 0, num_total = 0, Qe = 0;
+    double Qmin = NAN, pt = NAN, Qz = NAN;
     bool true_track = false;
     int counts_useful_events = 0;
     savetree.Branch("event_id", &event_id);
     savetree.Branch("track_id", &track_id);
     savetree.Branch("true_track", &true_track);
     savetree.Branch("Pt", &pt);
-    savetree.Branch("Q", &Q_min);
+    savetree.Branch("Q", &Qmin);
     savetree.Branch("Qz", &Qz);
     savetree.Branch("num_true", &num_true);
     savetree.Branch("num_total", &num_total);
-    savetree.Branch("Qe", &Q_e);
-    cout << path << endl;
+    savetree.Branch("Qe", &Qe);
 
     /**
      * @brief Get true points from source data
      */
-    while (eventIDs_toTest->size() >= n_tracks_in_event) {
+    while (eventIDs_toTest->size() >= args.n_track) {
         std::cout << "There are " << eventIDs_toTest->size()
                   << " events left\n";
         // int eventIDTest;
-        auto test_set = GetRandomSet(n_tracks_in_event, *eventIDs_toTest);
+        auto test_set = GetRandomSet(args.n_track, *eventIDs_toTest);
         for (auto event : *test_set) {
             eventIDs_toTest->erase(event);
         }
@@ -147,53 +111,43 @@ int main(int argc, char **argv) {
         /**
          * @brief add noise points
          */
-        AddNoise(n_noise, pointsList);
+        AddNoise(args.n_noise, pointsList);
         int npoints = static_cast<int>(pointsList.size());
-        // std::cout << "number of points: " << npoints << endl;
 
         /**
          * @brief Hough transform
          *
          */
-        // auto houghGrid = GridInit();
-        // FillGrid(houghGrid, pointsList);
-        // auto tracks = find_track(houghGrid);
-        auto houghGrid = newGridInit<NumAlpha, NumD>();
-        newFillGrid<NumAlpha, NumD>(houghGrid, pointsList);
-        auto tracks = newfindTrack<NumAlpha, NumD>(houghGrid);
+        auto houghGrid = Hough::GridInit<Hough::NumAlpha, Hough::NumD>();
+        Hough::FillGrid<Hough::NumAlpha, Hough::NumD>(houghGrid, pointsList);
+        auto tracks = Hough::FindTrack<Hough::NumAlpha, Hough::NumD>(houghGrid);
 
         /**
          * @brief track filter
          */
         int track_id_re = 0;
-        double Qmin = 1.;
         int n_good_tracks = 0;
         for (auto &track : tracks) {
             double p_t = NAN, Q_xy = NAN, Q_z = NAN;
             if (track->HitALayers()) {
-                // track->Print();
-                // std::cout << boolalpha << track->ContainTrueTrack() << " "
-                //           << noboolalpha << track->RatioTrues() << std::endl;
                 bool fit_fine = track->FitLinear(&p_t, &Q_xy, &Q_z);
-
                 if (fit_fine && (p_t > PtMin) && (Q_xy < QCut)) {
                     event_id = track->GetEventID(test_set.get());
-
                     track_id = track_id_re;
                     track_id_re++;
                     true_track = track->ContainTrueTrackMulti(test_set.get());
                     pt = p_t;
-                    Q_min = Q_xy;
+                    Qmin = Q_xy;
                     Qz = Q_z;
                     num_true = track->NumTruePointsMulti(test_set.get());
                     num_total = static_cast<int>(track->Counts());
-                    Q_e = track->GetSpin();
+                    Qe = track->GetSpin();
                     savefile.cd();
                     savetree.Fill();
 
                     n_good_tracks++;
                     if (args.mode == ExecMode::single) {
-                        std::ofstream out1("tracks.txt", std::ios::app);
+                        ofstream out1("tracks.txt", std::ios::app);
                         out1 << std::boolalpha << true_track << "\t";
                         for (auto *point : track->GetPoints()) {
                             out1 << point->id() << "\t";
@@ -204,18 +158,14 @@ int main(int argc, char **argv) {
             }
         }
         if (args.mode == ExecMode::single) {
-            std::ofstream out2("points.txt", std::ios::app);
+            ofstream out2("points.txt", std::ios::app);
             for (auto *point : pointsList) {
                 out2 << point->eventID << "\t" << point->id() << "\t"
                      << point->x << "\t" << point->y << "\t" << point->z
                      << "\n";
             }
         }
-        // std::cout << "number of good tracks: " << n_good_tracks << std::endl;
 
-        //
-        //
-        // delete
         for (auto *ptr : pointsList) {
             delete ptr;
         }
@@ -224,7 +174,7 @@ int main(int argc, char **argv) {
     savetree.Write();
     savefile.Write();
     savefile.Close();
-    cout << "Save Path: " << savepath << endl
+    cout << "Save Path: " << args.output_file << endl
          << "total tracks useful: " << counts_useful_events << endl
          << endl;
     return 0;

@@ -6,6 +6,8 @@
 #include <vector>
 
 #include "HitPoint.h"
+
+namespace Hough {
 enum class GridMode { POINT, GRID };
 class HoughGridArea {
  private:
@@ -111,5 +113,6 @@ void HoughGridArea::Print() {
         point->Print();
     }
 }
+}  // namespace Hough
 
 #endif

@@ -1,20 +1,7 @@
-#include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <random>
-#include <set>
-#include <vector>
-
 #include "HitPoint.h"
-#include "TFile.h"
-#include "TMath.h"
-#include "TRandom3.h"
-#include "TTree.h"
 #include "Track.h"
 #include "TreeRead.h"
 #include "args.h"
-#include "clipp.h"
 #include "global.h"
 
 using std::cerr;
@@ -26,32 +13,16 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-// sigma(Pt)/Pt ~= 1.0e-4 * Pt
-// sigma(Pt) ~= 1.0e-4* Pt * Pt
-// 20 -> 0.04 ; 100 -> 1 ; 135 -> 1.82 ; 200 -> 4
 int main(int argc, char **argv) {
-    /**
-     * @brief Commandline Arguments Parser with include/clipp.h
-     */
     Args args;
     args_parse(argc, argv, "LocalTracker", args);
     args_out_json(args);
-    double Pt_data = atof(args.pt_str.c_str());
-    int n_noise = atoi(args.n_noise_str.c_str());
-    int n_tracks_in_event = atoi(args.n_track_str.c_str());
 
     /**
      *  @brief Initialize the source data
      */
-    // string path =
-    //     "/home/txiao/STCF_Oscar2.0.0/share/pi+/test2/root_data_source/";
-    string path =
-        "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/"
-        "root_data_source/";
-    path += args.particle + "/posPt";
-    path += args.pt_str;
-    path += ".root";
-    TreeData data = TreeData(path.c_str());
+    TreeData data = TreeData(args.data_file.c_str());
+    cout << args.output_file << endl;
     if (data.isEmpty()) {
         cerr << "Data not found" << endl;
         return 0;
@@ -67,7 +38,7 @@ int main(int argc, char **argv) {
         eventIDs_all.insert(i);
     }
     if (args.mode == ExecMode::single) {
-        eventIDs_toTest = GetRandomSet(n_tracks_in_event, eventIDs_all);
+        eventIDs_toTest = GetRandomSet(args.n_track, eventIDs_all);
     } else if (args.mode == ExecMode::all) {
         eventIDs_toTest.reset(&eventIDs_all);
     }
@@ -75,13 +46,7 @@ int main(int argc, char **argv) {
     /**
      *  @brief Initialize the output file
      */
-    string savepath = "./data/" + args.particle + "/trackdata_Pt" +
-                      args.pt_str + "_noise" + args.n_noise_str;
-    if (n_tracks_in_event != 0) {
-        savepath += "_multi" + args.n_track_str;
-    }
-    savepath += ".root";
-    TFile savefile(savepath.c_str(), "RECREATE");
+    TFile savefile(args.output_file.c_str(), "RECREATE");
     TTree savetree("tree1", "tree1");
     int event_id = 0, track_id = 0, num_true = 0, num_total = 0, Q_e = 0;
     double Q_min = NAN, pt = NAN, Qz = NAN;
@@ -96,16 +61,15 @@ int main(int argc, char **argv) {
     savetree.Branch("num_true", &num_true);
     savetree.Branch("num_total", &num_total);
     savetree.Branch("Qe", &Q_e);
-    cout << path << endl;
 
     /**
      * @brief Get true points from source data
      */
-    while (eventIDs_toTest->size() >= n_tracks_in_event) {
+    while (eventIDs_toTest->size() >= args.n_track) {
         std::cout << "There are " << eventIDs_toTest->size()
                   << " events left\n";
         // int eventIDTest;
-        auto test_set = GetRandomSet(n_tracks_in_event, *eventIDs_toTest);
+        auto test_set = GetRandomSet(args.n_track, *eventIDs_toTest);
         for (auto event : *test_set) {
             eventIDs_toTest->erase(event);
         }
@@ -143,7 +107,7 @@ int main(int argc, char **argv) {
         /**
          * @brief add noise points
          */
-        AddNoise(n_noise, pointsList);
+        AddNoise(args.n_noise, pointsList);
         int npoints = static_cast<int>(pointsList.size());
         // std::cout << "number of points: " << npoints << endl;
 
@@ -171,7 +135,7 @@ int main(int argc, char **argv) {
     savetree.Write();
     savefile.Write();
     savefile.Close();
-    cout << "Save Path: " << savepath << endl;
+    cout << "Save Path: " << args.output_file << endl;
     cout << "total tracks useful: " << counts_useful_events << endl << endl;
     return 0;
 }

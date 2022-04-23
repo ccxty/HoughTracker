@@ -14,6 +14,7 @@
 #include "Track.h"
 #include "global.h"
 
+namespace Hough {
 using HoughGrid =
     std::vector<std::unique_ptr<std::vector<std::unique_ptr<HoughGridArea>>>>;
 
@@ -21,7 +22,7 @@ template <int NAlpha, int NRho>
 using GridMatrix =
     std::array<std::array<std::unique_ptr<HoughGridArea>, NRho>, NAlpha>;
 
-std::vector<std::unique_ptr<Track>> find_track(HoughGrid &gridMatrix) {
+std::vector<std::unique_ptr<Track>> FindTrack(HoughGrid &gridMatrix) {
     using std::make_unique;
     using std::unique_ptr;
     using std::vector;
@@ -125,7 +126,7 @@ void FillGrid(HoughGrid &gridMatrix, Points &points) {
 }
 
 template <int NAlpha, int NRho>
-auto newGridInit() {
+auto GridInit() {
     using std::array;
     using std::unique_ptr;
     auto martix = GridMatrix<NAlpha, NRho>();
@@ -142,7 +143,7 @@ auto newGridInit() {
 }
 
 template <int NAlpha, int NRho>
-void newFillGrid(GridMatrix<NAlpha, NRho> &matrix, Points &points) {
+void FillGrid(GridMatrix<NAlpha, NRho> &matrix, Points &points) {
     for (auto *point : points) {
         for (auto &row : matrix) {
             for (auto &grid : row) {
@@ -160,7 +161,7 @@ void newFillGrid(GridMatrix<NAlpha, NRho> &matrix, Points &points) {
 }
 
 template <int NAlpha, int NRho>
-std::vector<std::unique_ptr<Track>> newfindTrack(
+std::vector<std::unique_ptr<Track>> FindTrack(
     GridMatrix<NAlpha, NRho> &matrix) {
     using std::make_unique;
     using std::unique_ptr;
@@ -211,5 +212,6 @@ std::vector<std::unique_ptr<Track>> newfindTrack(
     }
     return std::move(ptr);
 }
+}  // namespace Hough
 
 #endif

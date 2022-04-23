@@ -78,11 +78,12 @@ auto test_unique_ptr2() {
 void test_json_out() {
     Args args;
     args.mode = ExecMode::all;
-    args.n_noise_str = "39";
-    args.n_track_str = "1";
+    args.n_noise = 39;
+    args.n_track = 1;
     args.particle = "e-";
-    args.pt_str = "50";
+    args.pt = 50;
     args_out_json(args);
+    std::cout << std::boolalpha << args.data_file.empty() << std::endl;
 }
 
 void test() {

@@ -12,6 +12,8 @@ constexpr double PtMin = 0.3 * MagFeild * 165.11 / 2.;  // 击中三层动量条
 constexpr double QCut = 1.;
 constexpr double QzCut = 2.;
 
+using Points = std::vector<HitPoint *>;
+
 /**
  * @brief Add noise to existing pointsVector
  *

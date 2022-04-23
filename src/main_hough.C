@@ -155,9 +155,12 @@ int main(int argc, char **argv) {
          * @brief Hough transform
          *
          */
-        auto houghGrid = GridInit();
-        FillGrid(houghGrid, pointsList);
-        auto tracks = find_track(houghGrid);
+        // auto houghGrid = GridInit();
+        // FillGrid(houghGrid, pointsList);
+        // auto tracks = find_track(houghGrid);
+        auto houghGrid = newGridInit<NumAlpha, NumD>();
+        newFillGrid<NumAlpha, NumD>(houghGrid, pointsList);
+        auto tracks = newfindTrack<NumAlpha, NumD>(houghGrid);
 
         /**
          * @brief track filter

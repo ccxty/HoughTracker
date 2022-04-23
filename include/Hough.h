@@ -12,27 +12,14 @@
 #include "HoughGridArea.h"
 #include "TMath.h"
 #include "Track.h"
+#include "global.h"
 
 using HoughGrid =
     std::vector<std::unique_ptr<std::vector<std::unique_ptr<HoughGridArea>>>>;
 
-// not to use
-void find_peak(HoughGrid &gridMatrix) {
-    int flag = 0;
-    for (auto &row : gridMatrix) {
-        for (auto &grid : *row) {
-            if (grid->counts() >= 3) {
-                auto points = grid->GetPointsHere();
-                for (auto *point : points) {
-                    // std::cout << flag << " " << grid->counts() << " "
-                    //           << point->eventID() << " " << point->layerID()
-                    //           << " " << ia << " " << id << endl;
-                }
-                flag++;
-            }
-        }
-    }
-}
+template <int NAlpha, int NRho>
+using GridMatrix =
+    std::array<std::array<std::unique_ptr<HoughGridArea>, NRho>, NAlpha>;
 
 std::vector<std::unique_ptr<Track>> find_track(HoughGrid &gridMatrix) {
     using std::make_unique;
@@ -120,8 +107,8 @@ auto GridInit(const int NAlpha = NumAlpha, const int NRho = NumD) {
  * @param gridMatrix the grids
  * @param pointsList all points, including true points and noise
  */
-void FillGrid(HoughGrid &gridMatrix, std::vector<HitPoint *> &pointsList) {
-    for (auto *point : pointsList) {
+void FillGrid(HoughGrid &gridMatrix, Points &points) {
+    for (auto *point : points) {
         for (auto &row : gridMatrix) {
             for (auto &grid : *row) {
                 double alpha = grid->xMid();
@@ -135,6 +122,94 @@ void FillGrid(HoughGrid &gridMatrix, std::vector<HitPoint *> &pointsList) {
             }
         }
     }
+}
+
+template <int NAlpha, int NRho>
+auto newGridInit() {
+    using std::array;
+    using std::unique_ptr;
+    auto martix = GridMatrix<NAlpha, NRho>();
+    for (int i = 0; i < NAlpha; i++) {
+        for (int j = 0; j < NRho; j++) {
+            auto ptr = std::make_unique<HoughGridArea>(
+                AlphaMin + i * AlphaBinWidth,
+                DMin + (j - 0.25) * DBinWidth,   // shift
+                DMin + (j + 0.75) * DBinWidth);  // shift
+            martix[i][j] = std::move(ptr);
+        }
+    }
+    return std::move(martix);
+}
+
+template <int NAlpha, int NRho>
+void newFillGrid(GridMatrix<NAlpha, NRho> &matrix, Points &points) {
+    for (auto *point : points) {
+        for (auto &row : matrix) {
+            for (auto &grid : row) {
+                double alpha = grid->xMid();
+                double rho = point->xConformal() * cos(alpha) +
+                             point->yConformal() * sin(alpha);
+
+                if ((rho >= grid->yMin()) && (rho < grid->yMax())) {
+                    grid->CountsAddOne();
+                    grid->GetPointsHere().push_back(point);
+                }
+            }
+        }
+    }
+}
+
+template <int NAlpha, int NRho>
+std::vector<std::unique_ptr<Track>> newfindTrack(
+    GridMatrix<NAlpha, NRho> &matrix) {
+    using std::make_unique;
+    using std::unique_ptr;
+    using std::vector;
+    auto ptr = std::vector<unique_ptr<Track>>();
+    for (int ia = 0; ia < NAlpha; ia++) {
+        for (int id = 0; id < NRho; id++) {
+            auto &grid = matrix[ia][id];
+            if (grid->counts() >= 3) {
+                auto points = grid->GetPointsHere();
+                if ((ia > 0) && (id > 0) && (ia + 1 < NAlpha) &&
+                    (id + 1 < NRho)) {
+                    int counts1 = matrix[ia - 1][id - 1]->counts();
+                    int counts2 = matrix[ia - 1][id]->counts();
+                    int counts3 = matrix[ia - 1][id + 1]->counts();
+                    int counts4 = matrix[ia][id - 1]->counts();
+                    int counts5 = matrix[ia][id + 1]->counts();
+                    int counts6 = matrix[ia + 1][id - 1]->counts();
+                    int counts7 = matrix[ia + 1][id]->counts();
+                    int counts8 = matrix[ia + 1][id + 1]->counts();
+                    if ((grid->counts() >= counts1) &&
+                        (grid->counts() >= counts2) &&
+                        (grid->counts() >= counts3) &&
+                        (grid->counts() >= counts4) &&
+                        (grid->counts() >= counts5) &&
+                        (grid->counts() >= counts6) &&
+                        (grid->counts() >= counts7) &&
+                        (grid->counts() >= counts8)) {
+                        auto ptr_temp = make_unique<Track>(points);
+                        if (ptr.empty()) {
+                            ptr.push_back(move(ptr_temp));
+                        } else {
+                            bool is_equal = false;
+                            for (auto &existingTrack : ptr) {
+                                if (existingTrack->operator==(*ptr_temp)) {
+                                    is_equal = true;
+                                    break;
+                                }
+                            }
+                            if (!is_equal && (ptr_temp->HitALayers())) {
+                                ptr.push_back(move(ptr_temp));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return std::move(ptr);
 }
 
 #endif

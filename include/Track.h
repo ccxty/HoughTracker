@@ -99,7 +99,7 @@ bool Track::operator==(Track &other) const {
             for (auto *point1 : _ptr) {
                 bool find = false;
                 for (auto *point2 : other._ptr) {
-                    if (point1->id() == point2->id()) {
+                    if (point1 == point2) {
                         find = true;
                         break;
                     }
@@ -114,7 +114,27 @@ bool Track::operator==(Track &other) const {
     return false;
 }
 
-bool Track::operator>(Track &other) const { return false; }
+bool Track::operator>(Track &other) const {
+    if (_ptr.empty()) {
+        return false;
+    }
+    if (this->_counts < other._counts) {
+        return false;
+    }
+    for (auto *point : other._ptr) {
+        bool find = false;
+        for (auto *exist : _ptr) {
+            if (point == exist) {
+                find = true;
+                break;
+            }
+        }
+        if (!find) {
+            return false;
+        }
+    }
+    return true;
+}
 
 // 需先调用 HitALayers();
 bool Track::FitLinear(double *pt, double *Qmin, double *Qz) {

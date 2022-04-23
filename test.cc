@@ -86,6 +86,12 @@ void test_json_out() {
     std::cout << std::boolalpha << args.data_file.empty() << std::endl;
 }
 
+void test_pointer() {
+    auto* ptr1 = new int(10);
+    auto* ptr2 = ptr1;
+    cout << (ptr1 == ptr2) << std::endl;
+}
+
 void test() {
     // std::set<int> base;
     // for (int i = 0; i < 100; i++)
@@ -154,4 +160,5 @@ void test() {
     }
     cout << endl;
     test_json_out();
+    test_pointer();
 }

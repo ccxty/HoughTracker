@@ -17,6 +17,18 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
+struct SaveData {
+    int event_id;
+    int track_id;
+    int num_true;
+    int num_total;
+    bool true_track;
+    double Qz;
+    double Qxy;
+    double Qe;
+    double pt;
+};
+
 int main(int argc, char **argv) {
     Args args;
     args_parse(argc, argv, "HoughTracker", args);
@@ -52,19 +64,17 @@ int main(int argc, char **argv) {
      */
     TFile savefile(args.output_file.c_str(), "RECREATE");
     TTree savetree("tree1", "tree1");
-    int event_id = 0, track_id = 0, num_true = 0, num_total = 0, Qe = 0;
-    double Qmin = NAN, pt = NAN, Qz = NAN;
-    bool true_track = false;
+    SaveData saveData{};
     int counts_useful_events = 0;
-    savetree.Branch("event_id", &event_id);
-    savetree.Branch("track_id", &track_id);
-    savetree.Branch("true_track", &true_track);
-    savetree.Branch("Pt", &pt);
-    savetree.Branch("Q", &Qmin);
-    savetree.Branch("Qz", &Qz);
-    savetree.Branch("num_true", &num_true);
-    savetree.Branch("num_total", &num_total);
-    savetree.Branch("Qe", &Qe);
+    savetree.Branch("event_id", &saveData.event_id);
+    savetree.Branch("track_id", &saveData.track_id);
+    savetree.Branch("true_track", &saveData.true_track);
+    savetree.Branch("Pt", &saveData.pt);
+    savetree.Branch("Q", &saveData.Qxy);
+    savetree.Branch("Qz", &saveData.Qz);
+    savetree.Branch("num_true", &saveData.num_true);
+    savetree.Branch("num_total", &saveData.num_total);
+    savetree.Branch("Qe", &saveData.Qe);
 
     /**
      * @brief Get true points from source data
@@ -132,23 +142,25 @@ int main(int argc, char **argv) {
             if (track->HitALayers()) {
                 bool fit_fine = track->FitLinear(&p_t, &Q_xy, &Q_z);
                 if (fit_fine && (p_t > PtMin) && (Q_xy < QCut)) {
-                    event_id = track->GetEventID(test_set.get());
-                    track_id = track_id_re;
+                    saveData.event_id = track->GetEventID(test_set.get());
+                    saveData.track_id = track_id_re;
                     track_id_re++;
-                    true_track = track->ContainTrueTrackMulti(test_set.get());
-                    pt = p_t;
-                    Qmin = Q_xy;
-                    Qz = Q_z;
-                    num_true = track->NumTruePointsMulti(test_set.get());
-                    num_total = static_cast<int>(track->Counts());
-                    Qe = track->GetSpin();
+                    saveData.true_track =
+                        track->ContainTrueTrackMulti(test_set.get());
+                    saveData.pt = p_t;
+                    saveData.Qxy = Q_xy;
+                    saveData.Qz = Q_z;
+                    saveData.num_true =
+                        track->NumTruePointsMulti(test_set.get());
+                    saveData.num_total = static_cast<int>(track->Counts());
+                    saveData.Qe = track->GetSpin();
                     savefile.cd();
                     savetree.Fill();
 
                     n_good_tracks++;
                     if (args.mode == ExecMode::single) {
                         ofstream out1("tracks.txt", std::ios::app);
-                        out1 << std::boolalpha << true_track << "\t";
+                        out1 << std::boolalpha << saveData.true_track << "\t";
                         for (auto *point : track->GetPoints()) {
                             out1 << point->id() << "\t";
                         }

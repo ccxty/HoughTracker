@@ -1,7 +1,9 @@
 for particle in e- pi- mu-
 do
     python gen_config.py $particle
-    for index in {1..541}
+    n=`ls -l | grep config_${particle} | wc -l`
+    echo $(($n+1))
+    for index in {1..703}
     do
         cp run.sh run${particle}${index}.sh
         chmod 755 run${particle}${index}.sh

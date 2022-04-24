@@ -16,7 +16,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-constexpr double DeltaPhi = 0.03;
+constexpr double DeltaPhi = 0.05;
 
 inline Track find_track(HitPoint *point, const Points &points) {
     Track track(point);
@@ -91,14 +91,14 @@ int main(int argc, char **argv) {
     TFile savefile(args.output_file.c_str(), "RECREATE");
     TTree savetree("tree1", "tree1");
     int event_id = 0, track_id = 0, num_true = 0, num_total = 0, Q_e = 0;
-    double Q_min = NAN, pt = NAN, Qz = NAN;
+    double Qmin = NAN, pt = NAN, Qz = NAN;
     bool true_track = false;
     int counts_useful_events = 0;
     savetree.Branch("event_id", &event_id);
     savetree.Branch("track_id", &track_id);
     savetree.Branch("true_track", &true_track);
     savetree.Branch("Pt", &pt);
-    savetree.Branch("Q", &Q_min);
+    savetree.Branch("Q", &Qmin);
     savetree.Branch("Qz", &Qz);
     savetree.Branch("num_true", &num_true);
     savetree.Branch("num_total", &num_total);
@@ -167,6 +167,7 @@ int main(int argc, char **argv) {
                 }
             }
         }
+        int track_id_re = 0;
         for (auto track : tracks) {
             Polynomial<2> line;
             double Qz_swap = NAN;
@@ -180,6 +181,8 @@ int main(int argc, char **argv) {
                 true_track = track.ContainTrueTrack();
                 pt = pt_swap;
                 event_id = track.GetEventID(test_set.get());
+                track_id = track_id_re;
+                track_id_re++;
                 savetree.Fill();
                 if (args.mode == ExecMode::single) {
                     ofstream out1("tracks.txt", std::ios::app);

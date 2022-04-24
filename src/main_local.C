@@ -39,20 +39,6 @@ inline Track find_track(HitPoint *point, const Points &points) {
         return std::move(track);
     }
     return std::move(track);
-    // Track result;
-    // vector<HitPoint *> layer0;
-    // vector<HitPoint *> layer1;
-    // vector<HitPoint *> layer2;
-    // for (auto *point : track.GetPoints()) {
-    //     if (point->layerID == 0) {
-    //         layer0.push_back(point);
-    //     } else if (point->layerID == 1) {
-    //         layer1.push_back(point);
-    //     } else if (point->layerID == 2) {
-    //         layer2.push_back(point);
-    //     }
-    // }
-    // return std::move(result);
 }
 
 int main(int argc, char **argv) {
@@ -146,10 +132,8 @@ int main(int argc, char **argv) {
         if (pointsList.size() < 3) {
             continue;
         }
-        /**
-         * @brief add noise points
-         */
         InnerAddNoise(args.n_noise, pointsList);
+
         vector<Track> tracks;
         for (auto *point : pointsList) {
             auto track = find_track(point, pointsList);

@@ -1,10 +1,10 @@
 #include "TBranch.h"
 #include "TFile.h"
 #include "TTree.h"
-#ifndef __TREE_DATA_CXX_INCLUDE__
-#define __TREE_DATA_CXX_INCLUDE__ 1
+#ifndef __TREEREAD_CXX_INCLUDE__
+#define __TREEREAD_CXX_INCLUDE__ 1
 
-class TreeData {
+class TreeRead {
  private:
     TFile *_file_source = nullptr;
     TTree *_tree = nullptr;
@@ -26,19 +26,19 @@ class TreeData {
 
  public:
     // default constructor
-    TreeData() = default;
+    TreeRead() = default;
     //  copy constructor
-    TreeData(const TreeData &) = delete;
+    TreeRead(const TreeRead &) = delete;
     // copy assignment operator
-    TreeData &operator=(const TreeData &other) = delete;
+    TreeRead &operator=(const TreeRead &other) = delete;
     // move constructor
-    TreeData(TreeData &&other) noexcept;
+    TreeRead(TreeRead &&other) noexcept;
     // move assignment operator
-    TreeData &operator=(TreeData &&other) noexcept;
+    TreeRead &operator=(TreeRead &&other) noexcept;
     // deconstructor
-    ~TreeData();
+    ~TreeRead();
     // constructor
-    explicit TreeData(const char *name, const std::string &tree_name = "tree1");
+    explicit TreeRead(const char *name, const std::string &tree_name = "tree1");
     bool Reset(char *name, const std::string &tree_name = "tree1");
     bool isEmpty() const;
 
@@ -55,12 +55,12 @@ class TreeData {
     inline std::vector<double> *Pt() const { return _pt; }
 };
 
-TreeData::TreeData(TreeData &&other) noexcept {
+TreeRead::TreeRead(TreeRead &&other) noexcept {
     *this = std::move(other);
     other.Clear();
 }
 
-TreeData &TreeData::operator=(TreeData &&other) noexcept {
+TreeRead &TreeRead::operator=(TreeRead &&other) noexcept {
     _file_source = other._file_source;
     _tree = other._tree;
     eventID = other.eventID;
@@ -81,14 +81,14 @@ TreeData &TreeData::operator=(TreeData &&other) noexcept {
     return *this;
 }
 
-TreeData::~TreeData() {
+TreeRead::~TreeRead() {
     if (_file_source != nullptr) {
         _file_source->Close();
     };
     this->Clear();
 };
 
-TreeData::TreeData(const char *name, const std::string &tree_name)
+TreeRead::TreeRead(const char *name, const std::string &tree_name)
     : _file_source(TFile::Open(name)) {
     _tree = dynamic_cast<TTree *>(gDirectory->Get(tree_name.c_str()));
     _tree->SetBranchAddress("posX", &_posX, &_b_posX);
@@ -101,7 +101,7 @@ TreeData::TreeData(const char *name, const std::string &tree_name)
     _tree->SetBranchAddress("nhits", &_nhits);
 };
 
-void TreeData::Clear() {
+void TreeRead::Clear() {
     _tree = nullptr;
     eventID = -1;
     _posX = nullptr;
@@ -119,7 +119,7 @@ void TreeData::Clear() {
     _nhits = 0;
 }
 
-bool TreeData::Reset(char *name, const std::string &tree_name) {
+bool TreeRead::Reset(char *name, const std::string &tree_name) {
     if (_file_source != nullptr) {
         _file_source->Close();
     };
@@ -136,6 +136,6 @@ bool TreeData::Reset(char *name, const std::string &tree_name) {
     return true;
 }
 
-bool TreeData::isEmpty() const { return _tree == nullptr; }
+bool TreeRead::isEmpty() const { return _tree == nullptr; }
 
 #endif

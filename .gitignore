@@ -24,3 +24,6 @@ condor/out/
 args_exec.json
 benchmark/
 test/
+condor/config_[e|mu|pi][+|-]*.json
+condor/run[e|mu|pi][+|-]*.sh
+condor/submit[e|mu|pi][+|-]*.cmd

@@ -12,6 +12,15 @@ constexpr double PtMin = 0.3 * MagFeild * 165.11 / 2.;  // 击中三层动量条
 constexpr double QCut = 1.;
 constexpr double QzCut = 2.;
 constexpr std::array<double, 3> InnerDectectorR = {65.115, 115.11, 165.11};
+// layer0: (25.6796, 59.8374)
+// layer1: (80.2514, 82.5229)
+// layer2: (165.11, 0)
+// layer0 -> layer1: 59.1
+// layer1 -> layer2: 118.368
+// layer0 -> layer2: 151.728
+constexpr double DMin01 = 59.1;
+constexpr double DMin12 = 118.368;
+constexpr double DMin02 = 151.728;
 
 using Points = std::vector<HitPoint *>;
 

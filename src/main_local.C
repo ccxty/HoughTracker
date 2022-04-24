@@ -25,12 +25,34 @@ inline Track find_track(HitPoint *point, const Points &points) {
         double phi2 = other->Phi();
         bool z_filter = (fabs(phi - phi2) < DeltaPhi) ||
                         (fabs(phi - phi2) > (2 * M_PI - DeltaPhi));
-        bool xy_filter = true;
-        if (z_filter && xy_filter) {
-            track.AddPoint(other);
+        if (other->layerID != 0 && z_filter) {
+            if (other->layerID == 1 && point->xyDistance(other) < DMin01) {
+                track.AddPoint(other);
+            }
+            if (other->layerID == 2 && point->xyDistance(other) < DMin02) {
+                track.AddPoint(other);
+            }
         }
     }
+    if (!track.HitALayers()) {
+        track.Clear();
+        return std::move(track);
+    }
     return std::move(track);
+    // Track result;
+    // vector<HitPoint *> layer0;
+    // vector<HitPoint *> layer1;
+    // vector<HitPoint *> layer2;
+    // for (auto *point : track.GetPoints()) {
+    //     if (point->layerID == 0) {
+    //         layer0.push_back(point);
+    //     } else if (point->layerID == 1) {
+    //         layer1.push_back(point);
+    //     } else if (point->layerID == 2) {
+    //         layer2.push_back(point);
+    //     }
+    // }
+    // return std::move(result);
 }
 
 int main(int argc, char **argv) {

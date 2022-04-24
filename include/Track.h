@@ -46,6 +46,8 @@ class Track {
     auto GetPointIDSet() const;
     std::tuple<int, int, int> GetLayerDistribution();
     void LayerDistribution();
+    void Clear();
+    bool IsEmpty() const;
 };
 
 Track::Track() = default;
@@ -314,5 +316,15 @@ void Track::LayerDistribution() {
         }
     }
 }
+
+void Track::Clear() {
+    _counts = 0;
+    _nlayer0 = 0;
+    _nlayer1 = 0;
+    _nlayer2 = 0;
+    _ptr.clear();
+}
+
+bool Track::IsEmpty() const { return _counts == 0; }
 
 #endif

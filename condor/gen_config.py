@@ -12,7 +12,7 @@ for pt in pt_array:
     for n_noise in n_noise_array:
         for n_track in n_track_array:
             config_index += 1
-            data_file = "./root_data_source/{}/pos{}.root".format(particle, pt)
+            data_file = "./root_data_source/{}/posPt{}.root".format(particle, pt)
             output_file = "./data/{}/trackdata_Pt{}_noise{}_multi{}.root".format(
                 particle, pt, n_noise, n_track)
             config = {
@@ -25,4 +25,4 @@ for pt in pt_array:
                 "pt": float(pt),
             }
             with open("config_" + particle+str(config_index) + ".json", "w") as f:
-                json.dump(config, f)
+                json.dump(config, f, indent=4)

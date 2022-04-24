@@ -16,7 +16,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-constexpr double DeltaPhi = 0.05;
+constexpr double DeltaPhi = 0.1;
 
 inline Track find_track(HitPoint *point, const Points &points) {
     Track track(point);
@@ -183,6 +183,8 @@ int main(int argc, char **argv) {
                 event_id = track.GetEventID(test_set.get());
                 track_id = track_id_re;
                 track_id_re++;
+                Qz = Qz_swap;
+                Qmin = Qmin_swap;
                 savetree.Fill();
                 if (args.mode == ExecMode::single) {
                     ofstream out1("tracks.txt", std::ios::app);

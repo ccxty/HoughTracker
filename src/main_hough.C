@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
         /**
          * @brief add noise points
          */
-        AddNoise(args.n_noise, pointsList);
+        InnerAddNoise(args.n_noise, pointsList);
         int npoints = static_cast<int>(pointsList.size());
 
         /**

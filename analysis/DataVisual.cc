@@ -37,8 +37,8 @@ struct Track {
 };
 
 void DataVisual() {
-    std::ifstream in_points("./build/points.txt");
-    std::ifstream in_tracks("./build/tracks.txt");
+    std::ifstream in_points("./points.txt");
+    std::ifstream in_tracks("./tracks.txt");
     std::vector<Point> points;
     std::vector<Track> tracks;
     Track track;

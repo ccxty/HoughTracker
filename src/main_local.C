@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "HitPoint.h"
 #include "Track.h"
 #include "TreeRead.h"
@@ -7,11 +9,29 @@
 using std::cerr;
 using std::cout;
 using std::endl;
+using std::ofstream;
 using std::set;
 using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+
+constexpr double DeltaPhi = 0.03;
+
+inline Track find_track(HitPoint *point, const Points &points) {
+    Track track(point);
+    double phi = point->Phi();
+    for (auto *other : points) {
+        double phi2 = other->Phi();
+        bool z_filter = (fabs(phi - phi2) < DeltaPhi) ||
+                        (fabs(phi - phi2) > (2 * M_PI - DeltaPhi));
+        bool xy_filter = true;
+        if (z_filter && xy_filter) {
+            track.AddPoint(other);
+        }
+    }
+    return std::move(track);
+}
 
 int main(int argc, char **argv) {
     Args args;
@@ -107,28 +127,55 @@ int main(int argc, char **argv) {
         /**
          * @brief add noise points
          */
-        AddNoise(args.n_noise, pointsList);
-        int npoints = static_cast<int>(pointsList.size());
-        // std::cout << "number of points: " << npoints << endl;
-
-        /**
-         * @brief Hough transform
-         *
-         */
-        std::vector<Track> tracks;
-        int track_id_re = 0;
-        for (const auto &track : tracks) {
-            event_id = track.GetEventID(test_set.get());
-            track_id = track_id_re;
-            track_id_re++;
-            true_track = track.ContainTrueTrackMulti(test_set.get());
-            pt = track.Pt();
-            Qz = track.Qz();
-            Q_e = 0;
-            Q_min = track->DOrigin();
-            num_true = track.NumTruePointsMulti(test_set.get());
-            // savefile->cd();
-            savetree.Fill();
+        InnerAddNoise(args.n_noise, pointsList);
+        vector<Track> tracks;
+        for (auto *point : pointsList) {
+            auto track = find_track(point, pointsList);
+            if (tracks.empty()) {
+                tracks.push_back(std::move(track));
+            } else {
+                for (auto &exist : tracks) {
+                    if (exist == track) {
+                        break;
+                    }
+                    if (exist > track) {
+                        break;
+                    }
+                    tracks.push_back(std::move(track));
+                }
+            }
+        }
+        for (auto track : tracks) {
+            Polynomial<2> line;
+            double Qz_swap = NAN;
+            double pt_swap = NAN;
+            double Qmin_swap = NAN;
+            if ((track.Counts() >= 3) && (track.HitALayers()) &&
+                (track.FitLinear(&pt_swap, &Qmin_swap, &Qz_swap))) {
+                num_total = static_cast<int>(track.Counts());
+                num_true =
+                    static_cast<int>(track.NumTruePointsMulti(test_set.get()));
+                true_track = track.ContainTrueTrack();
+                pt = pt_swap;
+                event_id = track.GetEventID(test_set.get());
+                savetree.Fill();
+                if (args.mode == ExecMode::single) {
+                    ofstream out1("tracks.txt", std::ios::app);
+                    out1 << std::boolalpha << true_track << "\t";
+                    for (auto *point : track.GetPoints()) {
+                        out1 << point->id() << "\t";
+                    }
+                    out1 << "\n";
+                }
+            }
+        }
+        if (args.mode == ExecMode::single) {
+            ofstream out2("points.txt", std::ios::app);
+            for (auto *point : pointsList) {
+                out2 << point->eventID << "\t" << point->id() << "\t"
+                     << point->x << "\t" << point->y << "\t" << point->z
+                     << "\n";
+            }
         }
     }
     savefile.cd();

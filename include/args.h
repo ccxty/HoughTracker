@@ -53,7 +53,7 @@ void args_parse_json(Args &args, std::string &json_file) {
     args.particle = args_json["particle"];
     args.data_file = args_json["data_file"];
     args.output_file = args_json["output_file"];
-    args.mode = args_json.get<ExecMode>();
+    args.mode = args_json["mode"];
 }
 
 void args_parse(int argc, char **argv, const std::string &program_name,

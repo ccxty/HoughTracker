@@ -33,6 +33,8 @@ class HitPoint {
              int layerID, double pt);
     inline double xConformal() const;
     inline double yConformal() const;
+    inline double xyDistance() const;
+    inline double Phi() const;  // [0,2*pi]
     inline double Pt() const;
     inline void SetPt(double pt);
     inline int id() const;
@@ -61,6 +63,14 @@ HitPoint::HitPoint(double x, double y, double z, int event, int track,
       _id(-1) {}
 inline double HitPoint::xConformal() const { return 2 * x / (x * x + y * y); }
 inline double HitPoint::yConformal() const { return 2 * y / (y * y + x * x); }
+inline double HitPoint::xyDistance() const { return sqrt(x * x + y * y); }
+inline double HitPoint::Phi() const {
+    double phi = atan2(z, sqrt(x * x + y * y));
+    if (phi < 0) {
+        phi += 2 * M_PI;
+    }
+    return phi;
+}
 inline int HitPoint::id() const { return _id; }
 inline void HitPoint::SetId(int identity) { _id = identity; }
 inline void HitPoint::SetPt(double pt) { _pt = pt; }

@@ -11,6 +11,7 @@ constexpr double MagFeild = 1.0;                        // 1.0 T
 constexpr double PtMin = 0.3 * MagFeild * 165.11 / 2.;  // 击中三层动量条件
 constexpr double QCut = 1.;
 constexpr double QzCut = 2.;
+constexpr std::array<double, 3> InnerDectectorR = {65.115, 115.11, 165.11};
 
 using Points = std::vector<HitPoint *>;
 
@@ -20,7 +21,7 @@ using Points = std::vector<HitPoint *>;
  * @param n_noise Number of noise points in all 3 layers
  * @param points Vector existing to add the noise points
  */
-void AddNoise(int n_noise, std::vector<HitPoint *> &points) {
+void InnerAddNoise(int n_noise, Points &points) {
     if (n_noise <= 0) {
         return;
     }
@@ -28,7 +29,6 @@ void AddNoise(int n_noise, std::vector<HitPoint *> &points) {
     auto rdm_layer = TRandom3();
     auto rdm_z = TRandom3();
     std::random_device rd_device;
-    std::array<double, 3> radius = {65.115, 115.11, 165.11};
     auto len = points.size();
     rdm.SetSeed(rd_device() % kMaxULong);
     rdm_layer.SetSeed(rd_device() % kMaxULong);
@@ -37,8 +37,8 @@ void AddNoise(int n_noise, std::vector<HitPoint *> &points) {
     for (int i = 0; i < n_noise; i++) {
         int layerID = static_cast<int>(rdm_layer.Integer(3));
         double posX = NAN, posY = NAN, posZ = NAN;
-        rdm.Circle(posX, posY, radius[layerID]);
-        posZ = (radius[layerID] / tan(20 * TMath::Pi() / 180.)) *
+        rdm.Circle(posX, posY, InnerDectectorR[layerID]);
+        posZ = (InnerDectectorR[layerID] / tan(20 * TMath::Pi() / 180.)) *
                (-1 + 2 * rdm_z.Rndm());
         auto *point = new HitPoint(posX, posY, posZ, -1, 1, layerID, 0);
         point->SetId(static_cast<int>(len) + i);

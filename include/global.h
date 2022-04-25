@@ -24,6 +24,12 @@ constexpr double DMin02 = 151.728;
 
 using Points = std::vector<HitPoint *>;
 
+struct TrackParameters {
+    double pt = 0;
+    Point2D center = {0, 0};
+    double kz = 0;
+};
+
 /**
  * @brief Add noise to existing pointsVector
  *

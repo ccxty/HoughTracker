@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     /**
      *  @brief Initialize the source data
      */
-    TreeData data = TreeData(args.data_file.c_str());
+    TreeRead data = TreeRead(args.data_file.c_str());
     cout << args.data_file << endl;
     if (data.isEmpty()) {
         cerr << "Data not found" << endl;
@@ -58,6 +58,8 @@ int main(int argc, char **argv) {
     } else if (args.mode == ExecMode::all) {
         eventIDs_toTest.reset(&eventIDs_all);
     }
+
+    // <eventID, num of all true points in this event>
 
     /**
      *  @brief Initialize the output file
@@ -106,12 +108,12 @@ int main(int argc, char **argv) {
                                      data.PosZ()->at(ip), data.EventID(),
                                      data.TrackID()->at(ip),
                                      data.LayerID()->at(ip), data.Pt()->at(ip));
-                    ptr->SetId(static_cast<int>(pointsList.size()));
+                    ptr->SetId(read_count);
                     pointsList.push_back(ptr);
                     read_count++;
                 }
                 if (read_count >= 3) {
-                    eventID_skip = data.EventID();
+                    // eventID_skip = data.EventID();
                 }
             }
         }
@@ -138,20 +140,20 @@ int main(int argc, char **argv) {
         int track_id_re = 0;
         int n_good_tracks = 0;
         for (auto &track : tracks) {
-            double p_t = NAN, Q_xy = NAN, Q_z = NAN;
+            double Q_xy = NAN, Q_z = NAN;
             if (track->HitALayers()) {
-                bool fit_fine = track->FitLinear(&p_t, &Q_xy, &Q_z);
-                if (fit_fine && (p_t > PtMin) && (Q_xy < QCut)) {
+                bool fit_fine = track->FitLinear(&Q_xy, &Q_z);
+                if (fit_fine && (track->Pt() > PtMin) && (Q_xy < QCut)) {
                     saveData.event_id = track->GetEventID(test_set.get());
                     saveData.track_id = track_id_re;
                     track_id_re++;
                     saveData.true_track =
-                        track->ContainTrueTrackMulti(test_set.get());
-                    saveData.pt = p_t;
+                        track->ContainFirstHalf(test_set.get());
+                    saveData.pt = track->Pt();
                     saveData.Qxy = Q_xy;
                     saveData.Qz = Q_z;
                     saveData.num_true =
-                        track->NumTruePointsMulti(test_set.get());
+                        track->NumFirstHalfPoints(test_set.get());
                     saveData.num_total = static_cast<int>(track->Counts());
                     saveData.Qe = track->GetSpin();
                     savefile.cd();

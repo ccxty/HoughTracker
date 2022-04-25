@@ -1,46 +1,46 @@
 #include <array>
 #include <cmath>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <set>
 #include <vector>
-#ifndef HOUGHTRACK_CXX
-#define HOUGHTRACK_CXX 1
+#ifndef __TRACK_CXX_INCLUDE__
+#define __TRACK_CXX_INCLUDE__ 1
 
 #include "HitPoint.h"
 #include "HoughGlobal.h"
 #include "global.h"
 #include "line.h"
+
 class Track {
  private:
     std::vector<HitPoint *> _ptr;
-    double _pt{0};
-    std::vector<HitPoint *>::size_type _counts{0};
+    int _counts{0};
     int _nlayer0{0};
     int _nlayer1{0};
     int _nlayer2{0};
+    TrackParameters _params;
 
  public:
     Track();
     explicit Track(std::vector<HitPoint *> ptr);
     explicit Track(HitPoint *point);
-    // HoughTrack &operator=(const HoughTrack &track);
-    // HoughTrack(const HoughTrack &track);
-    std::vector<HitPoint *>::size_type Counts() const;
+    int Counts() const;
     void AddPoint(HitPoint *point);
-    bool FitLinear(double *pt, double *Qmin, double *Qz);
+    bool FitLinear(double *Qmin, double *Qz);
     double Pt() const;
     void Print() const;
     std::vector<HitPoint *> &GetPoints();
     bool operator==(Track &other) const;
     bool operator!=(Track &other) const;
     bool operator>(Track &other) const;
+    bool operator<(Track &other);
     bool HitALayers();
-    double RatioTrues() const;
-    int NumTruePoints() const;
-    int NumTruePointsMulti(std::set<int> *events_id) const;
-    bool ContainTrueTrack() const;
-    bool ContainTrueTrackMulti(std::set<int> *events_id) const;
+    int NumFirstHalfPoints(std::set<int> *events_id) const;
+    int NumSecondHalfPoints(std::set<int> *events_id) const;
+    bool ContainFirstHalf(std::set<int> *events_id) const;
+    bool ContainSecondHalf(std::set<int> *events_id) const;
     int GetEventID(std::set<int> *events_id) const;
     int GetSpin() const;
     auto GetPointIDSet() const;
@@ -48,12 +48,14 @@ class Track {
     void LayerDistribution();
     void Clear();
     bool IsEmpty() const;
+    int GetNumNoise() const;
+    TrackParameters &GetTrackParameters();
 };
 
 Track::Track() = default;
 
 Track::Track(std::vector<HitPoint *> ptr)
-    : _ptr(std::move(ptr)), _counts(_ptr.size()) {}
+    : _ptr(std::move(ptr)), _counts(static_cast<int>(_ptr.size())) {}
 
 Track::Track(HitPoint *point) : _counts(1) { _ptr.push_back(point); }
 
@@ -76,9 +78,9 @@ void Track::AddPoint(HitPoint *point) {
     }
 }
 
-std::vector<HitPoint *>::size_type Track::Counts() const { return _counts; }
+int Track::Counts() const { return _counts; }
 
-double Track::Pt() const { return _pt; }
+double Track::Pt() const { return _params.pt; }
 
 void Track::Print() const {
     if (_ptr.empty()) {
@@ -138,8 +140,10 @@ bool Track::operator>(Track &other) const {
     return true;
 }
 
+bool Track::operator<(Track &other) { return other.operator>(*this); }
+
 // 需先调用 HitALayers();
-bool Track::FitLinear(double *pt, double *Qmin, double *Qz) {
+bool Track::FitLinear(double *Qmin, double *Qz) {
     auto nlayer = this->GetLayerDistribution();
     HitPoint *layer0[std::get<0>(nlayer)];
     HitPoint *layer1[std::get<1>(nlayer)];
@@ -185,8 +189,10 @@ bool Track::FitLinear(double *pt, double *Qmin, double *Qz) {
     if (!fit) {
         return false;
     }
-    *pt = 0.3 * param_R;
-    _pt = *pt;
+    _params.pt = 0.3 * param_R;
+    _params.kz = line_z.eff[1];
+    _params.center.x = -line_xy.eff[1] / line_xy.eff[0];
+    _params.center.y = 1 / line_xy.eff[0];
     return true;
 }
 
@@ -194,22 +200,6 @@ bool Track::HitALayers() {
     this->LayerDistribution();
     return (_nlayer0 > 0) && (_nlayer1 > 0) && (_nlayer2 > 0);
 }
-
-int Track::NumTruePoints() const {
-    int trues = 0;
-    for (auto *point : _ptr) {
-        if (point->eventID != -1) {
-            trues++;
-        }
-    }
-    return trues;
-}
-
-double Track::RatioTrues() const {
-    return this->NumTruePoints() / static_cast<double>(_counts);
-}
-
-bool Track::ContainTrueTrack() const { return this->NumTruePoints() == 3; }
 
 auto Track::GetPointIDSet() const {
     auto ptr = std::make_unique<std::set<int>>();
@@ -263,17 +253,45 @@ std::tuple<int, int, int> Track::GetLayerDistribution() {
     return std::make_tuple(_nlayer0, _nlayer1, _nlayer2);
 }
 
-bool Track::ContainTrueTrackMulti(std::set<int> *events_id) const {
-    return this->NumTruePointsMulti(events_id) == 3;
+bool Track::ContainFirstHalf(std::set<int> *events_id) const {
+    return this->NumFirstHalfPoints(events_id) == 3;
 }
 
-int Track::NumTruePointsMulti(std::set<int> *events_id) const {
+bool Track::ContainSecondHalf(std::set<int> *events_id) const {
+    return this->NumSecondHalfPoints(events_id) == 3;
+}
+
+int Track::NumFirstHalfPoints(std::set<int> *events_id) const {
     int max = 0;
-    for (int eventID : *events_id) {
+    std::vector<int> N_id;
+    for (int e_id : *events_id) {
         int flag = 0;
         for (auto *point : _ptr) {
-            if (eventID == point->eventID) {
-                flag++;
+            if (point->eventID == e_id) {
+                int id = point->id();
+                if ((id == 0) || (id == 1) || (id == 2)) {
+                    flag++;
+                }
+            }
+        }
+        if (flag > max) {
+            max = flag;
+        }
+    }
+    return max;
+}
+
+int Track::NumSecondHalfPoints(std::set<int> *events_id) const {
+    int max = 0;
+    std::vector<int> N_id;
+    for (int e_id : *events_id) {
+        int flag = 0;
+        for (auto *point : _ptr) {
+            if (point->eventID == e_id) {
+                int id = point->id();
+                if ((id == 4) || (id == 5) || (id == 6)) {
+                    flag++;
+                }
             }
         }
         if (flag > max) {
@@ -284,15 +302,18 @@ int Track::NumTruePointsMulti(std::set<int> *events_id) const {
 }
 
 int Track::GetEventID(std::set<int> *events_id) const {
-    for (int eventID : *events_id) {
+    for (int e_id : *events_id) {
         int flag = 0;
         for (auto *point : _ptr) {
-            if (point->eventID == eventID) {
-                flag++;
+            if (e_id == point->eventID) {
+                int id = point->id();
+                if ((id == 0) || (id == 1) || (id == 2)) {
+                    flag++;
+                }
             }
         }
         if (flag >= 3) {
-            return eventID;
+            return e_id;
         }
     }
     return -1;
@@ -326,5 +347,17 @@ void Track::Clear() {
 }
 
 bool Track::IsEmpty() const { return _counts == 0; }
+
+int Track::GetNumNoise() const {
+    int num_noise = 0;
+    for (auto *point : _ptr) {
+        if (point->eventID == -1) {
+            num_noise++;
+        }
+    }
+    return num_noise;
+}
+
+TrackParameters &Track::GetTrackParameters() { return _params; }
 
 #endif

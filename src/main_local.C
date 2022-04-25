@@ -1,5 +1,6 @@
 #include <cmath>
 
+#include "BasicTreeSave.h"
 #include "HitPoint.h"
 #include "Track.h"
 #include "TreeRead.h"
@@ -16,20 +17,34 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-constexpr double DeltaPhi = 0.1;
+constexpr double DeltaPhi01 = 0.1;
+constexpr double DeltaPhi12 = 0.1;
+constexpr double DeltaZ01 = 7;
+constexpr double DeltaZ12 = 7;
+
+constexpr double DeltaR01 = InnerDectectorR[1] - InnerDectectorR[0];
+constexpr double DeltaR12 = InnerDectectorR[2] - InnerDectectorR[1];
 
 inline Track find_track(HitPoint *point, const Points &points) {
     Track track(point);
-    double phi = point->Phi();
+    double k1 = point->z / InnerDectectorR[0];
+    std::vector<HitPoint *> temp_l1;
     for (auto *other : points) {
-        double phi2 = other->Phi();
-        bool z_filter = (fabs(phi - phi2) < DeltaPhi) ||
-                        (fabs(phi - phi2) > (2 * M_PI - DeltaPhi));
-        if (other->layerID != 0 && z_filter) {
-            if (other->layerID == 1 && point->xyDistance(other) < DMin01) {
-                track.AddPoint(other);
-            }
-            if (other->layerID == 2 && point->xyDistance(other) < DMin02) {
+        bool z_filter = fabs(other->z - point->z - k1 * DeltaR01) < DeltaZ01;
+        bool xy_filter = point->xyDistance(other) < DMin01;
+        if (other->layerID == 1 && z_filter && xy_filter) {
+            track.AddPoint(other);
+            temp_l1.push_back(other);
+        }
+    }
+    for (auto *point1 : temp_l1) {
+        double k2 = (point1->z - point->z) / DeltaR01;
+        for (auto *other : points) {
+            double phi2 = other->Phi();
+            bool z_filter =
+                fabs(other->z - point1->z - k2 * DeltaR12) < DeltaZ12;
+            bool xy_filter = point1->xyDistance(other) < DMin12;
+            if (other->layerID == 2 && z_filter && xy_filter) {
                 track.AddPoint(other);
             }
         }
@@ -49,7 +64,7 @@ int main(int argc, char **argv) {
     /**
      *  @brief Initialize the source data
      */
-    TreeData data = TreeData(args.data_file.c_str());
+    TreeRead data = TreeRead(args.data_file.c_str());
     cout << args.output_file << endl;
     if (data.isEmpty()) {
         cerr << "Data not found" << endl;
@@ -74,21 +89,8 @@ int main(int argc, char **argv) {
     /**
      *  @brief Initialize the output file
      */
-    TFile savefile(args.output_file.c_str(), "RECREATE");
-    TTree savetree("tree1", "tree1");
-    int event_id = 0, track_id = 0, num_true = 0, num_total = 0, Q_e = 0;
-    double Qmin = NAN, pt = NAN, Qz = NAN;
-    bool true_track = false;
     int counts_useful_events = 0;
-    savetree.Branch("event_id", &event_id);
-    savetree.Branch("track_id", &track_id);
-    savetree.Branch("true_track", &true_track);
-    savetree.Branch("Pt", &pt);
-    savetree.Branch("Q", &Qmin);
-    savetree.Branch("Qz", &Qz);
-    savetree.Branch("num_true", &num_true);
-    savetree.Branch("num_total", &num_total);
-    savetree.Branch("Qe", &Q_e);
+    BasicTreeSave save(args.output_file.c_str(), "tree1");
 
     /**
      * @brief Get true points from source data
@@ -120,12 +122,12 @@ int main(int argc, char **argv) {
                                      data.PosZ()->at(ip), data.EventID(),
                                      data.TrackID()->at(ip),
                                      data.LayerID()->at(ip), data.Pt()->at(ip));
-                    ptr->SetId(static_cast<int>(pointsList.size()));
+                    ptr->SetId(read_count);
                     pointsList.push_back(ptr);
                     read_count++;
                 }
                 if (read_count >= 3) {
-                    eventID_skip = data.EventID();
+                    // eventID_skip = data.EventID();
                 }
             }
         }
@@ -155,24 +157,30 @@ int main(int argc, char **argv) {
         for (auto track : tracks) {
             Polynomial<2> line;
             double Qz_swap = NAN;
-            double pt_swap = NAN;
             double Qmin_swap = NAN;
             if ((track.Counts() >= 3) && (track.HitALayers()) &&
-                (track.FitLinear(&pt_swap, &Qmin_swap, &Qz_swap))) {
-                num_total = static_cast<int>(track.Counts());
-                num_true =
-                    static_cast<int>(track.NumTruePointsMulti(test_set.get()));
-                true_track = track.ContainTrueTrack();
-                pt = pt_swap;
-                event_id = track.GetEventID(test_set.get());
-                track_id = track_id_re;
+                (track.FitLinear(&Qmin_swap, &Qz_swap))) {
+                save.num_total = static_cast<int>(track.Counts());
+                save.num_first_half = track.NumFirstHalfPoints(test_set.get());
+                save.true_track = track.ContainFirstHalf(test_set.get());
+                save.pt = track.Pt();
+                save.pt_true = args.pt;
+                save.event_id = track.GetEventID(test_set.get());
+                save.track_id = track_id_re;
                 track_id_re++;
-                Qz = Qz_swap;
-                Qmin = Qmin_swap;
-                savetree.Fill();
+                save.Qz = Qz_swap;
+                save.Qxy = Qmin_swap;
+                save.kz = track.GetTrackParameters().kz;
+                save.contain_first_half =
+                    track.ContainFirstHalf(test_set.get());
+                save.contain_second_half =
+                    track.ContainSecondHalf(test_set.get());
+                save.num_second_half =
+                    track.NumSecondHalfPoints(test_set.get());
+                save.Fill();
                 if (args.mode == ExecMode::single) {
                     ofstream out1("tracks.txt", std::ios::app);
-                    out1 << std::boolalpha << true_track << "\t";
+                    out1 << std::boolalpha << save.true_track << "\t";
                     for (auto *point : track.GetPoints()) {
                         out1 << point->id() << "\t";
                     }
@@ -183,16 +191,14 @@ int main(int argc, char **argv) {
         if (args.mode == ExecMode::single) {
             ofstream out2("points.txt", std::ios::app);
             for (auto *point : pointsList) {
-                out2 << point->eventID << "\t" << point->id() << "\t"
-                     << point->x << "\t" << point->y << "\t" << point->z
-                     << "\n";
+                out2 << point->eventID << "\t" << point->layerID << "\t"
+                     << point->id() << "\t" << point->x << "\t" << point->y
+                     << "\t" << point->z << "\n";
             }
         }
     }
-    savefile.cd();
-    savetree.Write();
-    savefile.Write();
-    savefile.Close();
+    save.Write();
+    save.Close();
     cout << "Save Path: " << args.output_file << endl;
     cout << "total tracks useful: " << counts_useful_events << endl << endl;
     return 0;

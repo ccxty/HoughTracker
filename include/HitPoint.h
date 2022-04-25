@@ -36,9 +36,9 @@ class HitPoint {
     inline double xyDistance(const HitPoint* other) const;
     inline double Phi() const;  // [0,2*pi]
     inline double Pt() const;
-    inline void SetPt(double pt);
+    inline HitPoint& SetPt(double pt);
     inline int id() const;
-    inline void SetId(int identity);
+    inline HitPoint& SetId(int identity);
     void Print() const;
 };
 HitPoint::HitPoint(double x, double y, double z, int event, int track,
@@ -75,8 +75,14 @@ inline double HitPoint::Phi() const {
     return phi;
 }
 inline int HitPoint::id() const { return _id; }
-inline void HitPoint::SetId(int identity) { _id = identity; }
-inline void HitPoint::SetPt(double pt) { _pt = pt; }
+inline HitPoint& HitPoint::SetId(int identity) {
+    _id = identity;
+    return *this;
+}
+inline HitPoint& HitPoint::SetPt(double pt) {
+    _pt = pt;
+    return *this;
+}
 inline double HitPoint::Pt() const { return _pt; }
 void HitPoint::Print() const {
     std::cout << "identity: " << _id << " "

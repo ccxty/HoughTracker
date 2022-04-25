@@ -44,7 +44,7 @@ class TreeRead {
 
     // getters
     Long64_t GetEntries() const { return _tree->GetEntries(); };
-    inline void GetEntry(Long64_t entry) { _tree->GetEntry(entry); }
+    inline int GetEntry(Long64_t entry) { return _tree->GetEntry(entry); }
     inline int EventID() const { return eventID; }
     inline int NHits() const { return _nhits; }
     inline std::vector<double> *PosX() const { return _posX; }

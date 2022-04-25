@@ -36,7 +36,7 @@ class BasicTreeSave {
     explicit BasicTreeSave(const char* filename,
                            const char* tree_name = "tree1");
     void Fill();
-    void Write();
+    BasicTreeSave& Write();
     void Close();
 };
 
@@ -62,9 +62,10 @@ BasicTreeSave::BasicTreeSave(const char* filename, const char* tree_name)
 
 void BasicTreeSave::Fill() { tree.Fill(); }
 
-void BasicTreeSave::Write() {
+BasicTreeSave& BasicTreeSave::Write() {
     savefile.cd();
     tree.Write();
+    return *this;
 }
 
 void BasicTreeSave::Close() { savefile.Close(); }

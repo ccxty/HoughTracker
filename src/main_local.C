@@ -155,12 +155,12 @@ int main(int argc, char **argv) {
         }
         int track_id_re = 0;
         for (auto track : tracks) {
-            Polynomial<2> line;
+            StraightLine line;
             double Qz_swap = NAN;
             double Qmin_swap = NAN;
             if ((track.Counts() >= 3) && (track.HitALayers()) &&
                 (track.FitLinear(&Qmin_swap, &Qz_swap))) {
-                save.num_total = static_cast<int>(track.Counts());
+                save.num_total = track.Counts();
                 save.num_first_half = track.NumFirstHalfPoints(test_set.get());
                 save.true_track = track.ContainFirstHalf(test_set.get());
                 save.pt = track.Pt();
@@ -197,9 +197,8 @@ int main(int argc, char **argv) {
             }
         }
     }
-    save.Write();
-    save.Close();
-    cout << "Save Path: " << args.output_file << endl;
-    cout << "total tracks useful: " << counts_useful_events << endl << endl;
+    save.Write().Close();
+    cout << "Save Path: " << args.output_file << endl
+         << "total tracks useful: " << counts_useful_events << endl;
     return 0;
 }

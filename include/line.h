@@ -21,6 +21,9 @@ struct Polynomial {
     double value(double x);
 };
 
+using StraightLine = Polynomial<2>;
+using Quadratic = Polynomial<3>;
+
 template <int N>
 Polynomial<N>::Polynomial() {
     for (int i = 0; i < N; i++) {
@@ -48,7 +51,7 @@ double Polynomial<N>::value(double x) {
  */
 template <int N>
 inline void LinearFit(std::array<double, N> &x, std::array<double, N> &y,
-                      double *Q, Polynomial<2> &line) {
+                      double *Q, StraightLine &line) {
     double sum_x = std::accumulate(x.begin(), x.end(), 0.0);
     double sum_y = std::accumulate(y.begin(), y.end(), 0.0);
     double sum_xx = 0;
@@ -80,7 +83,7 @@ inline void LinearFit(std::array<double, N> &x, std::array<double, N> &y,
  */
 inline void TherePointsLinearFit(HitPoint *point1, HitPoint *point2,
                                  HitPoint *point3, double *Q,
-                                 Polynomial<2> &line) {
+                                 StraightLine &line) {
     std::array<double, 3> posX = {point1->xConformal(), point2->xConformal(),
                                   point3->xConformal()};
     std::array<double, 3> posY = {point1->yConformal(), point2->yConformal(),
@@ -89,7 +92,7 @@ inline void TherePointsLinearFit(HitPoint *point1, HitPoint *point2,
 }
 
 inline void FitZLinear(HitPoint *point1, HitPoint *point2, HitPoint *point3,
-                       double Radius, double *Qz, Polynomial<2> &line) {
+                       double Radius, double *Qz, StraightLine &line) {
     std::array<double, 3> r_xy = {InnerDectectorR[point1->layerID],
                                   InnerDectectorR[point2->layerID],
                                   InnerDectectorR[point3->layerID]};
@@ -101,7 +104,7 @@ inline void FitZLinear(HitPoint *point1, HitPoint *point2, HitPoint *point3,
 }
 
 inline void FitZLinear(HitPoint *point1, HitPoint *point2, HitPoint *point3,
-                       double *Qz, Polynomial<2> &line) {
+                       double *Qz, StraightLine &line) {
     std::array<double, 3> r_xy = {InnerDectectorR[point1->layerID],
                                   InnerDectectorR[point2->layerID],
                                   InnerDectectorR[point3->layerID]};

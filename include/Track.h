@@ -27,7 +27,7 @@ class Track {
     explicit Track(std::vector<HitPoint *> ptr);
     explicit Track(HitPoint *point);
     int Counts() const;
-    void AddPoint(HitPoint *point);
+    Track &AddPoint(HitPoint *point);
     bool FitLinear(double *Qmin, double *Qz);
     double Pt() const;
     void Print() const;
@@ -45,7 +45,7 @@ class Track {
     int GetSpin() const;
     auto GetPointIDSet() const;
     std::tuple<int, int, int> GetLayerDistribution();
-    void LayerDistribution();
+    Track &LayerDistribution();
     void Clear();
     bool IsEmpty() const;
     int GetNumNoise() const;
@@ -59,7 +59,7 @@ Track::Track(std::vector<HitPoint *> ptr)
 
 Track::Track(HitPoint *point) : _counts(1) { _ptr.push_back(point); }
 
-void Track::AddPoint(HitPoint *point) {
+Track &Track::AddPoint(HitPoint *point) {
     if (_ptr.empty()) {
         _ptr.push_back(point);
         _counts = 1;
@@ -76,6 +76,7 @@ void Track::AddPoint(HitPoint *point) {
             _counts += 1;
         }
     }
+    return *this;
 }
 
 int Track::Counts() const { return _counts; }
@@ -166,8 +167,8 @@ bool Track::FitLinear(double *Qmin, double *Qz) {
             i_2++;
         }
     }
-    Polynomial<2> line_xy;
-    Polynomial<2> line_z;
+    StraightLine line_xy;
+    StraightLine line_z;
     double param_a0 = NAN, param_a1 = NAN, param_R = NAN;
     double Q_swap = NAN, Qz_swap = NAN;
     for (auto *point1 : layer0) {
@@ -263,7 +264,6 @@ bool Track::ContainSecondHalf(std::set<int> *events_id) const {
 
 int Track::NumFirstHalfPoints(std::set<int> *events_id) const {
     int max = 0;
-    std::vector<int> N_id;
     for (int e_id : *events_id) {
         int flag = 0;
         for (auto *point : _ptr) {
@@ -283,7 +283,6 @@ int Track::NumFirstHalfPoints(std::set<int> *events_id) const {
 
 int Track::NumSecondHalfPoints(std::set<int> *events_id) const {
     int max = 0;
-    std::vector<int> N_id;
     for (int e_id : *events_id) {
         int flag = 0;
         for (auto *point : _ptr) {
@@ -319,12 +318,12 @@ int Track::GetEventID(std::set<int> *events_id) const {
     return -1;
 }
 
-void Track::LayerDistribution() {
+Track &Track::LayerDistribution() {
     _nlayer0 = 0;
     _nlayer1 = 0;
     _nlayer2 = 0;
     if (_ptr.empty()) {
-        return;
+        return *this;
     }
     for (auto *point : _ptr) {
         int layerID = point->layerID;
@@ -336,6 +335,7 @@ void Track::LayerDistribution() {
             _nlayer2++;
         }
     }
+    return *this;
 }
 
 void Track::Clear() {

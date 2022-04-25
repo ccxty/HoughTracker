@@ -1,7 +1,8 @@
 import os
 import subprocess
 particles = ["e-", "mu-", "pi-"]
-excutable = "./bin/HoughTracker"
+#excutable = "./bin/HoughTracker"
+excutable = "./bin/LocalTracker"
 
 for particle in particles:
     os.system("python gen_config.py {}".format(particle))

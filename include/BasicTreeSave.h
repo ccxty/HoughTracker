@@ -26,8 +26,12 @@ class BasicTreeSave {
     double Qe = 0;
 
     double num_total = 0;
-    double num_first_half = 0;
+    int num_first_half = 0;
+    int num_second_half = 0;
     bool true_track = false;
+
+    bool contain_first_half = false;
+    bool contain_second_half = false;
 
     explicit BasicTreeSave(const char* filename,
                            const char* tree_name = "tree1");
@@ -50,7 +54,10 @@ BasicTreeSave::BasicTreeSave(const char* filename, const char* tree_name)
     tree.Branch("Qe", &Qe);
     tree.Branch("num_total", &num_total);
     tree.Branch("num_first_half", &num_first_half);
+    tree.Branch("num_second_half", &num_second_half);
     tree.Branch("true_track", &true_track);
+    tree.Branch("contain_first_half", &contain_first_half);
+    tree.Branch("contain_second_half", &contain_second_half);
 }
 
 void BasicTreeSave::Fill() { tree.Fill(); }

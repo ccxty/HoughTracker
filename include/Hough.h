@@ -92,8 +92,8 @@ auto GridInit(const int NAlpha = NumAlpha, const int NRho = NumD) {
         for (int j = 0; j < NRho; j++) {
             auto ptr3 = make_unique<HoughGridArea>(
                 AlphaMin + i * AlphaBinWidth,
-                DMin + (j - 0.25) * DBinWidth,   // shift
-                DMin + (j + 0.75) * DBinWidth);  // shift
+                RhoMin + (j - 0.25) * DBinWidth,   // shift
+                RhoMin + (j + 0.75) * DBinWidth);  // shift
             ptr2->push_back(move(ptr3));
         }
         ptr1.push_back(move(ptr2));
@@ -134,8 +134,8 @@ auto GridInit() {
         for (int j = 0; j < NRho; j++) {
             auto ptr = std::make_unique<HoughGridArea>(
                 AlphaMin + i * AlphaBinWidth,
-                DMin + (j - 0.25) * DBinWidth,   // shift
-                DMin + (j + 0.75) * DBinWidth);  // shift
+                RhoMin + (j - 0.25) * DBinWidth,   // shift
+                RhoMin + (j + 0.75) * DBinWidth);  // shift
             martix[i][j] = std::move(ptr);
         }
     }

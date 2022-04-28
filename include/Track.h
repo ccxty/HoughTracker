@@ -199,7 +199,7 @@ bool Track::FitLinear(double *Qmin, double *Qz) {
     if (!fit) {
         return false;
     }
-    _params.R = 0.3 * param_R;
+    _params.R = param_R;
     _params.kz = line_z.eff[1];
     _params.center.x = -line_xy.eff[1] / line_xy.eff[0];
     _params.center.y = 1 / line_xy.eff[0];

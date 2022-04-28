@@ -82,14 +82,14 @@ std::vector<std::unique_ptr<Track>> FindTrack(HoughGrid &gridMatrix) {
  * @param NRho Grid number in the rho direction, default NumD
  * @return vector<vector<HoughGridArea *> *>
  */
-auto GridInit(const int NumAlpha = NAlpha, const int NRho = NumD) {
+auto GridInit(const int NumAlpha = NAlpha, const int NumRho = NRho) {
     using std::make_unique;
     using std::unique_ptr;
     using std::vector;
     auto ptr1 = vector<unique_ptr<vector<unique_ptr<HoughGridArea>>>>();
     for (int i = 0; i < NumAlpha; i++) {
         auto ptr2 = make_unique<vector<unique_ptr<HoughGridArea>>>();
-        for (int j = 0; j < NRho; j++) {
+        for (int j = 0; j < NumRho; j++) {
             auto ptr3 = make_unique<HoughGridArea>(
                 AlphaMin + i * AlphaBinWidth,
                 RhoMin + (j - 0.25) * RhoBinWidth,   // shift

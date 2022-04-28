@@ -32,9 +32,9 @@ int main() {
         for (i_sign = 0; i_sign < 2; i_sign++) {
             for (i_pt = 0; i_pt < 18; i_pt++) {
                 for (i_deg = 0; i_deg < 9; i_deg++) {
-                    string path = "/ustcfs/STCFUser/zhouh/20220319/Single";
-                    path += particle[i_particle];
                     int index = 18 * i_deg + i_pt;
+                    string path = "/ustcfs/STCFUser/zhouh/20220319/Single";
+                    path += particle[i_particle] + "/";
                     path += "singleEminus" + std::to_string(index) + ".root";
                     string savepath = "./root_data_source/";
                     savepath += p_save[i_particle] + sign[i_sign] + "/posPt";

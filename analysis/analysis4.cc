@@ -18,7 +18,7 @@ using std::endl;
 using std::ifstream;
 using std::string;
 
-void analysis3() {
+void analysis4() {
     // 使用的粒子：负电粒子，[0,2,4] 三种粒子
     // 使用的噪声： 0，12，30，48，66
     // 使用的动量：50，75，100，135
@@ -68,10 +68,10 @@ void analysis3() {
                 in_total >> total;
                 if (i_total == 2) {
                     break;
-                } else {
-                    i_total++;
                 }
+                i_total++;
             }
+            total = 10000;
             array<double, 10> eff{};
             array<double, 10> eff_err{};
             array<double, 10> fake{};
@@ -79,12 +79,12 @@ void analysis3() {
             for (i_noise = 0; i_noise < 10; i_noise++) {
                 string path =
                     "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/"
-                    "data/20220425/HoughTracker/";
+                    "data/20220425/LocalTracker/";
                 path += particle_str[i_particle] + "/trackdata_Pt" +
                         pt_str[i_pt] + "_noise" + noise_str[i_noise] +
                         "_multi" + multi_str[i_multi] + ".root";
-                auto file = new TFile(path.c_str());
-                auto tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
+                auto *file = new TFile(path.c_str());
+                auto *tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
                 int event_id = 0;
                 int track_id = 0;
                 bool true_track = false;
@@ -125,10 +125,10 @@ void analysis3() {
                                          static_cast<double>(n_all)) /
                                     static_cast<double>(n_all);
             }
-            auto g_eff = new TGraphErrors(10, noise_double.data(), eff.data(),
-                                          0, eff_err.data());
-            auto g_fake = new TGraphErrors(10, noise_double.data(), fake.data(),
-                                           0, fake_err.data());
+            auto *g_eff = new TGraphErrors(10, noise_double.data(), eff.data(),
+                                           0, eff_err.data());
+            auto *g_fake = new TGraphErrors(10, noise_double.data(),
+                                            fake.data(), 0, fake_err.data());
             g_eff->SetTitle(particle_str[i_particle].c_str());
             g_fake->SetTitle(particle_str[i_particle].c_str());
             g_eff->SetLineColor(particle_color[i_particle]);
@@ -141,13 +141,13 @@ void analysis3() {
         g_1->GetYaxis()->SetTitle("eff");
         g_1->Draw("AC");
         c_1->BuildLegend();
-        // c_1->SaveAs("eff_60MeV.png");
+        c_1->SaveAs("eff_60MeV_local.png");
         c_2->cd();
         g_2->GetXaxis()->SetTitle("noise");
         g_2->GetYaxis()->SetTitle("fake rate");
         g_2->Draw("AC");
         c_2->BuildLegend();
-        // c_2->SaveAs("fake_60MeV.png");
+        c_2->SaveAs("fake_60MeV_local.png");
     }
 
     /**
@@ -159,10 +159,10 @@ void analysis3() {
     {
         i_particle = 0;
         i_pt = 0;
-        auto c_1 = new TCanvas("c_1", "eff @50 MeV");
-        auto c_2 = new TCanvas("c_2", "fake @50 MeV");
-        auto g_1 = new TMultiGraph("g1", "eff @50 MeV");
-        auto g_2 = new TMultiGraph("g2", "fake @50 MeV");
+        auto *c_1 = new TCanvas("c_1", "eff @50 MeV");
+        auto *c_2 = new TCanvas("c_2", "fake @50 MeV");
+        auto *g_1 = new TMultiGraph("g1", "eff @50 MeV");
+        auto *g_2 = new TMultiGraph("g2", "fake @50 MeV");
         for (i_multi = 0; i_multi < 3; i_multi++) {
             string total_file = "../total_" + particle_str[i_particle] + ".txt";
             ifstream in_total(total_file);
@@ -172,10 +172,10 @@ void analysis3() {
                 in_total >> total;
                 if (i_total == i_pt) {
                     break;
-                } else {
-                    i_total++;
                 }
+                i_total++;
             }
+            total = 10000;
             array<double, 10> eff{};
             array<double, 10> eff_err{};
             array<double, 10> fake{};
@@ -183,12 +183,12 @@ void analysis3() {
             for (i_noise = 0; i_noise < 10; i_noise++) {
                 string path =
                     "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/"
-                    "data/20220425/HoughTracker/";
+                    "data/20220425/LocalTracker/";
                 path += particle_str[i_particle] + "/trackdata_Pt" +
                         pt_str[i_pt] + "_noise" + noise_str[i_noise] +
                         "_multi" + multi_str[i_multi] + ".root";
-                auto file = new TFile(path.c_str());
-                auto tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
+                auto *file = new TFile(path.c_str());
+                auto *tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
                 int event_id = 0;
                 int track_id = 0;
                 bool true_track = false;
@@ -229,10 +229,10 @@ void analysis3() {
                                          static_cast<double>(n_all)) /
                                     static_cast<double>(n_all);
             }
-            auto g_eff = new TGraphErrors(10, noise_double.data(), eff.data(),
-                                          0, eff_err.data());
-            auto g_fake = new TGraphErrors(10, noise_double.data(), fake.data(),
-                                           0, fake_err.data());
+            auto *g_eff = new TGraphErrors(10, noise_double.data(), eff.data(),
+                                           0, eff_err.data());
+            auto *g_fake = new TGraphErrors(10, noise_double.data(),
+                                            fake.data(), 0, fake_err.data());
             g_eff->SetTitle((multi_str[i_multi] + " tracks").c_str());
             g_fake->SetTitle((multi_str[i_multi] + " tracks").c_str());
             g_eff->SetLineColor(multi_color[i_multi]);
@@ -245,13 +245,13 @@ void analysis3() {
         g_1->GetYaxis()->SetTitle("eff");
         g_1->Draw("AC");
         c_1->BuildLegend();
-        // c_1->SaveAs("eff_multi_50MeV.png");
+        c_1->SaveAs("eff_multi_50MeV_local.png");
         c_2->cd();
         g_2->GetXaxis()->SetTitle("noise");
         g_2->GetYaxis()->SetTitle("fake rate");
         g_2->Draw("AC");
         c_2->BuildLegend();
-        // c_2->SaveAs("fake_multi_50MeV.png");
+        c_2->SaveAs("fake_multi_50MeV_local.png");
     }
 
     /**
@@ -263,10 +263,10 @@ void analysis3() {
     {
         i_particle = 0;
         i_noise = 5;
-        auto c_1 = new TCanvas("c_1", "eff with noise 30");
-        auto c_2 = new TCanvas("c_2", "fake with noise 30");
-        auto g_1 = new TMultiGraph("g1", "eff with noise 30");
-        auto g_2 = new TMultiGraph("g2", "fake with noise 30");
+        auto *c_1 = new TCanvas("c_1", "eff with noise 30");
+        auto *c_2 = new TCanvas("c_2", "fake with noise 30");
+        auto *g_1 = new TMultiGraph("g1", "eff with noise 30");
+        auto *g_2 = new TMultiGraph("g2", "fake with noise 30");
         for (i_multi = 0; i_multi < 3; i_multi++) {
             array<double, 18> eff{};
             array<double, 18> eff_err{};
@@ -282,18 +282,18 @@ void analysis3() {
                     in_total >> total;
                     if (i_total == i_pt) {
                         break;
-                    } else {
-                        i_total++;
                     }
+                    i_total++;
                 }
+                total = 10000;
                 string path =
                     "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/"
-                    "data/20220425/HoughTracker/";
+                    "data/20220425/LocalTracker/";
                 path += particle_str[i_particle] + "/trackdata_Pt" +
                         pt_str[i_pt] + "_noise" + noise_str[i_noise] +
                         "_multi" + multi_str[i_multi] + ".root";
-                auto file = new TFile(path.c_str());
-                auto tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
+                auto *file = new TFile(path.c_str());
+                auto *tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
                 int event_id = 0;
                 int track_id = 0;
                 bool true_track = false;
@@ -334,10 +334,10 @@ void analysis3() {
                                       static_cast<double>(n_all)) /
                                  static_cast<double>(n_all);
             }
-            auto g_eff = new TGraphErrors(18, pt_double.data(), eff.data(), 0,
-                                          eff_err.data());
-            auto g_fake = new TGraphErrors(18, pt_double.data(), fake.data(), 0,
-                                           fake_err.data());
+            auto *g_eff = new TGraphErrors(18, pt_double.data(), eff.data(), 0,
+                                           eff_err.data());
+            auto *g_fake = new TGraphErrors(18, pt_double.data(), fake.data(),
+                                            0, fake_err.data());
             g_eff->SetTitle((multi_str[i_multi] + " tracks").c_str());
             g_fake->SetTitle((multi_str[i_multi] + " tracks").c_str());
             g_eff->SetLineColor(multi_color[i_multi]);
@@ -350,13 +350,13 @@ void analysis3() {
         g_1->GetYaxis()->SetTitle("eff");
         g_1->Draw("AC");
         c_1->BuildLegend();
-        // c_1->SaveAs("eff_multi_30noise.png");
+        c_1->SaveAs("eff_multi_30noise_local.png");
         c_2->cd();
         g_2->GetXaxis()->SetTitle("Pt [MeV/c]");
         g_2->GetYaxis()->SetTitle("fake rate");
         g_2->Draw("AC");
         c_2->BuildLegend();
-        // c_2->SaveAs("fake_multi_30noise.png");
+        c_2->SaveAs("fake_multi_30noise_local.png");
     }
 
     /**
@@ -368,10 +368,10 @@ void analysis3() {
     {
         i_particle = 0;
         i_multi = 0;
-        auto c_1 = new TCanvas("c_1", "eff");
-        auto c_2 = new TCanvas("c_2", "fake");
-        auto g_1 = new TMultiGraph("g1", "eff");
-        auto g_2 = new TMultiGraph("g2", "fake");
+        auto *c_1 = new TCanvas("c_1", "eff");
+        auto *c_2 = new TCanvas("c_2", "fake");
+        auto *g_1 = new TMultiGraph("g1", "eff");
+        auto *g_2 = new TMultiGraph("g2", "fake");
         for (i_pt = 0; i_pt < 4; i_pt++) {
             string total_file = "../total_" + particle_str[i_particle] + ".txt";
             ifstream in_total(total_file);
@@ -381,10 +381,10 @@ void analysis3() {
                 in_total >> total;
                 if (i_total == 2) {
                     break;
-                } else {
-                    i_total++;
                 }
+                i_total++;
             }
+            total = 10000;
             array<double, 10> eff{};
             array<double, 10> eff_err{};
             array<double, 10> fake{};
@@ -392,12 +392,12 @@ void analysis3() {
             for (i_noise = 0; i_noise < 10; i_noise++) {
                 string path =
                     "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/"
-                    "data/20220425/HoughTracker/";
+                    "data/20220425/LocalTracker/";
                 path += particle_str[i_particle] + "/trackdata_Pt" +
                         pt_select_str[i_pt] + "_noise" + noise_str[i_noise] +
                         "_multi" + multi_str[i_multi] + ".root";
-                auto file = new TFile(path.c_str());
-                auto tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
+                auto *file = new TFile(path.c_str());
+                auto *tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
                 int event_id = 0;
                 int track_id = 0;
                 bool true_track = false;
@@ -438,10 +438,10 @@ void analysis3() {
                                          static_cast<double>(n_all)) /
                                     static_cast<double>(n_all);
             }
-            auto g_eff = new TGraphErrors(10, noise_double.data(), eff.data(),
-                                          0, eff_err.data());
-            auto g_fake = new TGraphErrors(10, noise_double.data(), fake.data(),
-                                           0, fake_err.data());
+            auto *g_eff = new TGraphErrors(10, noise_double.data(), eff.data(),
+                                           0, eff_err.data());
+            auto *g_fake = new TGraphErrors(10, noise_double.data(),
+                                            fake.data(), 0, fake_err.data());
             g_eff->SetTitle((pt_select_str[i_pt] + " MeV/c").c_str());
             g_fake->SetTitle((pt_select_str[i_pt] + " MeV/c").c_str());
             g_eff->SetLineColor(pt_color[i_pt]);
@@ -454,13 +454,13 @@ void analysis3() {
         g_1->GetYaxis()->SetTitle("eff");
         g_1->Draw("AC");
         c_1->BuildLegend();
-        // c_1->SaveAs("eff_noise_pt.png");
+        c_1->SaveAs("eff_noise_pt_local.png");
         c_2->cd();
         g_2->GetXaxis()->SetTitle("noise");
         g_2->GetYaxis()->SetTitle("fake rate");
         g_2->Draw("AC");
         c_2->BuildLegend();
-        // c_2->SaveAs("fake_noise_pt.png");
+        c_2->SaveAs("fake_noise_pt_local.png");
     }
 
     /**
@@ -470,13 +470,13 @@ void analysis3() {
      *
      */
     {
-        i_particle = 4;
+        i_particle = 0;
         i_multi = 0;
-        auto c_1 = new TCanvas("c_1", "eff");
-        auto c_2 = new TCanvas("c_2", "fake");
-        auto g_1 = new TMultiGraph("g1", "eff");
-        auto g_2 = new TMultiGraph("g2", "fake");
-        for (i_noise = 4; i_noise < 5; i_noise++) {
+        auto *c_1 = new TCanvas("c_1", "eff");
+        auto *c_2 = new TCanvas("c_2", "fake");
+        auto *g_1 = new TMultiGraph("g1", "eff");
+        auto *g_2 = new TMultiGraph("g2", "fake");
+        for (i_noise = 0; i_noise < 5; i_noise++) {
             array<double, 18> eff{};
             array<double, 18> eff_err{};
             array<double, 18> fake{};
@@ -491,18 +491,18 @@ void analysis3() {
                     in_total >> total;
                     if (i_total == i_pt) {
                         break;
-                    } else {
-                        i_total++;
                     }
+                    i_total++;
                 }
+                total = 10000;
                 string path =
                     "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/"
-                    "data/20220425/HoughTracker/";
+                    "data/20220425/LocalTracker/";
                 path += particle_str[i_particle] + "/trackdata_Pt" +
                         pt_str[i_pt] + "_noise" + noise_select_str[i_noise] +
                         "_multi" + multi_str[i_multi] + ".root";
-                auto file = new TFile(path.c_str());
-                auto tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
+                auto *file = new TFile(path.c_str());
+                auto *tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
                 int event_id = 0;
                 int track_id = 0;
                 bool true_track = false;
@@ -549,10 +549,10 @@ void analysis3() {
                                       static_cast<double>(n_all)) /
                                  static_cast<double>(n_all);
             }
-            auto g_eff = new TGraphErrors(18, pt_double.data(), eff.data(), 0,
-                                          eff_err.data());
-            auto g_fake = new TGraphErrors(18, pt_double.data(), fake.data(), 0,
-                                           fake_err.data());
+            auto *g_eff = new TGraphErrors(18, pt_double.data(), eff.data(), 0,
+                                           eff_err.data());
+            auto *g_fake = new TGraphErrors(18, pt_double.data(), fake.data(),
+                                            0, fake_err.data());
             g_eff->SetTitle((noise_select_str[i_noise] + " noise").c_str());
             g_fake->SetTitle((noise_select_str[i_noise] + " noise").c_str());
             g_eff->SetLineColor(noise_color[i_noise]);
@@ -565,12 +565,12 @@ void analysis3() {
         g_1->GetYaxis()->SetTitle("eff");
         g_1->Draw("AC");
         c_1->BuildLegend();
-        c_1->SaveAs("eff_pt_noise.png");
+        c_1->SaveAs("eff_pt_noise_local.png");
         c_2->cd();
         g_2->GetXaxis()->SetTitle("Pt [MeV/c]");
         g_2->GetYaxis()->SetTitle("fake rate");
         g_2->Draw("AC");
         c_2->BuildLegend();
-        c_2->SaveAs("fake_pt_noise.png");
+        c_2->SaveAs("fake_pt_noise_local.png");
     }
 }

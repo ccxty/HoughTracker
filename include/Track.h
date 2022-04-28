@@ -81,7 +81,7 @@ Track &Track::AddPoint(HitPoint *point) {
 
 int Track::Counts() const { return _counts; }
 
-double Track::Pt() const { return _params.pt; }
+double Track::Pt() const { return _params.R * 0.3; }
 
 void Track::Print() const {
     if (_ptr.empty()) {
@@ -145,44 +145,53 @@ bool Track::operator<(Track &other) { return other.operator>(*this); }
 
 // 需先调用 HitALayers();
 bool Track::FitLinear(double *Qmin, double *Qz) {
-    auto nlayer = this->GetLayerDistribution();
-    HitPoint *layer0[std::get<0>(nlayer)];
-    HitPoint *layer1[std::get<1>(nlayer)];
-    HitPoint *layer2[std::get<2>(nlayer)];
-    int i_0 = 0, i_1 = 0, i_2 = 0;
+    this->LayerDistribution();
+    std::vector<HitPoint *> layer0;
+    std::vector<HitPoint *> layer1;
+    std::vector<HitPoint *> layer2;
     *Qmin = 1.0;
     *Qz = 1000;
     bool fit = false;
-    for (int i = 0; i < _counts; i++) {
-        auto *point = _ptr.at(i);
+    for (auto *point : _ptr) {
         int layer_id = point->layerID;
         if (layer_id == 0) {
-            layer0[i_0] = point;
-            i_0++;
+            layer0.push_back(point);
         } else if (layer_id == 1) {
-            layer1[i_1] = point;
-            i_1++;
+            layer1.push_back(point);
         } else if (layer_id == 2) {
-            layer2[i_2] = point;
-            i_2++;
+            layer2.push_back(point);
         }
     }
     StraightLine line_xy;
     StraightLine line_z;
+    StraightLine line_xy_swap;
+    StraightLine line_z_swap;
     double param_a0 = NAN, param_a1 = NAN, param_R = NAN;
     double Q_swap = NAN, Qz_swap = NAN;
     for (auto *point1 : layer0) {
         for (auto *point2 : layer1) {
             for (auto *point3 : layer2) {
-                TherePointsLinearFit(point1, point2, point3, &Q_swap, line_xy);
-                double R = sqrt(line_xy.eff[1] * line_xy.eff[1] + 1) /
-                           abs(line_xy.eff[0]);
-                FitZLinear(point1, point2, point3, R, &Qz_swap, line_z);
+                TherePointsLinearFit(point1, point2, point3, &Q_swap,
+                                     line_xy_swap);
+                double R = sqrt(line_xy_swap.eff[1] * line_xy_swap.eff[1] + 1) /
+                           abs(line_xy_swap.eff[0]);
+                FitZLinear(point1, point2, point3, R, &Qz_swap, line_z_swap);
+                double center_x = -line_xy_swap.eff[1] / line_xy_swap.eff[0];
+                double center_y = 1 / line_xy_swap.eff[0];
+                double d =
+                    fabs(sqrt(center_x * center_x + center_y * center_y) - R);
+                if (d > 100) {
+                    continue;
+                }
                 if ((Qz_swap < QzCut) && (Q_swap < *Qmin)) {
                     fit = true;
                     *Qmin = Q_swap;
                     *Qz = Qz_swap;
                     param_R = R;
+                    line_xy.eff[0] = line_xy_swap.eff[0];
+                    line_xy.eff[1] = line_xy_swap.eff[1];
+                    line_z.eff[0] = line_z_swap.eff[0];
+                    line_z.eff[1] = line_z_swap.eff[1];
                 }
             }
         }
@@ -190,7 +199,7 @@ bool Track::FitLinear(double *Qmin, double *Qz) {
     if (!fit) {
         return false;
     }
-    _params.pt = 0.3 * param_R;
+    _params.R = 0.3 * param_R;
     _params.kz = line_z.eff[1];
     _params.center.x = -line_xy.eff[1] / line_xy.eff[0];
     _params.center.y = 1 / line_xy.eff[0];

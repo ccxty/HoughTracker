@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
      *  @brief Initialize the source data
      */
     TreeRead data = TreeRead(args.data_file.c_str());
-    cout << args.output_file << endl;
+    cout << "DataFile:" << args.data_file << endl;
     if (data.isEmpty()) {
         cerr << "Data not found" << endl;
         return 0;
@@ -160,6 +160,7 @@ int main(int argc, char **argv) {
             double Qmin_swap = NAN;
             if ((track.Counts() >= 3) && (track.HitALayers()) &&
                 (track.FitLinear(&Qmin_swap, &Qz_swap))) {
+                auto params = track.GetTrackParameters();
                 save.num_total = track.Counts();
                 save.num_first_half = track.NumFirstHalfPoints(test_set.get());
                 save.true_track = track.ContainFirstHalf(test_set.get());
@@ -177,10 +178,13 @@ int main(int argc, char **argv) {
                     track.ContainSecondHalf(test_set.get());
                 save.num_second_half =
                     track.NumSecondHalfPoints(test_set.get());
+                save.DeltaDXY = fabs(sqrt(params.center.x * params.center.x +
+                                          params.center.y * params.center.y));
                 save.Fill();
                 if (args.mode == ExecMode::single) {
                     ofstream out1("tracks.txt", std::ios::app);
-                    out1 << std::boolalpha << save.true_track << "\t";
+                    out1 << save.event_id << "\t" << std::boolalpha
+                         << save.true_track << "\t";
                     for (auto *point : track.GetPoints()) {
                         out1 << point->id() << "\t";
                     }

@@ -20,8 +20,10 @@ using std::string;
 using std::vector;
 
 void compare_pt() {
-    string re_file_path = "./data/e-/trackdata_Pt50_noise66_multi1.root";
-    string origin_file_path = "./data/e-/trackdata_Pt50_noise0_multi1.root";
+    string re_file_path =
+        "./data/20220425/HoughTracker/e-/trackdata_Pt50_noise66_multi1.root";
+    string origin_file_path =
+        "./data/20220425/HoughTracker/e-/trackdata_Pt50_noise0_multi1.root";
 
     auto *re_file = new TFile(re_file_path.c_str());
     auto *tree_re = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
@@ -81,6 +83,8 @@ void compare_pt() {
         }
     }
     c1->cd();
+    h2->GetXaxis()->SetTitle("Pt [MeV/c]");
+    h1->GetXaxis()->SetTitle("Pt [MeV/c]");
     h2->SetLineColor(kRed);
     h2->Draw("same");
     std::cout << "mean: " << h1->GetMean() << std::endl;

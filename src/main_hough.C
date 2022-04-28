@@ -68,6 +68,7 @@ int main(int argc, char **argv) {
     TTree savetree("tree1", "tree1");
     SaveData saveData{};
     int counts_useful_events = 0;
+    int num_second = 0;
     savetree.Branch("event_id", &saveData.event_id);
     savetree.Branch("track_id", &saveData.track_id);
     savetree.Branch("true_track", &saveData.true_track);
@@ -77,6 +78,7 @@ int main(int argc, char **argv) {
     savetree.Branch("num_true", &saveData.num_true);
     savetree.Branch("num_total", &saveData.num_total);
     savetree.Branch("Qe", &saveData.Qe);
+    savetree.Branch("num_second", &num_second);
 
     /**
      * @brief Get true points from source data
@@ -113,7 +115,7 @@ int main(int argc, char **argv) {
                     read_count++;
                 }
                 if (read_count >= 3) {
-                    eventID_skip = data.EventID();
+                    // eventID_skip = data.EventID();
                 }
             }
         }
@@ -160,6 +162,7 @@ int main(int argc, char **argv) {
                         track->NumFirstHalfPoints(test_set.get());
                     saveData.num_total = static_cast<int>(track->Counts());
                     saveData.Qe = track->GetSpin();
+                    num_second = track->NumSecondHalfPoints(test_set.get());
                     savefile.cd();
                     savetree.Fill();
 

@@ -126,7 +126,7 @@ void FillGrid(HoughGrid &gridMatrix, Points &points) {
 }
 
 template <int NAlpha, int NRho>
-auto GridInit() {
+auto GridInit(double shift) {  // shift == 0.25 is good for single gridmatrix
     using std::array;
     using std::unique_ptr;
     auto martix = GridMatrix<NAlpha, NRho>();
@@ -134,8 +134,8 @@ auto GridInit() {
         for (int j = 0; j < NRho; j++) {
             auto ptr = std::make_unique<HoughGridArea>(
                 AlphaMin + i * AlphaBinWidth,
-                RhoMin + (j - 0.25) * RhoBinWidth,   // shift
-                RhoMin + (j + 0.75) * RhoBinWidth);  // shift
+                RhoMin + (j - shift) * RhoBinWidth,       // shift
+                RhoMin + (j + shift + 1) * RhoBinWidth);  // shift
             martix[i][j] = std::move(ptr);
         }
     }
@@ -212,6 +212,24 @@ std::vector<std::unique_ptr<Track>> FindTrack(
     }
     return std::move(ptr);
 }
+
+using Tracks = std::vector<std::unique_ptr<Track>>;
+Tracks MergeTracks(Tracks &tracks1, Tracks &tracks2) {
+    for (auto &track : tracks2) {
+        bool contain = false;
+        for (auto &existingTrack : tracks1) {
+            if (existingTrack->operator>=(*track)) {
+                contain = true;
+                break;
+            }
+        }
+        if (!contain) {
+            tracks1.push_back(move(track));
+        }
+    }
+    return std::move(tracks1);
+}
+
 }  // namespace Hough
 
 #endif

@@ -35,6 +35,7 @@ class Track {
     bool operator==(Track &other) const;
     bool operator!=(Track &other) const;
     bool operator>(Track &other) const;
+    bool operator>=(Track &other) const;
     bool operator<(Track &other);
     bool HitALayers();
     int NumFirstHalfPoints(std::set<int> *events_id) const;
@@ -142,6 +143,25 @@ bool Track::operator>(Track &other) const {
 }
 
 bool Track::operator<(Track &other) { return other.operator>(*this); }
+
+bool Track::operator>=(Track &other) const {
+    if (_counts < other._counts) {
+        return false;
+    }
+    for (auto *point : other._ptr) {
+        bool find = false;
+        for (auto *exist : _ptr) {
+            if (point == exist) {
+                find = true;
+                break;
+            }
+        }
+        if (!find) {
+            return false;
+        }
+    }
+    return true;
+}
 
 // 需先调用 HitALayers();
 bool Track::FitLinear(double *Qmin, double *Qz) {

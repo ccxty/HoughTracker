@@ -130,9 +130,13 @@ int main(int argc, char **argv) {
          * @brief Hough transform
          *
          */
-        auto houghGrid = Hough::GridInit<Hough::NAlpha, Hough::NRho>();
-        Hough::FillGrid<Hough::NAlpha, Hough::NRho>(houghGrid, pointsList);
-        auto tracks = Hough::FindTrack<Hough::NAlpha, Hough::NRho>(houghGrid);
+        auto houghGrid1 = Hough::GridInit<Hough::NAlpha, Hough::NRho>(0);
+        auto houghGrid2 = Hough::GridInit<Hough::NAlpha, Hough::NRho>(0.5);
+        Hough::FillGrid<Hough::NAlpha, Hough::NRho>(houghGrid1, pointsList);
+        Hough::FillGrid<Hough::NAlpha, Hough::NRho>(houghGrid2, pointsList);
+        auto tracks1 = Hough::FindTrack<Hough::NAlpha, Hough::NRho>(houghGrid1);
+        auto tracks2 = Hough::FindTrack<Hough::NAlpha, Hough::NRho>(houghGrid2);
+        auto tracks = Hough::MergeTracks(tracks1, tracks2);
 
         /**
          * @brief track filter

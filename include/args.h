@@ -25,6 +25,7 @@ struct Args {
     int n_track;
     std::string particle;
     ExecMode mode = ExecMode::help;
+    std::string deg = "90";
 };
 
 void args_out_json(Args &args) {
@@ -36,6 +37,7 @@ void args_out_json(Args &args) {
     args_json["mode"] = args.mode;
     args_json["data_file"] = args.data_file;
     args_json["output_file"] = args.output_file;
+    args_json["deg"] = args.deg;
     std::ofstream out("args_exec.json");
     out << std::setw(4) << args_json << std::endl;
 }
@@ -54,6 +56,7 @@ void args_parse_json(Args &args, std::string &json_file) {
     args.data_file = args_json["data_file"];
     args.output_file = args_json["output_file"];
     args.mode = args_json["mode"];
+    args.deg = args_json["deg"];
 }
 
 void args_parse(int argc, char **argv, const std::string &program_name,
@@ -73,16 +76,19 @@ void args_parse(int argc, char **argv, const std::string &program_name,
     auto particle_arg =
         required("-particle") & value("particle", args.particle);
     auto n_track_arg = required("-multi") & value("num-tracks", n_track_str);
+    auto deg_arg = option("-deg") & value("deg", args.deg);
     auto all_mode =
         (command("all").set(args.mode, ExecMode::all),
          pt_arg % "Pt of the data file", noise_arg % "number of noise points",
          particle_arg % "the particle stored in the data file",
-         n_track_arg % "number of tracks in single event");
+         n_track_arg % "number of tracks in single event",
+         deg_arg % "degree of the momentum, default is 90");
     auto single_mode =
         (command("single").set(args.mode, ExecMode::single),
          pt_arg % "Pt of the data file", noise_arg % "number of noise points",
          particle_arg % "the particle stored in the data file",
-         n_track_arg % "number of tracks in single event");
+         n_track_arg % "number of tracks in single event",
+         deg_arg % "degree of the momentum, default is 90");
     auto json_mode =
         (command("json").set(args.mode, ExecMode::json),
          option("-c", "--config") &
@@ -127,12 +133,14 @@ void args_parse(int argc, char **argv, const std::string &program_name,
             args.data_file += args.particle;
             args.data_file += "/posPt";
             args.data_file += std::to_string(args.pt);
+            args.data_file += "_deg";
+            args.data_file += args.deg;
             args.data_file += ".root";
         }
         if (args.output_file.empty()) {
             args.output_file = "./data/" + args.particle + "/trackdata_Pt" +
                                pt_str + "_noise" + n_noise_str + "_multi" +
-                               n_track_str + ".root";
+                               n_track_str + "_deg" + args.deg + ".root";
         }
     } else {
         std::cout << usage_lines(cli, program_name) << '\n';

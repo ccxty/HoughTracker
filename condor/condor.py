@@ -1,8 +1,8 @@
 import os
 import subprocess
 particles = ["e-", "mu-", "pi-"]
-#excutable = "./bin/HoughTracker"
-excutable = "./bin/LocalTracker"
+#executable = "./bin/HoughTracker"
+executable = "./bin/LocalTracker"
 
 for particle in particles:
     os.system("python gen_config.py {}".format(particle))
@@ -23,7 +23,7 @@ for particle in particles:
         os.system("cp run.sh {}".format(run))
         os.system("cp submit.cmd {}".format(submit))
         os.system("chmod +x {}".format(run))
-        os.system("sed -i '2c {} json -c {}' {}".format(excutable, config, run))
+        os.system("sed -i '2c {} json -c {}' {}".format(executable, config, run))
         os.system("sed -i '5c Executable           = {}' {}".format(run, submit))
         os.system("sed -i '6c Output               = {}' {}".format(out, submit))
         os.system("sed -i '7c Error                = {}' {}".format(err, submit))

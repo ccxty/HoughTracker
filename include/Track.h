@@ -34,9 +34,7 @@ class Track {
     std::vector<HitPoint *> &GetPoints();
     bool operator==(Track &other) const;
     bool operator!=(Track &other) const;
-    bool operator>(Track &other) const;
     bool operator>=(Track &other) const;
-    bool operator<(Track &other);
     bool HitALayers();
     int NumFirstHalfPoints(std::set<int> *events_id) const;
     int NumSecondHalfPoints(std::set<int> *events_id) const;
@@ -51,6 +49,7 @@ class Track {
     bool IsEmpty() const;
     int GetNumNoise() const;
     TrackParameters &GetTrackParameters();
+    Track &FilterXY();
 };
 
 Track::Track() = default;
@@ -119,30 +118,6 @@ bool Track::operator==(Track &other) const {
     }
     return false;
 }
-
-bool Track::operator>(Track &other) const {
-    if (_ptr.empty()) {
-        return false;
-    }
-    if (this->_counts < other._counts) {
-        return false;
-    }
-    for (auto *point : other._ptr) {
-        bool find = false;
-        for (auto *exist : _ptr) {
-            if (point == exist) {
-                find = true;
-                break;
-            }
-        }
-        if (!find) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool Track::operator<(Track &other) { return other.operator>(*this); }
 
 bool Track::operator>=(Track &other) const {
     if (_counts < other._counts) {
@@ -388,5 +363,11 @@ int Track::GetNumNoise() const {
 }
 
 TrackParameters &Track::GetTrackParameters() { return _params; }
+
+Track &Track::FilterXY() {
+    if (!_ptr.empty()) {
+    }
+    return *this;
+}
 
 #endif

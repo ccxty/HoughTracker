@@ -22,6 +22,14 @@ constexpr double DMin01 = 59.1;
 constexpr double DMin12 = 118.368;
 constexpr double DMin02 = 151.728;
 
+constexpr double DeltaPhi01 = 0.1;
+constexpr double DeltaPhi12 = 0.1;
+constexpr double DeltaZ01 = 10;
+constexpr double DeltaZ12 = 10;
+
+constexpr double DeltaR01 = InnerDectectorR[1] - InnerDectectorR[0];
+constexpr double DeltaR12 = InnerDectectorR[2] - InnerDectectorR[1];
+
 using Points = std::vector<HitPoint *>;
 
 struct TrackParameters {

@@ -12,18 +12,9 @@ using std::cout;
 using std::endl;
 using std::ofstream;
 using std::set;
-using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::vector;
-
-constexpr double DeltaPhi01 = 0.1;
-constexpr double DeltaPhi12 = 0.1;
-constexpr double DeltaZ01 = 7;
-constexpr double DeltaZ12 = 7;
-
-constexpr double DeltaR01 = InnerDectectorR[1] - InnerDectectorR[0];
-constexpr double DeltaR12 = InnerDectectorR[2] - InnerDectectorR[1];
 
 inline Track find_track(HitPoint *point, const Points &points) {
     Track track(point);
@@ -143,10 +134,7 @@ int main(int argc, char **argv) {
                 tracks.push_back(std::move(track));
             } else {
                 for (auto &exist : tracks) {
-                    if (exist == track) {
-                        break;
-                    }
-                    if (exist > track) {
+                    if (exist >= track) {
                         break;
                     }
                     tracks.push_back(std::move(track));

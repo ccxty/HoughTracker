@@ -25,7 +25,7 @@ class BasicTreeSave {
 
     double Qe = 0;
 
-    double num_total = 0;
+    int num_total = 0;
     int num_first_half = 0;
     int num_second_half = 0;
     bool true_track = false;

@@ -100,26 +100,26 @@ HoughGridArea &HoughGridArea::CountsReset() {
 }
 void HoughGridArea::Print() {
     if (_points.empty()) {
-        std::cout << "no points found" << std::endl;
+        std::cout << "no points found\n";
         return;
     }
 
     if (_mode == GridMode::GRID) {
         std::cout << "mode: "
                   << "Grid\t"
-                  << "counts: " << _counts << std::endl
+                  << "counts: " << _counts << "\n"
                   << "x_min: " << _xMin << "\t"
-                  << "x_max: " << _xMax << std::endl
+                  << "x_max: " << _xMax << "\n"
                   << "y_min: " << _yMin << "\t"
-                  << "y_max: " << _yMax << std::endl;
+                  << "y_max: " << _yMax << "\n";
     }
     if (_mode == GridMode::POINT) {
         std::cout << "mode: "
                   << "Point\t"
-                  << "counts: " << _counts << std::endl
-                  << "x_mid: " << _xMid << std::endl
+                  << "counts: " << _counts << "\n"
+                  << "x_mid: " << _xMid << "\n"
                   << "y_min: " << _yMin << "\t"
-                  << "y_max: " << _yMax << std::endl;
+                  << "y_max: " << _yMax << "\n";
     }
     for (auto *point : _points) {
         point->Print();

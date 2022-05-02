@@ -90,6 +90,6 @@ void HitPoint::Print() const {
               << "eventID: " << eventID << " "
               << "layerID: " << layerID << " "
               << "trackID: " << trackID << " " << x << " " << y << " " << z
-              << std::endl;
+              << "\n";
 }
 #endif

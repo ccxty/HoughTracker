@@ -86,10 +86,10 @@ double Track::Pt() const { return _params.R * 0.3; }
 
 void Track::Print() const {
     if (_ptr.empty()) {
-        std::cout << "Empty" << std::endl;
+        std::cout << "Empty\n";
         return;
     }
-    std::cout << "counts: " << _counts << std::endl;
+    std::cout << "counts: " << _counts << "\n";
     for (auto *point : _ptr) {
         point->Print();
     }

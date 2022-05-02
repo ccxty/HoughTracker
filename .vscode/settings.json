@@ -1,7 +1,7 @@
 {
     "files.associations": {
         ".clang-tidy": "yaml",
-        "main2.C": "cpp",
+        "main_hough.C": "cpp",
         "graph5.C": "cpp",
         "graph4.C": "cpp",
         "graph3.C": "cpp",

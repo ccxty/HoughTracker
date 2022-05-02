@@ -39,7 +39,7 @@ void args_out_json(Args &args) {
     args_json["output_file"] = args.output_file;
     args_json["deg"] = args.deg;
     std::ofstream out("args_exec.json");
-    out << std::setw(4) << args_json << std::endl;
+    out << std::setw(4) << args_json << "\n";
 }
 
 void args_parse_json(Args &args, std::string &json_file) {

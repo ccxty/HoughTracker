@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
     TreeRead data = TreeRead(args.data_file.c_str());
     cout << args.data_file << endl;
     if (data.isEmpty()) {
-        cerr << "Data not found" << endl;
+        cerr << "Data not found\n";
         return 0;
     }
 
@@ -166,10 +166,9 @@ int main(int argc, char **argv) {
             delete ptr;
         }
     }
-    save.Write();
-    save.Close();
-    cout << "Save Path: " << args.output_file << endl
-         << "total tracks useful: " << counts_useful_events << endl
+    save.Write().Close();
+    cout << "Save Path: " << args.output_file << "\n"
+         << "total tracks useful: " << counts_useful_events << "\n"
          << endl;
     return 0;
 }

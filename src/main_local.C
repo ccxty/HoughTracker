@@ -35,6 +35,7 @@ inline Track find_track(HitPoint *point, const Points &points) {
             bool z_filter =
                 fabs(other->z - point1->z - k2 * DeltaR12) < DeltaZ12;
             bool xy_filter = point1->xyDistance(other) < DMin12;
+            // bool xy_filter = point->xyDistance(other) < DMin02;
             if (other->layerID == 2 && z_filter && xy_filter) {
                 track.AddPoint(other);
             }
@@ -56,9 +57,9 @@ int main(int argc, char **argv) {
      *  @brief Initialize the source data
      */
     TreeRead data = TreeRead(args.data_file.c_str());
-    cout << "DataFile:" << args.data_file << endl;
+    cout << "DataFile:" << args.data_file << "\n";
     if (data.isEmpty()) {
-        cerr << "Data not found" << endl;
+        cerr << "Data not found\n";
         return 0;
     }
 
@@ -87,8 +88,8 @@ int main(int argc, char **argv) {
      * @brief Get true points from source data
      */
     while (eventIDs_toTest->size() >= args.n_track) {
-        std::cout << "There are " << eventIDs_toTest->size()
-                  << " events left\n";
+        // std::cout << "There are " << eventIDs_toTest->size()
+        //           << " events left\n";
         // int eventIDTest;
         auto test_set = GetRandomSet(args.n_track, *eventIDs_toTest);
         for (auto event : *test_set) {
@@ -190,7 +191,7 @@ int main(int argc, char **argv) {
         }
     }
     save.Write().Close();
-    cout << "Save Path: " << args.output_file << endl
+    cout << "Save Path: " << args.output_file << "\n"
          << "total tracks useful: " << counts_useful_events << endl;
     return 0;
 }

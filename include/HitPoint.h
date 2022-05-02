@@ -1,5 +1,5 @@
 #ifndef __HitPOINT_CXX_INCLUDED__
-#define __HitPOINT_CXX_INCLUDED__ 1
+#define __HitPOINT_CXX_INCLUDED__
 #include <cmath>
 #include <iostream>
 #include <vector>

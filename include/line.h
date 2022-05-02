@@ -1,8 +1,8 @@
 #include <array>
 #include <cmath>
 #include <numeric>
-#ifndef __LINE_INCLUDE_CXX__
-#define __LINE_INCLUDE_CXX__ 1
+#ifndef __LINE_CXX_INCLUDED__
+#define __LINE_CXX_INCLUDED__
 #include "HitPoint.h"
 #include "global.h"
 template <int N>

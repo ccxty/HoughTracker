@@ -5,7 +5,7 @@
 #include "TMath.h"
 #include "TRandom3.h"
 #ifndef __GLOBAL_CXX_INCLUDE__
-#define __GLOBAL_CXX_INCLUDE__ 1
+#define __GLOBAL_CXX_INCLUDE__
 
 constexpr double MagFeild = 1.0;                        // 1.0 T
 constexpr double PtMin = 0.3 * MagFeild * 165.11 / 2.;  // 击中三层动量条件

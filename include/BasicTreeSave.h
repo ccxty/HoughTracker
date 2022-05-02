@@ -1,5 +1,5 @@
 #ifndef __BASIC_TREESAVE_CXX_INCLUDE__
-#define __BASIC_TREESAVE_CXX_INCLUDE__ 1
+#define __BASIC_TREESAVE_CXX_INCLUDE__
 
 #include "TBranch.h"
 #include "TFile.h"

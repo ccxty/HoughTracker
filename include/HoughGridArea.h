@@ -1,6 +1,6 @@
 #include <cmath>
-#ifndef HOUGHGRIDAREA_CXX
-#define HOUGHGRIDAREA_CXX 1
+#ifndef __HOUGHGRIDAREA_CXX_INCLUDE__
+#define __HOUGHGRIDAREA_CXX_INCLUDED__
 
 #include <iostream>
 #include <vector>

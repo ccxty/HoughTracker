@@ -2,7 +2,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #ifndef __TREEREAD_CXX_INCLUDE__
-#define __TREEREAD_CXX_INCLUDE__ 1
+#define __TREEREAD_CXX_INCLUDE__
 
 class TreeRead {
  private:

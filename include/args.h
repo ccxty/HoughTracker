@@ -6,7 +6,7 @@
 #include "clipp.h"
 #include "json.hpp"
 #ifndef __ARGS_PARSE_CXX_INCLUDE__
-#define __ARGS_PARSE_CXX_INCLUDE__ 1
+#define __ARGS_PARSE_CXX_INCLUDE__
 
 enum class ExecMode { all, single, help, json };
 

@@ -1,6 +1,6 @@
 #include "TMath.h"
 #ifndef __HOUGHGLOBAL_CXX_INCLUDE__
-#define __HOUGHGLOBAL_CXX_INCLUDE__ 1
+#define __HOUGHGLOBAL_CXX_INCLUDE__
 
 namespace Hough {
 constexpr double AlphaMin = 0;

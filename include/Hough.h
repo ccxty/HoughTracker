@@ -5,7 +5,7 @@
 
 #include "TRandom3.h"
 #ifndef HOUGH_CXX_INCLUDE_
-#define HOUGH_CXX_INCLUDE_ 1
+#define HOUGH_CXX_INCLUDE_
 
 #include "HitPoint.h"
 #include "HoughGlobal.h"

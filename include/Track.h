@@ -50,6 +50,7 @@ class Track {
     bool IsEmpty() const;
     int GetNumNoise() const;
     TrackParameters &GetTrackParameters();
+    std::vector<Track> Split();
     Track &FilterXY();
 };
 
@@ -365,9 +366,76 @@ int Track::GetNumNoise() const {
 
 TrackParameters &Track::GetTrackParameters() { return _params; }
 
+std::vector<Track> Track::Split() {
+    auto result = std::vector<Track>();
+    for (auto *point0 : _ptr) {
+        if (point0->layerID == 0) {
+            auto track = Track(point0);
+            auto temp_l1 = std::vector<HitPoint *>();
+            double k1 = point0->z / InnerDectectorR[0];
+            for (auto *other : _ptr) {
+                bool z_filter =
+                    fabs(other->z - point0->z - k1 * DeltaR01) < DeltaZ01;
+                bool xy_filter = point0->xyDistance(other) < DMin01;
+                if (other->layerID == 1 && z_filter && xy_filter) {
+                    track.AddPoint(other);
+                    temp_l1.push_back(other);
+                }
+            }
+            for (auto *point1 : temp_l1) {
+                double k2 = (point1->z - point0->z) / DeltaR01;
+                for (auto *other : _ptr) {
+                    double phi2 = other->Phi();
+                    bool z_filter =
+                        fabs(other->z - point1->z - k2 * DeltaR12) < DeltaZ12;
+                    bool xy_filter = point1->xyDistance(other) < DMin12;
+                    if (other->layerID == 2 && z_filter && xy_filter) {
+                        track.AddPoint(other);
+                    }
+                }
+            }
+            result.push_back(std::move(track));
+        }
+    }
+    return result;
+}
+
 Track &Track::FilterXY() {
     if (this->HitALayers()) {
+        HitPoint *point0 = nullptr;
         if (_nlayer0 == 1) {
+            for (auto *other : _ptr) {
+                if (other->layerID == 0) {
+                    point0 = other;
+                }
+            }
+            std::vector<HitPoint *> temp_layer1;
+            for (auto *other : _ptr) {
+                if (other->layerID == 1) {
+                    if (point0->xyDistance(other) > DMin01) {
+                        auto temp = find(_ptr.begin(), _ptr.end(), other);
+                        _ptr.erase(temp);
+                    } else {
+                        temp_layer1.push_back(other);
+                    }
+                }
+            }
+            if (!temp_layer1.empty()) {
+                for (auto *other : _ptr) {
+                    if (other->layerID == 2) {
+                        bool in_area = false;
+                        for (auto *exist : temp_layer1) {
+                            if (other->xyDistance(exist) < DMin12) {
+                                in_area = true;
+                            }
+                        }
+                        if (!in_area) {
+                            auto temp = find(_ptr.begin(), _ptr.end(), other);
+                            _ptr.erase(temp);
+                        }
+                    }
+                }
+            }
         }
     }
     return *this;

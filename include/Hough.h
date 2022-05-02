@@ -17,7 +17,7 @@
 namespace Hough {
 using HoughGrid =
     std::vector<std::unique_ptr<std::vector<std::unique_ptr<HoughGridArea>>>>;
-using Tracks = std::vector<std::unique_ptr<Track>>;
+using Tracks = std::vector<Track>;
 
 template <int NAlpha, int NRho>
 using GridMatrix =
@@ -84,19 +84,19 @@ Tracks FindTrack(GridMatrix<NAlpha, NRho> &matrix) {
                         (counts22 >= counts13) && (counts22 >= counts21) &&
                         (counts22 >= counts23) && (counts22 >= counts31) &&
                         (counts22 >= counts32) && (counts22 >= counts33)) {
-                        auto ptr_temp = make_unique<Track>(points);
+                        auto ptr_temp = Track(points);
                         if (ptr.empty()) {
-                            ptr.push_back(move(ptr_temp));
+                            ptr.push_back(std::move(ptr_temp));
                         } else {
                             bool is_equal = false;
                             for (auto &existingTrack : ptr) {
-                                if (existingTrack->operator==(*ptr_temp)) {
+                                if (existingTrack.operator==(ptr_temp)) {
                                     is_equal = true;
                                     break;
                                 }
                             }
-                            if (!is_equal && (ptr_temp->HitALayers())) {
-                                ptr.push_back(move(ptr_temp));
+                            if (!is_equal && (ptr_temp.HitALayers())) {
+                                ptr.push_back(std::move(ptr_temp));
                             }
                         }
                     }
@@ -107,20 +107,19 @@ Tracks FindTrack(GridMatrix<NAlpha, NRho> &matrix) {
     return std::move(ptr);
 }
 
-Tracks MergeTracks(Tracks &tracks1, Tracks &tracks2) {
-    for (auto &track : tracks2) {
+void MergeTracks(Tracks &origin, Tracks &add) {
+    for (auto &track : add) {
         bool contain = false;
-        for (auto &existingTrack : tracks1) {
-            if (existingTrack->operator>=(*track)) {
+        for (auto &existingTrack : origin) {
+            if (existingTrack.operator>=(track)) {
                 contain = true;
                 break;
             }
         }
         if (!contain) {
-            tracks1.push_back(move(track));
+            origin.push_back(std::move(track));
         }
     }
-    return std::move(tracks1);
 }
 
 }  // namespace Hough

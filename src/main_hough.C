@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
                     read_count++;
                 }
                 if (read_count >= 3) {
-                    eventID_skip = data.EventID();
+                    // eventID_skip = data.EventID();
                 }
             }
         }
@@ -119,7 +119,15 @@ int main(int argc, char **argv) {
         Hough::FillGrid<Hough::NAlpha, Hough::NRho>(houghGrid2, pointsList);
         auto tracks1 = Hough::FindTrack<Hough::NAlpha, Hough::NRho>(houghGrid1);
         auto tracks2 = Hough::FindTrack<Hough::NAlpha, Hough::NRho>(houghGrid2);
-        auto tracks = Hough::MergeTracks(tracks1, tracks2);
+        auto tracks = std::vector<Track>();
+        for (auto &track : tracks1) {
+            auto temp = track.Split();
+            Hough::MergeTracks(tracks, temp);
+        }
+        for (auto &track : tracks2) {
+            auto temp = track.Split();
+            Hough::MergeTracks(tracks, temp);
+        }
         // auto tracks = std::move(tracks1);
 
         /**
@@ -129,23 +137,23 @@ int main(int argc, char **argv) {
         int n_good_tracks = 0;
         for (auto &track : tracks) {
             double Q_xy = NAN, Q_z = NAN;
-            if (track->HitALayers()) {
-                bool fit_fine = track->FitLinear(&Q_xy, &Q_z);
-                if (fit_fine && (track->Pt() > PtMin) && (Q_xy < QCut)) {
-                    save.event_id = track->GetEventID(test_set.get());
+            if (track.HitALayers()) {
+                bool fit_fine = track.FitLinear(&Q_xy, &Q_z);
+                if (fit_fine && (track.Pt() > PtMin) && (Q_xy < QCut)) {
+                    save.event_id = track.GetEventID(test_set.get());
                     save.track_id = track_id_re;
                     track_id_re++;
-                    save.true_track = track->ContainFirstHalf(test_set.get());
-                    save.pt = track->Pt();
+                    save.true_track = track.ContainFirstHalf(test_set.get());
+                    save.pt = track.Pt();
                     save.Qxy = Q_xy;
                     save.Qz = Q_z;
                     save.num_first_half =
-                        track->NumFirstHalfPoints(test_set.get());
-                    save.num_total = track->Counts();
-                    save.Qe = track->GetSpin();
-                    num_second = track->NumSecondHalfPoints(test_set.get());
+                        track.NumFirstHalfPoints(test_set.get());
+                    save.num_total = track.Counts();
+                    save.Qe = track.GetSpin();
+                    num_second = track.NumSecondHalfPoints(test_set.get());
 
-                    auto num_layers = track->GetLayerDistribution();
+                    auto num_layers = track.GetLayerDistribution();
                     num_layer0 = std::get<0>(num_layers);
                     num_layer1 = std::get<1>(num_layers);
                     num_layer2 = std::get<2>(num_layers);
@@ -155,7 +163,7 @@ int main(int argc, char **argv) {
                     if (args.mode == ExecMode::single) {
                         ofstream out1("tracks.txt", std::ios::app);
                         out1 << std::boolalpha << save.true_track << "\t";
-                        for (auto *point : track->GetPoints()) {
+                        for (auto *point : track.GetPoints()) {
                             out1 << point->id() << "\t";
                         }
                         out1 << "\n";

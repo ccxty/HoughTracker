@@ -1,3 +1,4 @@
+#include "BasicTreeSave.h"
 #include "HitPoint.h"
 #include "Hough.h"
 #include "HoughGridArea.h"
@@ -16,18 +17,6 @@ using std::set;
 using std::string;
 using std::unique_ptr;
 using std::vector;
-
-struct SaveData {
-    int event_id;
-    int track_id;
-    int num_true;
-    int num_total;
-    bool true_track;
-    double Qz;
-    double Qxy;
-    double Qe;
-    double pt;
-};
 
 int main(int argc, char **argv) {
     Args args;
@@ -64,21 +53,9 @@ int main(int argc, char **argv) {
     /**
      *  @brief Initialize the output file
      */
-    TFile savefile(args.output_file.c_str(), "RECREATE");
-    TTree savetree("tree1", "tree1");
-    SaveData saveData{};
+    BasicTreeSave save(args.output_file.c_str());
     int counts_useful_events = 0;
     int num_second = 0;
-    savetree.Branch("event_id", &saveData.event_id);
-    savetree.Branch("track_id", &saveData.track_id);
-    savetree.Branch("true_track", &saveData.true_track);
-    savetree.Branch("Pt", &saveData.pt);
-    savetree.Branch("Q", &saveData.Qxy);
-    savetree.Branch("Qz", &saveData.Qz);
-    savetree.Branch("num_true", &saveData.num_true);
-    savetree.Branch("num_total", &saveData.num_total);
-    savetree.Branch("Qe", &saveData.Qe);
-    savetree.Branch("num_second", &num_second);
 
     /**
      * @brief Get true points from source data
@@ -150,26 +127,24 @@ int main(int argc, char **argv) {
             if (track->HitALayers()) {
                 bool fit_fine = track->FitLinear(&Q_xy, &Q_z);
                 if (fit_fine && (track->Pt() > PtMin) && (Q_xy < QCut)) {
-                    saveData.event_id = track->GetEventID(test_set.get());
-                    saveData.track_id = track_id_re;
+                    save.event_id = track->GetEventID(test_set.get());
+                    save.track_id = track_id_re;
                     track_id_re++;
-                    saveData.true_track =
-                        track->ContainFirstHalf(test_set.get());
-                    saveData.pt = track->Pt();
-                    saveData.Qxy = Q_xy;
-                    saveData.Qz = Q_z;
-                    saveData.num_true =
+                    save.true_track = track->ContainFirstHalf(test_set.get());
+                    save.pt = track->Pt();
+                    save.Qxy = Q_xy;
+                    save.Qz = Q_z;
+                    save.num_first_half =
                         track->NumFirstHalfPoints(test_set.get());
-                    saveData.num_total = static_cast<int>(track->Counts());
-                    saveData.Qe = track->GetSpin();
+                    save.num_total = track->Counts();
+                    save.Qe = track->GetSpin();
                     num_second = track->NumSecondHalfPoints(test_set.get());
-                    savefile.cd();
-                    savetree.Fill();
+                    save.Fill();
 
                     n_good_tracks++;
                     if (args.mode == ExecMode::single) {
                         ofstream out1("tracks.txt", std::ios::app);
-                        out1 << std::boolalpha << saveData.true_track << "\t";
+                        out1 << std::boolalpha << save.true_track << "\t";
                         for (auto *point : track->GetPoints()) {
                             out1 << point->id() << "\t";
                         }
@@ -191,10 +166,8 @@ int main(int argc, char **argv) {
             delete ptr;
         }
     }
-    savefile.cd();
-    savetree.Write();
-    savefile.Write();
-    savefile.Close();
+    save.Write();
+    save.Close();
     cout << "Save Path: " << args.output_file << endl
          << "total tracks useful: " << counts_useful_events << endl
          << endl;

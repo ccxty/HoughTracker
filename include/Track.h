@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <iostream>
@@ -6,7 +7,7 @@
 #include <set>
 #include <vector>
 #ifndef __TRACK_CXX_INCLUDE__
-#define __TRACK_CXX_INCLUDE__ 1
+#define __TRACK_CXX_INCLUDE__
 
 #include "HitPoint.h"
 #include "HoughGlobal.h"
@@ -365,7 +366,24 @@ int Track::GetNumNoise() const {
 TrackParameters &Track::GetTrackParameters() { return _params; }
 
 Track &Track::FilterXY() {
-    if (!_ptr.empty()) {
+    if (this->HitALayers()) {
+        int flag = 0;
+        for (auto *point0 : _ptr) {
+            if (point0->layerID == 0) {
+                for (auto *point1 : _ptr) {
+                    if ((point1->layerID == 1) &&
+                        (point1->xyDistance(point0) > DMin01)) {
+                        auto iter = std::find(_ptr.begin(), _ptr.end(), point1);
+                        _ptr.erase(iter);
+                    }
+                    if ((point1->layerID == 2) &&
+                        (point1->xyDistance(point0) > DMin02)) {
+                        auto iter = std::find(_ptr.begin(), _ptr.end(), point1);
+                        _ptr.erase(iter);
+                    }
+                }
+            }
+        }
     }
     return *this;
 }

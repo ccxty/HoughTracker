@@ -67,7 +67,8 @@ Tracks FindTrack(GridMatrix<NAlpha, NRho> &matrix) {
     for (int ia = 0; ia < NAlpha; ia++) {
         for (int id = 0; id < NRho; id++) {
             auto &grid = matrix[ia][id];
-            if (int counts22 = grid->counts() >= 3) {
+            int counts22 = grid->counts();
+            if (counts22 >= 3) {
                 auto points = grid->GetPointsHere();
                 if ((ia > 0) && (id > 0) && (ia + 1 < NAlpha) &&
                     (id + 1 < NRho)) {

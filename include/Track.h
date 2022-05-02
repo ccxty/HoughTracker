@@ -367,22 +367,7 @@ TrackParameters &Track::GetTrackParameters() { return _params; }
 
 Track &Track::FilterXY() {
     if (this->HitALayers()) {
-        int flag = 0;
-        for (auto *point0 : _ptr) {
-            if (point0->layerID == 0) {
-                for (auto *point1 : _ptr) {
-                    if ((point1->layerID == 1) &&
-                        (point1->xyDistance(point0) > DMin01)) {
-                        auto iter = std::find(_ptr.begin(), _ptr.end(), point1);
-                        _ptr.erase(iter);
-                    }
-                    if ((point1->layerID == 2) &&
-                        (point1->xyDistance(point0) > DMin02)) {
-                        auto iter = std::find(_ptr.begin(), _ptr.end(), point1);
-                        _ptr.erase(iter);
-                    }
-                }
-            }
+        if (_nlayer0 == 1) {
         }
     }
     return *this;

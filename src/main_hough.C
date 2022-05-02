@@ -56,6 +56,10 @@ int main(int argc, char **argv) {
     BasicTreeSave save(args.output_file.c_str());
     int counts_useful_events = 0;
     int num_second = 0;
+    int num_layer0 = 0, num_layer1 = 0, num_layer2 = 0;
+    save.tree.Branch("num_layer0", &num_layer0);
+    save.tree.Branch("num_layer1", &num_layer1);
+    save.tree.Branch("num_layer2", &num_layer2);
 
     /**
      * @brief Get true points from source data
@@ -92,7 +96,7 @@ int main(int argc, char **argv) {
                     read_count++;
                 }
                 if (read_count >= 3) {
-                    // eventID_skip = data.EventID();
+                    eventID_skip = data.EventID();
                 }
             }
         }
@@ -116,6 +120,7 @@ int main(int argc, char **argv) {
         auto tracks1 = Hough::FindTrack<Hough::NAlpha, Hough::NRho>(houghGrid1);
         auto tracks2 = Hough::FindTrack<Hough::NAlpha, Hough::NRho>(houghGrid2);
         auto tracks = Hough::MergeTracks(tracks1, tracks2);
+        // auto tracks = std::move(tracks1);
 
         /**
          * @brief track filter
@@ -139,6 +144,11 @@ int main(int argc, char **argv) {
                     save.num_total = track->Counts();
                     save.Qe = track->GetSpin();
                     num_second = track->NumSecondHalfPoints(test_set.get());
+
+                    auto num_layers = track->GetLayerDistribution();
+                    num_layer0 = std::get<0>(num_layers);
+                    num_layer1 = std::get<1>(num_layers);
+                    num_layer2 = std::get<2>(num_layers);
                     save.Fill();
 
                     n_good_tracks++;

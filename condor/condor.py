@@ -1,8 +1,8 @@
 import os
 import subprocess
 particles = ["e-", "mu-", "pi-"]
-#executable = "./bin/HoughTracker"
-executable = "./bin/LocalTracker"
+executable = "./bin/HoughTracker"
+#executable = "./bin/LocalTracker"
 
 for particle in particles:
     os.system("python gen_config.py {}".format(particle))
@@ -12,6 +12,9 @@ for particle in particles:
     wc = subprocess.Popen(('wc', '-l'), stdin=grep.stdout,
                           stdout=subprocess.PIPE)
     n = int(wc.communicate()[0])
+    ls.terminate()
+    grep.terminate()
+    wc.terminate()
 
     for index in range(1, n + 1):
         run = "run_{}_{}.sh".format(particle, index)

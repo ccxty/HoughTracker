@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
      */
     while (eventIDs_toTest->size() >= args.n_track) {
         std::cout << "There are " << eventIDs_toTest->size()
-                  << " events left\n";
+                  << " events left\033[A2\n";
         // int eventIDTest;
         auto test_set = GetRandomSet(args.n_track, *eventIDs_toTest);
         for (auto event : *test_set) {

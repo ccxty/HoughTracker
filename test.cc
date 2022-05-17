@@ -10,11 +10,16 @@
 #include <utility>
 
 #include "TCanvas.h"
+#include "TClass.h"
 #include "TFile.h"
 #include "TH1.h"
+#include "TH2.h"
 #include "TMath.h"
 #include "TRandom3.h"
 #include "include/args.h"
+#include "TMarker.h"
+#include "TGraph.h"
+#include "TH2D.h"
 
 using std::accumulate;
 using std::array;
@@ -26,6 +31,7 @@ using std::string;
 using std::tuple;
 using std::unique_ptr;
 using std::vector;
+constexpr std::array<double, 3> InnerDectectorR = {65.115, 115.11, 165.11};
 
 std::set<int>* GetRandomSet(int n_tracks_in_event, std::set<int>& base) {
     auto* set = new std::set<int>;
@@ -92,6 +98,20 @@ void test_pointer() {
     cout << (ptr1 == ptr2) << std::endl;
 }
 
+void draw_points(){
+    auto point0= new TMarker(InnerDectectorR[0],0.857237,0);
+
+    auto point1 = new TMarker(InnerDectectorR[1],1.44932,0);
+    auto point2 = new TMarker(InnerDectectorR[2],1.66734,0);
+    TCanvas *c1 = new TCanvas("","");
+    TH2D* h = new TH2D();
+    c1->cd();
+    h->Draw();
+    point0->Draw();
+    point1->Draw();
+    point2->Draw();
+}
+
 void test() {
     // std::set<int> base;
     // for (int i = 0; i < 100; i++)
@@ -149,7 +169,7 @@ void test() {
             cout << j << "\t";
         }
     }
-    cout << endl;
+    cout << "\r";
     auto test_ptr2 = test_unique_ptr2();
     for (const auto& i : test_ptr2) {
         for (const auto& j : *i) {
@@ -161,4 +181,5 @@ void test() {
     cout << endl;
     test_json_out();
     test_pointer();
+    draw_points();
 }

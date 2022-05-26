@@ -53,6 +53,7 @@ array<double, 2> get_nhits(TTree* tree) {
     auto n = tree->GetEntries();
     double sum_x = 0;
     double sum_xx = 0;
+    auto h = TH1D("h", "h", 50, 0.5, 50.5);
     for (auto ie = 0; ie < n; ie++) {
         tree->GetEntry(ie);
         int nhits = 0;
@@ -61,11 +62,15 @@ array<double, 2> get_nhits(TTree* tree) {
                 nhits++;
             }
         }
+        h.Fill(nhits);
         sum_x += nhits;
         sum_xx += nhits * nhits;
     }
-    result[0] = sum_x / static_cast<double>(n);
-    result[1] = sqrt(sum_xx / static_cast<double>(n) - result[0] * result[0]);
+    // result[0] = sum_x / static_cast<double>(n);
+    // result[1] = sqrt(sum_xx / static_cast<double>(n) - result[0] *
+    // result[0]);
+    result[0] = h.GetMean();
+    result[1] = h.GetMeanError();
     return result;
 }
 

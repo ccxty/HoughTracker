@@ -115,7 +115,7 @@ void DataVisual() {
     const int N_Points = static_cast<int>(points.size());
     const int N_Tracks = static_cast<int>(tracks.size());
     TH2F* hg1 =
-        new TH2F("h", "e- @ 50MeV with noise 39", 5, -200, 200, 5, -200, 200);
+        new TH2F("h", "e- @ 50MeV with noise 66", 5, -200, 200, 5, -200, 200);
     canvas1->cd();
     hg1->SetLabelSize(0.02, "Y");
     hg1->SetLabelSize(0.02, "x");
@@ -134,12 +134,18 @@ void DataVisual() {
     for (auto point : points) {
         auto* hit = new TMarker(point.x, point.y, 0);
         if (point.eventID != -1) {
-            hit->SetMarkerColor(kRed);
+            if (point.id >= 3) {
+                hit->SetMarkerColor(kRed);
+                hit->SetMarkerStyle(kOpenCircle);
+            } else {
+                hit->SetMarkerColor(kRed);
+                hit->SetMarkerStyle(kFullCircle);
+            }
         } else {
             hit->SetMarkerColor(kBlack);
+            hit->SetMarkerStyle(kOpenCircle);
         }
-        hit->SetMarkerStyle(kOpenCircle);
-        hit->SetMarkerSize(0.5);
+        hit->SetMarkerSize(0.7);
         hit->Draw();
     }
     for (const auto& track : tracks) {
@@ -163,7 +169,7 @@ void DataVisual() {
                 } else {
                     hit->SetMarkerColor(kBlack);
                 }
-                hit->Draw();
+                // hit->Draw();
             }
         }
         if (!is_true) {
@@ -178,7 +184,7 @@ void DataVisual() {
                 } else {
                     hit->SetMarkerColor(kBlack);
                 }
-                hit->Draw();
+                // hit->Draw();
             }
         }
         // TCanvas* canvas2 = new TCanvas("c2", "c2", 800, 800);

@@ -104,7 +104,32 @@ array<array<double, 2>, 2> get_eff_fake(TTree *tree) {
     return result;
 }
 
-void graph_pt_deg(string &program_name) {
+template <int N>
+void print(array<double, N> &input, ofstream &out) {
+    for (auto x : input) {
+        out << x << " ";
+    }
+}
+
+template <int N>
+void print_all(array<double, N> &eff, array<double, N> &eff_err,
+               array<double, N> &fake, array<double, N> &fake_err,
+               ofstream &out) {
+    out << "eff:      ";
+    print<N>(eff, out);
+    out << "\n";
+    out << "eff_err:  ";
+    print<N>(eff_err, out);
+    out << "\n";
+    out << "fake:     ";
+    print<N>(fake, out);
+    out << "\n";
+    out << "fake_err: ";
+    print<N>(fake_err, out);
+    out << "\n";
+}
+
+void graph_pt_deg(string &program_name, ofstream &out) {
     int i_particle = 0;
     int i_noise = 9;
     int i_multi = 0;
@@ -129,6 +154,7 @@ void graph_pt_deg(string &program_name) {
             fake[i_pt] = result[1][0];
             fake_err[i_pt] = result[1][1];
         }
+        print_all<18>(eff, eff_err, fake, fake_err, out);
         auto *g_eff = new TGraphErrors(18, pt_double.data(), eff.data(),
                                        nullptr, eff_err.data());
         auto *g_fake = new TGraphErrors(18, pt_double.data(), fake.data(),
@@ -156,7 +182,7 @@ void graph_pt_deg(string &program_name) {
     c2->SaveAs(("fake_pt_deg_" + program_name + ".png").c_str());
 }
 
-void graph_noise_deg(string &program_name) {
+void graph_noise_deg(string &program_name, ofstream &out) {
     int i_particle = 0;
     int i_pt = 0;
     int i_multi = 0;
@@ -180,6 +206,7 @@ void graph_noise_deg(string &program_name) {
             fake[i_noise] = result[1][0];
             fake_err[i_noise] = result[1][1];
         }
+        print_all<13>(eff, eff_err, fake, fake_err, out);
         auto *g_eff = new TGraphErrors(13, noise_double.data(), eff.data(),
                                        nullptr, eff_err.data());
         auto *g_fake = new TGraphErrors(13, noise_double.data(), fake.data(),
@@ -207,7 +234,7 @@ void graph_noise_deg(string &program_name) {
     c2->SaveAs(("fake_noise_deg_" + program_name + ".png").c_str());
 }
 
-void graph_pt_particle(string &program_name) {
+void graph_pt_particle(string &program_name, ofstream &out) {
     int i_noise = 9;
     int i_multi = 0;
     int i_deg = 0;
@@ -232,6 +259,7 @@ void graph_pt_particle(string &program_name) {
             fake[i_pt] = result[1][0];
             fake_err[i_pt] = result[1][1];
         }
+        print_all<18>(eff, eff_err, fake, fake_err, out);
         auto *g_eff = new TGraphErrors(18, pt_double.data(), eff.data(),
                                        nullptr, eff_err.data());
         auto *g_fake = new TGraphErrors(18, pt_double.data(), fake.data(),
@@ -259,7 +287,7 @@ void graph_pt_particle(string &program_name) {
     c2->SaveAs(("fake_pt_particle_" + program_name + ".png").c_str());
 }
 
-void graph_noise_particle(string &program_name) {
+void graph_noise_particle(string &program_name, ofstream &out) {
     int i_pt = 2;
     int i_multi = 0;
     int i_deg = 0;
@@ -283,6 +311,7 @@ void graph_noise_particle(string &program_name) {
             fake[i_noise] = result[1][0];
             fake_err[i_noise] = result[1][1];
         }
+        print_all<13>(eff, eff_err, fake, fake_err, out);
         auto *g_eff = new TGraphErrors(13, noise_double.data(), eff.data(),
                                        nullptr, eff_err.data());
         auto *g_fake = new TGraphErrors(13, noise_double.data(), fake.data(),
@@ -310,7 +339,7 @@ void graph_noise_particle(string &program_name) {
     c2->SaveAs(("fake_noise_particle_" + program_name + ".png").c_str());
 }
 
-void graph_deg_multi(string program_name) {
+void graph_deg_multi(string program_name, ofstream &out) {
     int i_particle = 0;
     int i_noise = 9;
     int i_pt = 0;
@@ -335,6 +364,7 @@ void graph_deg_multi(string program_name) {
             fake[i_deg] = result[1][0];
             fake_err[i_deg] = result[1][1];
         }
+        print_all<9>(eff, eff_err, fake, fake_err, out);
         std::cout << std::endl;
         auto *g_eff = new TGraphErrors(9, deg_double.data(), eff.data(),
                                        nullptr, eff_err.data());
@@ -365,11 +395,13 @@ void graph_deg_multi(string program_name) {
 
 void analysis5() {
     array<string, 2> program_name = {"Hough", "Local"};
+    ofstream out("output.txt", ios::app);
     for (string &program : program_name) {
-        graph_pt_deg(program);
-        graph_noise_deg(program);
-        graph_pt_particle(program);
-        graph_noise_particle(program);
-        graph_deg_multi(program);
+        graph_pt_deg(program, out);
+        graph_noise_deg(program, out);
+        graph_pt_particle(program, out);
+        graph_noise_particle(program, out);
+        graph_deg_multi(program, out);
+        out << "\n";
     }
 }

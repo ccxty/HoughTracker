@@ -372,7 +372,7 @@ std::vector<Track> Track::Split() {
         if (point0->layerID == 0) {
             auto track = Track(point0);
             auto temp_l1 = std::vector<HitPoint *>();
-            double k1 = point0->z / InnerDectectorR[0];
+            double k1 = point0->z / InnerDetectorR[0];
             for (auto *other : _ptr) {
                 bool z_filter =
                     fabs(other->z - point0->z - k1 * DeltaR01) < DeltaZ01;

@@ -93,9 +93,9 @@ inline void TherePointsLinearFit(HitPoint *point1, HitPoint *point2,
 
 inline void FitZLinear(HitPoint *point1, HitPoint *point2, HitPoint *point3,
                        double Radius, double *Qz, StraightLine &line) {
-    std::array<double, 3> r_xy = {InnerDectectorR[point1->layerID],
-                                  InnerDectectorR[point2->layerID],
-                                  InnerDectectorR[point3->layerID]};
+    std::array<double, 3> r_xy = {InnerDetectorR[point1->layerID],
+                                  InnerDetectorR[point2->layerID],
+                                  InnerDetectorR[point3->layerID]};
     std::array<double, 3> s_xy = {2 * Radius * asin(r_xy[0] / (2 * Radius)),
                                   2 * Radius * asin(r_xy[1] / (2 * Radius)),
                                   2 * Radius * asin(r_xy[2] / (2 * Radius))};
@@ -105,9 +105,9 @@ inline void FitZLinear(HitPoint *point1, HitPoint *point2, HitPoint *point3,
 
 inline void FitZLinear(HitPoint *point1, HitPoint *point2, HitPoint *point3,
                        double *Qz, StraightLine &line) {
-    std::array<double, 3> r_xy = {InnerDectectorR[point1->layerID],
-                                  InnerDectectorR[point2->layerID],
-                                  InnerDectectorR[point3->layerID]};
+    std::array<double, 3> r_xy = {InnerDetectorR[point1->layerID],
+                                  InnerDetectorR[point2->layerID],
+                                  InnerDetectorR[point3->layerID]};
     std::array<double, 3> posZ = {point1->z, point2->z, point3->z};
     LinearFit<3>(r_xy, posZ, Qz, line);
 }

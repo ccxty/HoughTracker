@@ -11,7 +11,7 @@ constexpr double MagFeild = 1.0;                        // 1.0 T
 constexpr double PtMin = 0.3 * MagFeild * 165.11 / 2.;  // 击中三层动量条件
 constexpr double QCut = 0.1;
 constexpr double QzCut = 2.;
-constexpr std::array<double, 3> InnerDectectorR = {65.115, 115.11, 165.11};
+constexpr std::array<double, 3> InnerDetectorR = {65.115, 115.11, 165.11};
 // layer0: (25.6796, 59.8374)
 // layer1: (80.2514, 82.5229)
 // layer2: (165.11, 0)
@@ -27,8 +27,8 @@ constexpr double DeltaPhi12 = 0.1;
 constexpr double DeltaZ01 = 10;
 constexpr double DeltaZ12 = 10;
 
-constexpr double DeltaR01 = InnerDectectorR[1] - InnerDectectorR[0];
-constexpr double DeltaR12 = InnerDectectorR[2] - InnerDectectorR[1];
+constexpr double DeltaR01 = InnerDetectorR[1] - InnerDetectorR[0];
+constexpr double DeltaR12 = InnerDetectorR[2] - InnerDetectorR[1];
 
 using Points = std::vector<HitPoint *>;
 
@@ -60,8 +60,8 @@ void InnerAddNoise(int n_noise, Points &points) {
     for (int i = 0; i < n_noise; i++) {
         int layerID = static_cast<int>(rdm_layer.Integer(3));
         double posX = NAN, posY = NAN, posZ = NAN;
-        rdm.Circle(posX, posY, InnerDectectorR[layerID]);
-        posZ = (InnerDectectorR[layerID] / tan(20 * TMath::Pi() / 180.)) *
+        rdm.Circle(posX, posY, InnerDetectorR[layerID]);
+        posZ = (InnerDetectorR[layerID] / tan(20 * TMath::Pi() / 180.)) *
                (-1 + 2 * rdm_z.Rndm());
         auto *point = new HitPoint(posX, posY, posZ, -1, 1, layerID, 0);
         point->SetId(static_cast<int>(len) + i);

@@ -18,7 +18,7 @@ using std::vector;
 
 inline Track find_track(HitPoint *point, const Points &points) {
     Track track(point);
-    double k1 = point->z / InnerDectectorR[0];
+    double k1 = point->z / InnerDetectorR[0];
     std::vector<HitPoint *> temp_l1;
     for (auto *other : points) {
         bool z_filter = fabs(other->z - point->z - k1 * DeltaR01) < DeltaZ01;

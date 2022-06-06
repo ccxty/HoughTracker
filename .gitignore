@@ -30,3 +30,4 @@ condor/submit[e|mu|pi][+|-]*.cmd
 condor/run_*.sh
 condor/submit_*.cmd
 .xmake/
+lib64/

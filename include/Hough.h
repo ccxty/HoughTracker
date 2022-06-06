@@ -24,20 +24,20 @@ using GridMatrix =
     std::array<std::array<std::unique_ptr<HoughGridArea>, NRho>, NAlpha>;
 
 template <int NAlpha, int NRho>
-auto GridInit(double shift) {  // shift == 0.25 is good for single gridmatrix
+auto GridInit(double shift) {  // shift == 0.25 is good for single grid_matrix
     using std::array;
     using std::unique_ptr;
-    auto martix = GridMatrix<NAlpha, NRho>();
+    auto matrix = GridMatrix<NAlpha, NRho>();
     for (int i = 0; i < NAlpha; i++) {
         for (int j = 0; j < NRho; j++) {
             auto ptr = std::make_unique<HoughGridArea>(
                 AlphaMin + i * AlphaBinWidth,
                 RhoMin + (j - shift) * RhoBinWidth,       // shift
                 RhoMin + (j + shift + 1) * RhoBinWidth);  // shift
-            martix[i][j] = std::move(ptr);
+            matrix[i][j] = std::move(ptr);
         }
     }
-    return std::move(martix);
+    return std::move(matrix);
 }
 
 template <int NAlpha, int NRho>

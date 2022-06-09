@@ -1,13 +1,14 @@
 #include <iostream>
 #include <ostream>
+#include <set>
 
 #include "TFile.h"
 #include "TTree.h"
 
+using std::array;
 using std::cout;
 using std::endl;
 using std::string;
-using std::array;
 
 array<array<double, 2>, 2> get_eff_fake(TTree *tree) {
     int eventID = 0;
@@ -60,14 +61,12 @@ array<array<double, 2>, 2> get_eff_fake(TTree *tree) {
     return result;
 }
 
-
-
 void tiny_test() {
     // string tiny_test_file = "./data/pi-/trackdata_Pt60_noise39_multi1.root";
     string tiny_test_file =
         "./data/e-/trackdata_Pt50_noise66_multi1_deg90.root";
     TFile *file = new TFile(tiny_test_file.c_str());
-    auto tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
+    auto *tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
     auto result = get_eff_fake(tree);
     cout << "eff: " << result[0][0] << "\tfake: " << result[1][0] << endl;
 }

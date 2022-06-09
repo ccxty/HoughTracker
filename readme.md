@@ -1,1 +1,2 @@
 # README
+更新记录见[CHANGELOG.md](CHANGELOG.md)

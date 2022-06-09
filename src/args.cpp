@@ -1,5 +1,18 @@
 #include "args.h"
 
+CArgs export_c_args(Args &args) {
+    CArgs c_args{};
+    c_args.data_file = const_cast<char *>(args.data_file.c_str());
+    c_args.output_file = const_cast<char *>(args.output_file.c_str());
+    c_args.pt = args.pt;
+    c_args.n_noise = args.n_noise;
+    c_args.n_track = args.n_track;
+    c_args.particle = const_cast<char *>(args.particle.c_str());
+    c_args.mode = args.mode;
+    c_args.deg = const_cast<char *>(args.deg.c_str());
+    return c_args;
+}
+
 void args_out_json(Args &args) {
     nlohmann::json args_json;
     args_json["pt"] = args.pt;

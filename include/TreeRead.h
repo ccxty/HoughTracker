@@ -38,7 +38,7 @@ class TreeRead {
     // deconstructor
     ~TreeRead();
     // constructor
-    explicit TreeRead(const char *name, const std::string &tree_name = "tree1");
+    explicit TreeRead(const char *name, const char *tree_name = "tree1");
     bool Reset(char *name, const std::string &tree_name = "tree1");
     bool isEmpty() const;
 
@@ -88,9 +88,9 @@ TreeRead::~TreeRead() {
     this->Clear();
 };
 
-TreeRead::TreeRead(const char *name, const std::string &tree_name)
+TreeRead::TreeRead(const char *name, const char *tree_name)
     : _file_source(TFile::Open(name)) {
-    _tree = dynamic_cast<TTree *>(gDirectory->Get(tree_name.c_str()));
+    _tree = dynamic_cast<TTree *>(gDirectory->Get(tree_name));
     _tree->SetBranchAddress("posX", &_posX, &_b_posX);
     _tree->SetBranchAddress("posY", &_posY, &_b_posY);
     _tree->SetBranchAddress("posZ", &_posZ, &_b_posZ);

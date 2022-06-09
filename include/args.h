@@ -8,7 +8,7 @@
 #ifndef __ARGS_PARSE_CXX_INCLUDE__
 #define __ARGS_PARSE_CXX_INCLUDE__
 
-enum class ExecMode { all, single, help, json };
+enum ExecMode { all, single, help, json };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(ExecMode, {
                                            {ExecMode::all, "all"},
@@ -27,6 +27,19 @@ struct Args {
     ExecMode mode = ExecMode::help;
     std::string deg = "90";
 };
+
+struct CArgs {
+    char *data_file;
+    char *output_file;
+    double pt;
+    int n_noise;
+    int n_track;
+    char *particle;
+    ExecMode mode;
+    char *deg;
+};
+
+CArgs export_c_args(Args &args);
 
 void args_out_json(Args &args);
 

@@ -1,11 +1,12 @@
 #include <array>
 #include <cmath>
+#include <iostream>
 #include <memory>
 #include <numeric>
 
 #include "TRandom3.h"
-#ifndef HOUGH_CXX_INCLUDE_
-#define HOUGH_CXX_INCLUDE_
+#ifndef __HOUGH_CXX_INCLUDE__
+#define __HOUGH_CXX_INCLUDE__
 
 #include "HitPoint.h"
 #include "HoughGlobal.h"
@@ -15,6 +16,7 @@
 #include "global.h"
 
 namespace Hough {
+
 using HoughGrid =
     std::vector<std::unique_ptr<std::vector<std::unique_ptr<HoughGridArea>>>>;
 using Tracks = std::vector<Track>;
@@ -24,16 +26,17 @@ using GridMatrix =
     std::array<std::array<std::unique_ptr<HoughGridArea>, NRho>, NAlpha>;
 
 template <int NAlpha, int NRho>
-auto GridInit(double shift) {  // shift == 0.25 is good for single grid_matrix
+auto GridInit() {
     using std::array;
     using std::unique_ptr;
     auto matrix = GridMatrix<NAlpha, NRho>();
     for (int i = 0; i < NAlpha; i++) {
         for (int j = 0; j < NRho; j++) {
             auto ptr = std::make_unique<HoughGridArea>(
-                AlphaMin + i * AlphaBinWidth,
-                RhoMin + (j - shift) * RhoBinWidth,       // shift
-                RhoMin + (j + shift + 1) * RhoBinWidth);  // shift
+                AlphaMin + i * AlphaBinWidth,                           //
+                RhoMin + j * RhoBinWidth * (1 - Overlap),               //
+                RhoMin + j * RhoBinWidth * (1 - Overlap) + RhoBinWidth  //
+            );
             matrix[i][j] = std::move(ptr);
         }
     }
@@ -44,14 +47,17 @@ template <int NAlpha, int NRho>
 void FillGrid(GridMatrix<NAlpha, NRho> &matrix, Points &points) {
     for (auto *point : points) {
         for (auto &row : matrix) {
-            for (auto &grid : row) {
-                double alpha = grid->xMid();
-                double rho = point->xConformal() * cos(alpha) +
-                             point->yConformal() * sin(alpha);
-
-                if ((rho >= grid->yMin()) && (rho < grid->yMax())) {
-                    grid->CountsAddOne();
-                    grid->GetPointsHere().push_back(point);
+            double alpha = row[0]->xMid();
+            double rho = point->xConformal() * cos(alpha) +
+                         point->yConformal() * sin(alpha);
+            double q = floor((rho - RhoMin) / (RhoBinWidth * (1 - Overlap)));
+            int index = floor(q);
+            if (index == 0) {
+                row[0]->CountsAddOne();
+            } else {  // assume Overlap <= 0.5
+                row[index]->CountsAddOne();
+                if (q - index - 1 / (1 - Overlap) < -1) {
+                    row[index - 1]->CountsAddOne();
                 }
             }
         }
@@ -84,6 +90,8 @@ Tracks FindTrack(GridMatrix<NAlpha, NRho> &matrix) {
                         (counts22 >= counts13) && (counts22 >= counts21) &&
                         (counts22 >= counts23) && (counts22 >= counts31) &&
                         (counts22 >= counts32) && (counts22 >= counts33)) {
+                        // std::cout << ia << ", " << id << ":\t" << counts22
+                        //   << "\n";
                         auto ptr_temp = Track(points);
                         if (ptr.empty()) {
                             ptr.push_back(std::move(ptr_temp));
@@ -107,20 +115,7 @@ Tracks FindTrack(GridMatrix<NAlpha, NRho> &matrix) {
     return std::move(ptr);
 }
 
-void MergeTracks(Tracks &origin, Tracks &add) {
-    for (auto &track : add) {
-        bool contain = false;
-        for (auto &existingTrack : origin) {
-            if (existingTrack.operator>=(track)) {
-                contain = true;
-                break;
-            }
-        }
-        if (!contain) {
-            origin.push_back(std::move(track));
-        }
-    }
-}
+void MergeTracks(Tracks &origin, Tracks &add);
 
 }  // namespace Hough
 

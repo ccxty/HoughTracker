@@ -14,7 +14,6 @@ class Args(Structure):
     ]
 
 
-Hough = cdll.LoadLibrary(
-    "/home/ubuntu-tyxiao/work/STCF_Oscar2.0.0/Tracker/lib64/libTracker.so")
+Hough = cdll.LoadLibrary("libTracker.so")
 
 run = Hough.run_hough

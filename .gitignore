@@ -32,3 +32,4 @@ condor/submit_*.cmd
 .xmake/
 lib64/
 pyHough/__pycache__/
+setup.sh

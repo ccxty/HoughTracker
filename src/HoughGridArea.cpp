@@ -1,6 +1,8 @@
 #include "HoughGridArea.h"
 namespace Hough {
-HoughGridArea::HoughGridArea(double x_min, double x_max, double y_min,
+HoughGridArea::HoughGridArea(double x_min,
+                             double x_max,
+                             double y_min,
                              double y_max)
     : _xMin(x_min),
       _xMax(x_max),
@@ -33,14 +35,30 @@ HoughGridArea &HoughGridArea::SetY(double y_min, double y_max) {
     _yMax = y_max;
     return *this;
 }
-GridMode HoughGridArea::mode() { return _mode; }
-std::vector<HitPoint *> &HoughGridArea::GetPointsHere() { return _points; }
-int HoughGridArea::counts() const { return _counts; }
-double HoughGridArea::xMin() const { return _xMin; }
-double HoughGridArea::xMax() const { return _xMax; }
-double HoughGridArea::yMin() const { return _yMin; }
-double HoughGridArea::yMax() const { return _yMax; }
-double HoughGridArea::xMid() const { return _xMid; }
+GridMode HoughGridArea::mode() {
+    return _mode;
+}
+std::vector<HitPoint *> &HoughGridArea::GetPointsHere() {
+    return _points;
+}
+int HoughGridArea::counts() const {
+    return _counts;
+}
+double HoughGridArea::xMin() const {
+    return _xMin;
+}
+double HoughGridArea::xMax() const {
+    return _xMax;
+}
+double HoughGridArea::yMin() const {
+    return _yMin;
+}
+double HoughGridArea::yMax() const {
+    return _yMax;
+}
+double HoughGridArea::xMid() const {
+    return _xMid;
+}
 HoughGridArea &HoughGridArea::CountsChange(int counts) {
     _counts = counts;
     return *this;
@@ -49,7 +67,14 @@ HoughGridArea &HoughGridArea::CountsAddOne() {
     _counts += 1;
     return *this;
 }
-bool HoughGridArea::CountsZero() const { return _counts > 0; }
+HoughGridArea &HoughGridArea::AddPoint(HitPoint *point) {
+    _points.push_back(point);
+    _counts += 1;
+    return *this;
+}
+bool HoughGridArea::CountsZero() const {
+    return _counts > 0;
+}
 HoughGridArea &HoughGridArea::CountsReset() {
     _counts = 0;
     return *this;

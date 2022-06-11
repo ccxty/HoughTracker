@@ -37,6 +37,7 @@ class HoughGridArea {
     GridMode mode();
     HoughGridArea &CountsChange(int counts);
     HoughGridArea &CountsAddOne();
+    HoughGridArea &AddPoint(HitPoint *point);
     bool CountsZero() const;
     HoughGridArea &CountsReset();
     void Print();

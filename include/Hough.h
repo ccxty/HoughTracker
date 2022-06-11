@@ -53,11 +53,11 @@ void FillGrid(GridMatrix<NAlpha, NRho> &matrix, Points &points) {
             double q = floor((rho - RhoMin) / (RhoBinWidth * (1 - Overlap)));
             int index = floor(q);
             if (index == 0) {
-                row[0]->CountsAddOne();
+                row[0]->AddPoint(point);
             } else {  // assume Overlap <= 0.5
-                row[index]->CountsAddOne();
+                row[index]->AddPoint(point);
                 if (q - index - 1 / (1 - Overlap) < -1) {
-                    row[index - 1]->CountsAddOne();
+                    row[index - 1]->AddPoint(point);
                 }
             }
         }
@@ -86,12 +86,19 @@ Tracks FindTrack(GridMatrix<NAlpha, NRho> &matrix) {
                     int counts31 = matrix[ia + 1][id - 1]->counts();
                     int counts32 = matrix[ia + 1][id]->counts();
                     int counts33 = matrix[ia + 1][id + 1]->counts();
-                    if ((counts22 >= counts11) && (counts22 >= counts12) &&
-                        (counts22 >= counts13) && (counts22 >= counts21) &&
-                        (counts22 >= counts23) && (counts22 >= counts31) &&
-                        (counts22 >= counts32) && (counts22 >= counts33)) {
-                        // std::cout << ia << ", " << id << ":\t" << counts22
-                        //   << "\n";
+                    int flag = (counts22 >= counts11) + (counts22 >= counts12) +
+                               (counts12 >= counts13) + (counts22 >= counts21) +
+                               (counts22 >= counts23) + (counts21 >= counts31) +
+                               (counts22 >= counts32) + (counts22 >= counts33);
+                    // if (  //(counts22 >= counts11) &&  //
+                    //     (counts22 >= counts12) &&  //
+                    //     //(counts22 >= counts13) &&  //
+                    //     (counts22 >= counts21) &&  //
+                    //     (counts22 >= counts23) &&  //
+                    //     //(counts22 >= counts31) &&  //
+                    //     (counts22 >= counts32) &&  //
+                    //     //(counts22 >= counts33)     //
+                    if (flag >= 5) {
                         auto ptr_temp = Track(points);
                         if (ptr.empty()) {
                             ptr.push_back(std::move(ptr_temp));

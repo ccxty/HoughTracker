@@ -2,7 +2,7 @@
 
 #include <memory>
 
-void InnerAddNoise(int n_noise, Points &points) {
+void ITKAddNoise(int n_noise, Points &points) {
     if (n_noise <= 0) {
         return;
     }
@@ -18,12 +18,15 @@ void InnerAddNoise(int n_noise, Points &points) {
     for (int i = 0; i < n_noise; i++) {
         int layerID = static_cast<int>(rdm_layer.Integer(3));
         double posX = NAN, posY = NAN, posZ = NAN;
-        rdm.Circle(posX, posY, InnerDetectorR[layerID]);
-        posZ = (InnerDetectorR[layerID] / tan(20 * TMath::Pi() / 180.)) *
+        rdm.Circle(posX, posY, InnerTrackerR[layerID]);
+        posZ = (InnerTrackerR[layerID] / tan(20 * TMath::Pi() / 180.)) *
                (-1 + 2 * rdm_z.Rndm());
-        posZ += gRandom->Gaus(0, 0.4);
-        posX += gRandom->Gaus(0, 0.1 / sqrt(2));
-        posY += gRandom->Gaus(0, 0.1 / sqrt(2));
+        double theta = atan2(posY, posX);
+        double err_z = gRandom->Gaus(0, E_Z);
+        double err_xy = gRandom->Gaus(0, E_RPhi);
+        posZ += err_z;
+        posX += -err_xy * sin(theta);
+        posY += err_xy * cos(theta);
         auto *point = new HitPoint(posX, posY, posZ, -1, 1, layerID, 0);
         point->SetId(static_cast<int>(len) + i);
         points.push_back(point);

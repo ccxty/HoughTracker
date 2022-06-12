@@ -84,14 +84,22 @@ void run_hough(CArgs c_args) {
             for (int ip = 0; ip < nhits; ip++) {
                 if ((data.TrackID()->at(ip) == 1) &&
                     (data.EventID() != eventID_skip)) {
-                    auto *ptr = new HitPoint(
-                        data.PosX()->at(ip) + gRandom->Gaus(0, 0.1 / sqrt(2)),
-                        data.PosY()->at(ip) + gRandom->Gaus(0, 0.1 / sqrt(2)),
-                        data.PosZ()->at(ip) + gRandom->Gaus(0, 0.4),
-                        data.EventID(),
-                        data.TrackID()->at(ip),
-                        data.LayerID()->at(ip),
-                        data.Pt()->at(ip));
+                    double x = data.PosX()->at(ip);
+                    double y = data.PosY()->at(ip);
+                    double z = data.PosZ()->at(ip);
+                    double theta = atan2(y, x);
+                    double err_z = gRandom->Gaus(0, E_Z);
+                    double err_xy = gRandom->Gaus(0, E_RPhi);
+                    z += err_z;
+                    x += -err_xy * sin(theta);
+                    y += err_xy * cos(theta);
+                    auto *ptr = new HitPoint(x,
+                                             y,
+                                             z,
+                                             data.EventID(),
+                                             data.TrackID()->at(ip),
+                                             data.LayerID()->at(ip),
+                                             data.Pt()->at(ip));
                     ptr->SetId(read_count);
                     pointsList.push_back(ptr);
                     read_count++;
@@ -107,7 +115,7 @@ void run_hough(CArgs c_args) {
         /**
          * @brief add noise points
          */
-        InnerAddNoise(c_args.n_noise, pointsList);
+        ITKAddNoise(c_args.n_noise, pointsList);
         int npoints = static_cast<int>(pointsList.size());
 
         /**

@@ -5,7 +5,9 @@ Track::Track() = default;
 Track::Track(std::vector<HitPoint *> ptr)
     : _ptr(std::move(ptr)), _counts(static_cast<int>(_ptr.size())) {}
 
-Track::Track(HitPoint *point) : _counts(1) { _ptr.push_back(point); }
+Track::Track(HitPoint *point) : _counts(1) {
+    _ptr.push_back(point);
+}
 
 Track &Track::AddPoint(HitPoint *point) {
     if (_ptr.empty()) {
@@ -27,9 +29,13 @@ Track &Track::AddPoint(HitPoint *point) {
     return *this;
 }
 
-int Track::Counts() const { return _counts; }
+int Track::Counts() const {
+    return _counts;
+}
 
-double Track::Pt() const { return _params.R * 0.3; }
+double Track::Pt() const {
+    return _params.R * 0.3;
+}
 
 void Track::Print() const {
     if (_ptr.empty()) {
@@ -42,9 +48,13 @@ void Track::Print() const {
     }
 }
 
-std::vector<HitPoint *> &Track::GetPoints() { return _ptr; }
+std::vector<HitPoint *> &Track::GetPoints() {
+    return _ptr;
+}
 
-bool Track::operator!=(Track &other) const { return !this->operator==(other); }
+bool Track::operator!=(Track &other) const {
+    return !this->operator==(other);
+}
 
 bool Track::operator==(Track &other) const {
     if (this->_counts == other._counts) {
@@ -114,7 +124,10 @@ bool Track::FitLinear(double *Qmin, double *Qz) {
     for (auto *point1 : layer0) {
         for (auto *point2 : layer1) {
             for (auto *point3 : layer2) {
-                TherePointsLinearFit(point1, point2, point3, &Q_swap,
+                TherePointsLinearFit(point1,
+                                     point2,
+                                     point3,
+                                     &Q_swap,
                                      line_xy_swap);
                 double R = sqrt(line_xy_swap.eff[1] * line_xy_swap.eff[1] + 1) /
                            abs(line_xy_swap.eff[0]);
@@ -298,7 +311,9 @@ void Track::Clear() {
     _ptr.clear();
 }
 
-bool Track::IsEmpty() const { return _counts == 0; }
+bool Track::IsEmpty() const {
+    return _counts == 0;
+}
 
 int Track::GetNumNoise() const {
     int num_noise = 0;
@@ -310,7 +325,9 @@ int Track::GetNumNoise() const {
     return num_noise;
 }
 
-TrackParameters &Track::GetTrackParameters() { return _params; }
+TrackParameters &Track::GetTrackParameters() {
+    return _params;
+}
 
 std::vector<Track> Track::Split() {
     auto result = std::vector<Track>();
@@ -318,7 +335,7 @@ std::vector<Track> Track::Split() {
         if (point0->layerID == 0) {
             auto track = Track(point0);
             auto temp_l1 = std::vector<HitPoint *>();
-            double k1 = point0->z / InnerDetectorR[0];
+            double k1 = point0->z / InnerTrackerR[0];
             for (auto *other : _ptr) {
                 bool z_filter =
                     fabs(other->z - point0->z - k1 * DeltaR01) < DeltaZ01;

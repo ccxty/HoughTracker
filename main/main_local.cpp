@@ -18,7 +18,7 @@ using std::vector;
 
 inline Track find_track(HitPoint *point, const Points &points) {
     Track track(point);
-    double k1 = point->z / InnerDetectorR[0];
+    double k1 = point->z / InnerTrackerR[0];
     std::vector<HitPoint *> temp_l1;
     for (auto *other : points) {
         bool z_filter = fabs(other->z - point->z - k1 * DeltaR01) < DeltaZ01;
@@ -109,11 +109,13 @@ int main(int argc, char **argv) {
             for (int ip = 0; ip < nhits; ip++) {
                 if ((data.TrackID()->at(ip) == 1) &&
                     (data.EventID() != eventID_skip)) {
-                    auto *ptr =
-                        new HitPoint(data.PosX()->at(ip), data.PosY()->at(ip),
-                                     data.PosZ()->at(ip), data.EventID(),
-                                     data.TrackID()->at(ip),
-                                     data.LayerID()->at(ip), data.Pt()->at(ip));
+                    auto *ptr = new HitPoint(data.PosX()->at(ip),
+                                             data.PosY()->at(ip),
+                                             data.PosZ()->at(ip),
+                                             data.EventID(),
+                                             data.TrackID()->at(ip),
+                                             data.LayerID()->at(ip),
+                                             data.Pt()->at(ip));
                     ptr->SetId(read_count);
                     pointsList.push_back(ptr);
                     read_count++;
@@ -126,7 +128,7 @@ int main(int argc, char **argv) {
         if (pointsList.size() < 3) {
             continue;
         }
-        InnerAddNoise(args.n_noise, pointsList);
+        ITKAddNoise(args.n_noise, pointsList);
 
         vector<Track> tracks;
         for (auto *point : pointsList) {

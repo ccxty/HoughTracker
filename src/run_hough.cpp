@@ -84,13 +84,14 @@ void run_hough(CArgs c_args) {
             for (int ip = 0; ip < nhits; ip++) {
                 if ((data.TrackID()->at(ip) == 1) &&
                     (data.EventID() != eventID_skip)) {
-                    auto *ptr = new HitPoint(data.PosX()->at(ip),
-                                             data.PosY()->at(ip),
-                                             data.PosZ()->at(ip),
-                                             data.EventID(),
-                                             data.TrackID()->at(ip),
-                                             data.LayerID()->at(ip),
-                                             data.Pt()->at(ip));
+                    auto *ptr = new HitPoint(
+                        data.PosX()->at(ip) + gRandom->Gaus(0, 0.1 / sqrt(2)),
+                        data.PosY()->at(ip) + gRandom->Gaus(0, 0.1 / sqrt(2)),
+                        data.PosZ()->at(ip) + gRandom->Gaus(0, 0.4),
+                        data.EventID(),
+                        data.TrackID()->at(ip),
+                        data.LayerID()->at(ip),
+                        data.Pt()->at(ip));
                     ptr->SetId(read_count);
                     pointsList.push_back(ptr);
                     read_count++;

@@ -21,6 +21,9 @@ void InnerAddNoise(int n_noise, Points &points) {
         rdm.Circle(posX, posY, InnerDetectorR[layerID]);
         posZ = (InnerDetectorR[layerID] / tan(20 * TMath::Pi() / 180.)) *
                (-1 + 2 * rdm_z.Rndm());
+        posZ += gRandom->Gaus(0, 0.4);
+        posX += gRandom->Gaus(0, 0.1 / sqrt(2));
+        posY += gRandom->Gaus(0, 0.1 / sqrt(2));
         auto *point = new HitPoint(posX, posY, posZ, -1, 1, layerID, 0);
         point->SetId(static_cast<int>(len) + i);
         points.push_back(point);

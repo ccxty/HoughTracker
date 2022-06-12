@@ -31,5 +31,5 @@ condor/run_*.sh
 condor/submit_*.cmd
 .xmake/
 lib64/
-pyHough/__pycache__/
+python/pyHough/__pycache__/
 setup.sh

@@ -14,16 +14,54 @@ int main() {
 
     // string path = "/ustcfs/STCFUser/zhouh/20211018/20211206_lowPt/pi+/";
     //  path += "singlePiplus15.root";
-    string n_str[] = {"0", "1",  "2",  "3",  "4",  "5",  "6",  "7",  "8",
-                      "9", "10", "11", "12", "13", "14", "15", "16", "17"};
-    string pts[] = {"50",  "55",  "60",  "65",  "70",  "75",
-                    "80",  "85",  "90",  "95",  "100", "105",
-                    "110", "115", "120", "125", "130", "135"};
+    string n_str[] = {"0",
+                      "1",
+                      "2",
+                      "3",
+                      "4",
+                      "5",
+                      "6",
+                      "7",
+                      "8",
+                      "9",
+                      "10",
+                      "11",
+                      "12",
+                      "13",
+                      "14",
+                      "15",
+                      "16",
+                      "17"};
+    string pts[] = {"50",
+                    "55",
+                    "60",
+                    "65",
+                    "70",
+                    "75",
+                    "80",
+                    "85",
+                    "90",
+                    "95",
+                    "100",
+                    "105",
+                    "110",
+                    "115",
+                    "120",
+                    "125",
+                    "130",
+                    "135"};
     string particle[3] = {"Pion", "Electron", "Muon"};
     string p_save[3] = {"pi", "e", "mu"};
     string sign[2] = {"+", "-"};
-    string deg_str[9] = {"90", "84.2608", "78.463", "72.5424", "66.4218",
-                         "60", "53.1301", "45.573", "36.8699"};
+    string deg_str[9] = {"90",
+                         "84.2608",
+                         "78.463",
+                         "72.5424",
+                         "66.4218",
+                         "60",
+                         "53.1301",
+                         "45.573",
+                         "36.8699"};
     int i_pt = 0;
     int i_deg = 0;
     int i_sign = 0;
@@ -33,10 +71,10 @@ int main() {
             for (i_pt = 0; i_pt < 18; i_pt++) {
                 for (i_deg = 0; i_deg < 9; i_deg++) {
                     int index = 18 * i_deg + i_pt;
-                    string path = "/ustcfs/STCFUser/zhouh/20220319/Single";
+                    string path = "/ustcfs/STCFUser/zhouh/20220511/Single";
                     path += particle[i_particle] + "/";
                     path += "singleEminus" + std::to_string(index) + ".root";
-                    string savepath = "./root_data_source/";
+                    string savepath = "./root_data_source/4/";
                     savepath += p_save[i_particle] + sign[i_sign] + "/posPt";
                     savepath += pts[i_pt] + "_deg" + deg_str[i_deg] + ".root";
 

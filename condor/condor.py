@@ -12,9 +12,6 @@ for particle in particles:
     wc = subprocess.Popen(('wc', '-l'), stdin=grep.stdout,
                           stdout=subprocess.PIPE)
     n = int(wc.communicate()[0])
-    ls.terminate()
-    grep.terminate()
-    wc.terminate()
 
     for index in range(1, n + 1):
         run = "run_{}_{}.sh".format(particle, index)

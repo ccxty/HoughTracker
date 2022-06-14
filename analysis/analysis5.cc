@@ -18,33 +18,84 @@ using std::tuple;
 using std::vector;
 
 const array<string, 6> particle_str = {"e-", "mu-", "pi-", "e+", "mu+", "pi+"};
-const array<string, 18> pt_str = {"50",  "55",  "60",  "65",  "70",  "75",
-                                  "80",  "85",  "90",  "95",  "100", "105",
-                                  "110", "115", "120", "125", "130", "135"};
-const array<double, 18> pt_double = {50,  55,  60,  65,  70,  75,
-                                     80,  85,  90,  95,  100, 105,
-                                     110, 115, 120, 125, 130, 135};
-const array<string, 13> noise_str = {"0",  "6",  "12", "18", "24", "30", "39",
-                                     "48", "57", "66", "75", "85", "100"};
-const array<double, 13> noise_double = {0,  6,  12, 18, 24, 30, 39,
-                                        48, 57, 66, 75, 85, 100};
+const array<string, 18> pt_str = {"50",
+                                  "55",
+                                  "60",
+                                  "65",
+                                  "70",
+                                  "75",
+                                  "80",
+                                  "85",
+                                  "90",
+                                  "95",
+                                  "100",
+                                  "105",
+                                  "110",
+                                  "115",
+                                  "120",
+                                  "125",
+                                  "130",
+                                  "135"};
+const array<double, 18> pt_double = {50,
+                                     55,
+                                     60,
+                                     65,
+                                     70,
+                                     75,
+                                     80,
+                                     85,
+                                     90,
+                                     95,
+                                     100,
+                                     105,
+                                     110,
+                                     115,
+                                     120,
+                                     125,
+                                     130,
+                                     135};
+const array<string, 13> noise_str = {"0",
+                                     "6",
+                                     "12",
+                                     "18",
+                                     "24",
+                                     "30",
+                                     "39",
+                                     "48",
+                                     "57",
+                                     "66",
+                                     "75",
+                                     "85",
+                                     "100"};
+const array<double, 13> noise_double =
+    {0, 6, 12, 18, 24, 30, 39, 48, 57, 66, 75, 85, 100};
 const array<string, 3> multi_str = {"1", "3", "5"};
 const array<double, 3> multi_double = {1, 3, 5};
-const array<EColor, 6> particle_color = {kBlack,  kViolet, kRed,
-                                         kYellow, kBlue,   kGreen};
-const array<string, 9> deg_str = {"90",      "84.2608", "78.463",
-                                  "72.5424", "66.4218", "60",
-                                  "53.1301", "45.573",  "36.8699"};
-const array<double, 9> deg_double = {90, 84.2608, 78.463, 72.5424, 66.4218,
-                                     60, 53.1301, 45.573, 36.8699};
+const array<EColor, 6> particle_color =
+    {kBlack, kViolet, kRed, kYellow, kBlue, kGreen};
+const array<string, 9> deg_str = {"90",
+                                  "84.2608",
+                                  "78.463",
+                                  "72.5424",
+                                  "66.4218",
+                                  "60",
+                                  "53.1301",
+                                  "45.573",
+                                  "36.8699"};
+const array<double, 9> deg_double =
+    {90, 84.2608, 78.463, 72.5424, 66.4218, 60, 53.1301, 45.573, 36.8699};
 const array<EColor, 3> multi_color = {kBlack, kRed, kViolet};
 const array<EColor, 4> pt_color = {kBlack, kRed, kViolet, kGray};
 const array<EColor, 5> noise_color = {kBlack, kRed, kViolet, kBlue, kGray};
 const array<EColor, 3> deg_color = {kBlack, kRed, kViolet};
 
-string get_file_name(int i_particle, int i_pt, int i_noise, int i_multi,
-                     int i_deg, string &program_name) {
-    string file_name = "../data/20220502/" + program_name + "Tracker/";
+string get_file_name(int i_particle,
+                     int i_pt,
+                     int i_noise,
+                     int i_multi,
+                     int i_deg,
+                     string &program_name) {
+    string file_name = "../data/20220614/" + program_name + "Tracker/";
     file_name += particle_str[i_particle] + "/trackdata_Pt";
     file_name += pt_str[i_pt] + "_noise";
     file_name += noise_str[i_noise] + "_multi";
@@ -104,32 +155,7 @@ array<array<double, 2>, 2> get_eff_fake(TTree *tree) {
     return result;
 }
 
-template <int N>
-void print(array<double, N> &input, ofstream &out) {
-    for (auto x : input) {
-        out << x << " ";
-    }
-}
-
-template <int N>
-void print_all(array<double, N> &eff, array<double, N> &eff_err,
-               array<double, N> &fake, array<double, N> &fake_err,
-               ofstream &out) {
-    out << "eff:      ";
-    print<N>(eff, out);
-    out << "\n";
-    out << "eff_err:  ";
-    print<N>(eff_err, out);
-    out << "\n";
-    out << "fake:     ";
-    print<N>(fake, out);
-    out << "\n";
-    out << "fake_err: ";
-    print<N>(fake_err, out);
-    out << "\n";
-}
-
-void graph_pt_deg(string &program_name, ofstream &out) {
+void graph_pt_deg(string &program_name) {
     int i_particle = 0;
     int i_noise = 9;
     int i_multi = 0;
@@ -144,8 +170,12 @@ void graph_pt_deg(string &program_name, ofstream &out) {
         array<double, 18> fake;
         array<double, 18> fake_err;
         for (int i_pt = 0; i_pt < 18; i_pt++) {
-            string file_name = get_file_name(i_particle, i_pt, i_noise, i_multi,
-                                             i_deg, program_name);
+            string file_name = get_file_name(i_particle,
+                                             i_pt,
+                                             i_noise,
+                                             i_multi,
+                                             i_deg,
+                                             program_name);
             auto *file = new TFile(file_name.c_str());
             auto *tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
             auto result = get_eff_fake(tree);
@@ -154,11 +184,16 @@ void graph_pt_deg(string &program_name, ofstream &out) {
             fake[i_pt] = result[1][0];
             fake_err[i_pt] = result[1][1];
         }
-        print_all<18>(eff, eff_err, fake, fake_err, out);
-        auto *g_eff = new TGraphErrors(18, pt_double.data(), eff.data(),
-                                       nullptr, eff_err.data());
-        auto *g_fake = new TGraphErrors(18, pt_double.data(), fake.data(),
-                                        nullptr, fake_err.data());
+        auto *g_eff = new TGraphErrors(18,
+                                       pt_double.data(),
+                                       eff.data(),
+                                       nullptr,
+                                       eff_err.data());
+        auto *g_fake = new TGraphErrors(18,
+                                        pt_double.data(),
+                                        fake.data(),
+                                        nullptr,
+                                        fake_err.data());
         g_eff->SetLineColor(deg_color[i_deg / 4]);
         g_fake->SetLineColor(deg_color[i_deg / 4]);
         g_eff->SetTitle(("degree " + deg_str[i_deg]).c_str());
@@ -182,7 +217,7 @@ void graph_pt_deg(string &program_name, ofstream &out) {
     c2->SaveAs(("fake_pt_deg_" + program_name + ".png").c_str());
 }
 
-void graph_noise_deg(string &program_name, ofstream &out) {
+void graph_noise_deg(string &program_name) {
     int i_particle = 0;
     int i_pt = 0;
     int i_multi = 0;
@@ -196,8 +231,12 @@ void graph_noise_deg(string &program_name, ofstream &out) {
         array<double, 13> fake;
         array<double, 13> fake_err;
         for (int i_noise = 0; i_noise < 13; i_noise++) {
-            string file_name = get_file_name(i_particle, i_pt, i_noise, i_multi,
-                                             i_deg, program_name);
+            string file_name = get_file_name(i_particle,
+                                             i_pt,
+                                             i_noise,
+                                             i_multi,
+                                             i_deg,
+                                             program_name);
             auto *file = new TFile(file_name.c_str());
             auto *tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
             auto result = get_eff_fake(tree);
@@ -206,11 +245,16 @@ void graph_noise_deg(string &program_name, ofstream &out) {
             fake[i_noise] = result[1][0];
             fake_err[i_noise] = result[1][1];
         }
-        print_all<13>(eff, eff_err, fake, fake_err, out);
-        auto *g_eff = new TGraphErrors(13, noise_double.data(), eff.data(),
-                                       nullptr, eff_err.data());
-        auto *g_fake = new TGraphErrors(13, noise_double.data(), fake.data(),
-                                        nullptr, fake_err.data());
+        auto *g_eff = new TGraphErrors(13,
+                                       noise_double.data(),
+                                       eff.data(),
+                                       nullptr,
+                                       eff_err.data());
+        auto *g_fake = new TGraphErrors(13,
+                                        noise_double.data(),
+                                        fake.data(),
+                                        nullptr,
+                                        fake_err.data());
         g_eff->SetLineColor(deg_color[i_deg / 4]);
         g_fake->SetLineColor(deg_color[i_deg / 4]);
         g_eff->SetTitle(("degree " + deg_str[i_deg]).c_str());
@@ -234,7 +278,7 @@ void graph_noise_deg(string &program_name, ofstream &out) {
     c2->SaveAs(("fake_noise_deg_" + program_name + ".png").c_str());
 }
 
-void graph_pt_particle(string &program_name, ofstream &out) {
+void graph_pt_particle(string &program_name) {
     int i_noise = 9;
     int i_multi = 0;
     int i_deg = 0;
@@ -249,8 +293,12 @@ void graph_pt_particle(string &program_name, ofstream &out) {
         array<double, 18> fake;
         array<double, 18> fake_err;
         for (int i_pt = 0; i_pt < 18; i_pt++) {
-            string file_name = get_file_name(i_particle, i_pt, i_noise, i_multi,
-                                             i_deg, program_name);
+            string file_name = get_file_name(i_particle,
+                                             i_pt,
+                                             i_noise,
+                                             i_multi,
+                                             i_deg,
+                                             program_name);
             auto *file = new TFile(file_name.c_str());
             auto *tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
             auto result = get_eff_fake(tree);
@@ -259,11 +307,16 @@ void graph_pt_particle(string &program_name, ofstream &out) {
             fake[i_pt] = result[1][0];
             fake_err[i_pt] = result[1][1];
         }
-        print_all<18>(eff, eff_err, fake, fake_err, out);
-        auto *g_eff = new TGraphErrors(18, pt_double.data(), eff.data(),
-                                       nullptr, eff_err.data());
-        auto *g_fake = new TGraphErrors(18, pt_double.data(), fake.data(),
-                                        nullptr, fake_err.data());
+        auto *g_eff = new TGraphErrors(18,
+                                       pt_double.data(),
+                                       eff.data(),
+                                       nullptr,
+                                       eff_err.data());
+        auto *g_fake = new TGraphErrors(18,
+                                        pt_double.data(),
+                                        fake.data(),
+                                        nullptr,
+                                        fake_err.data());
         g_eff->SetLineColor(particle_color[i_particle]);
         g_fake->SetLineColor(particle_color[i_particle]);
         g_eff->SetTitle(particle_str[i_particle].c_str());
@@ -287,7 +340,7 @@ void graph_pt_particle(string &program_name, ofstream &out) {
     c2->SaveAs(("fake_pt_particle_" + program_name + ".png").c_str());
 }
 
-void graph_noise_particle(string &program_name, ofstream &out) {
+void graph_noise_particle(string &program_name) {
     int i_pt = 2;
     int i_multi = 0;
     int i_deg = 0;
@@ -301,8 +354,12 @@ void graph_noise_particle(string &program_name, ofstream &out) {
         array<double, 13> fake;
         array<double, 13> fake_err;
         for (int i_noise = 0; i_noise < 13; i_noise++) {
-            string file_name = get_file_name(i_particle, i_pt, i_noise, i_multi,
-                                             i_deg, program_name);
+            string file_name = get_file_name(i_particle,
+                                             i_pt,
+                                             i_noise,
+                                             i_multi,
+                                             i_deg,
+                                             program_name);
             auto *file = new TFile(file_name.c_str());
             auto *tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
             auto result = get_eff_fake(tree);
@@ -311,11 +368,16 @@ void graph_noise_particle(string &program_name, ofstream &out) {
             fake[i_noise] = result[1][0];
             fake_err[i_noise] = result[1][1];
         }
-        print_all<13>(eff, eff_err, fake, fake_err, out);
-        auto *g_eff = new TGraphErrors(13, noise_double.data(), eff.data(),
-                                       nullptr, eff_err.data());
-        auto *g_fake = new TGraphErrors(13, noise_double.data(), fake.data(),
-                                        nullptr, fake_err.data());
+        auto *g_eff = new TGraphErrors(13,
+                                       noise_double.data(),
+                                       eff.data(),
+                                       nullptr,
+                                       eff_err.data());
+        auto *g_fake = new TGraphErrors(13,
+                                        noise_double.data(),
+                                        fake.data(),
+                                        nullptr,
+                                        fake_err.data());
         g_eff->SetLineColor(particle_color[i_particle]);
         g_fake->SetLineColor(particle_color[i_particle]);
         g_eff->SetTitle(particle_str[i_particle].c_str());
@@ -339,7 +401,7 @@ void graph_noise_particle(string &program_name, ofstream &out) {
     c2->SaveAs(("fake_noise_particle_" + program_name + ".png").c_str());
 }
 
-void graph_deg_multi(string program_name, ofstream &out) {
+void graph_deg_multi(string program_name) {
     int i_particle = 0;
     int i_noise = 9;
     int i_pt = 0;
@@ -354,8 +416,12 @@ void graph_deg_multi(string program_name, ofstream &out) {
         array<double, 9> fake;
         array<double, 9> fake_err;
         for (int i_deg = 0; i_deg < 9; i_deg++) {
-            string file_name = get_file_name(i_particle, i_pt, i_noise, i_multi,
-                                             i_deg, program_name);
+            string file_name = get_file_name(i_particle,
+                                             i_pt,
+                                             i_noise,
+                                             i_multi,
+                                             i_deg,
+                                             program_name);
             auto *file = new TFile(file_name.c_str());
             auto *tree = dynamic_cast<TTree *>(gDirectory->Get("tree1"));
             auto result = get_eff_fake(tree);
@@ -364,12 +430,17 @@ void graph_deg_multi(string program_name, ofstream &out) {
             fake[i_deg] = result[1][0];
             fake_err[i_deg] = result[1][1];
         }
-        print_all<9>(eff, eff_err, fake, fake_err, out);
         std::cout << std::endl;
-        auto *g_eff = new TGraphErrors(9, deg_double.data(), eff.data(),
-                                       nullptr, eff_err.data());
-        auto *g_fake = new TGraphErrors(9, deg_double.data(), fake.data(),
-                                        nullptr, fake_err.data());
+        auto *g_eff = new TGraphErrors(9,
+                                       deg_double.data(),
+                                       eff.data(),
+                                       nullptr,
+                                       eff_err.data());
+        auto *g_fake = new TGraphErrors(9,
+                                        deg_double.data(),
+                                        fake.data(),
+                                        nullptr,
+                                        fake_err.data());
         g_eff->SetLineColor(multi_color[i_multi]);
         g_fake->SetLineColor(multi_color[i_multi]);
         g_eff->SetTitle((multi_str[i_multi] + "tracks").c_str());
@@ -394,14 +465,13 @@ void graph_deg_multi(string program_name, ofstream &out) {
 }
 
 void analysis5() {
-    array<string, 2> program_name = {"Hough", "Local"};
-    ofstream out("output.txt", ios::app);
+    array<string, 1> program_name = {"Hough" /*, "Local"*/};
     for (string &program : program_name) {
-        graph_pt_deg(program, out);
-        graph_noise_deg(program, out);
-        graph_pt_particle(program, out);
-        graph_noise_particle(program, out);
-        graph_deg_multi(program, out);
+        graph_pt_deg(program);
+        graph_noise_deg(program);
+        graph_pt_particle(program);
+        graph_noise_particle(program);
+        graph_deg_multi(program);
         out << "\n";
     }
 }

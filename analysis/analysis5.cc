@@ -159,16 +159,15 @@ void graph_pt_deg(string &program_name) {
     int i_particle = 0;
     int i_noise = 9;
     int i_multi = 0;
-    TMultiGraph *effs = new TMultiGraph("effs", "eff    e- with 66 noise");
-    TMultiGraph *fakes =
-        new TMultiGraph("fakes", "fake    e- rate with 66 noise");
-    TCanvas *c1 = new TCanvas("c1", "c1");
-    TCanvas *c2 = new TCanvas("c2", "c2");
+    auto *effs = new TMultiGraph("effs", "eff    e- with 66 noise");
+    auto *fakes = new TMultiGraph("fakes", "fake    e- rate with 66 noise");
+    auto *c1 = new TCanvas("c1", "c1");
+    auto *c2 = new TCanvas("c2", "c2");
     for (int i_deg = 0; i_deg < 9; i_deg += 4) {
-        array<double, 18> eff;
-        array<double, 18> eff_err;
-        array<double, 18> fake;
-        array<double, 18> fake_err;
+        array<double, 18> eff{};
+        array<double, 18> eff_err{};
+        array<double, 18> fake{};
+        array<double, 18> fake_err{};
         for (int i_pt = 0; i_pt < 18; i_pt++) {
             string file_name = get_file_name(i_particle,
                                              i_pt,
@@ -221,15 +220,15 @@ void graph_noise_deg(string &program_name) {
     int i_particle = 0;
     int i_pt = 0;
     int i_multi = 0;
-    TMultiGraph *effs = new TMultiGraph("effs", "eff    e^{-}@50MeV");
-    TMultiGraph *fakes = new TMultiGraph("fakes", "fake rate    e^{-}@50MeV");
-    TCanvas *c1 = new TCanvas("c1", "c1");
-    TCanvas *c2 = new TCanvas("c2", "c2");
+    auto *effs = new TMultiGraph("effs", "eff    e^{-}@50MeV");
+    auto *fakes = new TMultiGraph("fakes", "fake rate    e^{-}@50MeV");
+    auto *c1 = new TCanvas("c1", "c1");
+    auto *c2 = new TCanvas("c2", "c2");
     for (int i_deg = 0; i_deg < 9; i_deg += 4) {
-        array<double, 13> eff;
-        array<double, 13> eff_err;
-        array<double, 13> fake;
-        array<double, 13> fake_err;
+        array<double, 13> eff{};
+        array<double, 13> eff_err{};
+        array<double, 13> fake{};
+        array<double, 13> fake_err{};
         for (int i_noise = 0; i_noise < 13; i_noise++) {
             string file_name = get_file_name(i_particle,
                                              i_pt,
@@ -282,16 +281,15 @@ void graph_pt_particle(string &program_name) {
     int i_noise = 9;
     int i_multi = 0;
     int i_deg = 0;
-    TMultiGraph *effs = new TMultiGraph("effs", "eff    with 66 noise @90deg");
-    TMultiGraph *fakes =
-        new TMultiGraph("fakes", "fake rate    with 66 noise @90deg");
-    TCanvas *c1 = new TCanvas("c1", "c1");
-    TCanvas *c2 = new TCanvas("c2", "c2");
+    auto *effs = new TMultiGraph("effs", "eff    with 66 noise @90deg");
+    auto *fakes = new TMultiGraph("fakes", "fake rate    with 66 noise @90deg");
+    auto *c1 = new TCanvas("c1", "c1");
+    auto *c2 = new TCanvas("c2", "c2");
     for (int i_particle = 0; i_particle < 3; i_particle++) {
-        array<double, 18> eff;
-        array<double, 18> eff_err;
-        array<double, 18> fake;
-        array<double, 18> fake_err;
+        array<double, 18> eff{};
+        array<double, 18> eff_err{};
+        array<double, 18> fake{};
+        array<double, 18> fake_err{};
         for (int i_pt = 0; i_pt < 18; i_pt++) {
             string file_name = get_file_name(i_particle,
                                              i_pt,
@@ -344,15 +342,15 @@ void graph_noise_particle(string &program_name) {
     int i_pt = 2;
     int i_multi = 0;
     int i_deg = 0;
-    TMultiGraph *effs = new TMultiGraph("effs", "eff    @60MeV, 90deg");
-    TMultiGraph *fakes = new TMultiGraph("fakes", "fake rate    @60MeV, 90deg");
-    TCanvas *c1 = new TCanvas("c1", "c1");
-    TCanvas *c2 = new TCanvas("c2", "c2");
+    auto *effs = new TMultiGraph("effs", "eff    @60MeV, 90deg");
+    auto *fakes = new TMultiGraph("fakes", "fake rate    @60MeV, 90deg");
+    auto *c1 = new TCanvas("c1", "c1");
+    auto *c2 = new TCanvas("c2", "c2");
     for (int i_particle = 0; i_particle < 3; i_particle++) {
-        array<double, 13> eff;
-        array<double, 13> eff_err;
-        array<double, 13> fake;
-        array<double, 13> fake_err;
+        array<double, 13> eff{};
+        array<double, 13> eff_err{};
+        array<double, 13> fake{};
+        array<double, 13> fake_err{};
         for (int i_noise = 0; i_noise < 13; i_noise++) {
             string file_name = get_file_name(i_particle,
                                              i_pt,
@@ -405,16 +403,15 @@ void graph_deg_multi(string program_name) {
     int i_particle = 0;
     int i_noise = 9;
     int i_pt = 0;
-    TMultiGraph *effs = new TMultiGraph("effs", "eff    e^{-}@50MeV,66 noise");
-    TMultiGraph *fakes =
-        new TMultiGraph("fakes", "fake rate    e^{-}@50MeV,66 noise");
-    TCanvas *c1 = new TCanvas("c1", "c1");
-    TCanvas *c2 = new TCanvas("c2", "c2");
+    auto *effs = new TMultiGraph("effs", "eff    e^{-}@50MeV,66 noise");
+    auto *fakes = new TMultiGraph("fakes", "fake rate    e^{-}@50MeV,66 noise");
+    auto *c1 = new TCanvas("c1", "c1");
+    auto *c2 = new TCanvas("c2", "c2");
     for (int i_multi = 0; i_multi < 3; i_multi++) {
-        array<double, 9> eff;
-        array<double, 9> eff_err;
-        array<double, 9> fake;
-        array<double, 9> fake_err;
+        array<double, 9> eff{};
+        array<double, 9> eff_err{};
+        array<double, 9> fake{};
+        array<double, 9> fake_err{};
         for (int i_deg = 0; i_deg < 9; i_deg++) {
             string file_name = get_file_name(i_particle,
                                              i_pt,
@@ -472,6 +469,5 @@ void analysis5() {
         graph_pt_particle(program);
         graph_noise_particle(program);
         graph_deg_multi(program);
-        out << "\n";
     }
 }

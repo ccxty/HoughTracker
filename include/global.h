@@ -11,6 +11,7 @@ constexpr double MagFeild = 1.0;                        // 1.0 T
 constexpr double PtMin = 0.3 * MagFeild * 165.11 / 2.;  // 击中三层动量条件
 constexpr double QCut = 0.1;
 constexpr double QzCut = 2.;
+// 65.115, 100.11, 130.11, 165.11
 constexpr std::array<double, 3> InnerTrackerR = {65.115, 115.11, 165.11};
 // layer0: (25.6796, 59.8374)
 // layer1: (80.2514, 82.5229)

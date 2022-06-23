@@ -17,8 +17,6 @@
 
 namespace Hough {
 
-using HoughGrid =
-    std::vector<std::unique_ptr<std::vector<std::unique_ptr<HoughGridArea>>>>;
 using Tracks = std::vector<Track>;
 
 template <int NAlpha, int NRho>

@@ -7,19 +7,21 @@
 #include <numeric>
 #include <random>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "TCanvas.h"
 #include "TClass.h"
 #include "TFile.h"
+#include "TGraph.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH2D.h"
+#include "TMarker.h"
 #include "TMath.h"
 #include "TRandom3.h"
+#include "TTree.h"
 #include "include/args.h"
-#include "TMarker.h"
-#include "TGraph.h"
-#include "TH2D.h"
 
 using std::accumulate;
 using std::array;
@@ -31,7 +33,7 @@ using std::string;
 using std::tuple;
 using std::unique_ptr;
 using std::vector;
-constexpr std::array<double, 3> InnerDectectorR = {65.115, 115.11, 165.11};
+constexpr std::array<double, 3> InnerDetectorR = {65.115, 115.11, 165.11};
 
 std::set<int>* GetRandomSet(int n_tracks_in_event, std::set<int>& base) {
     auto* set = new std::set<int>;
@@ -98,18 +100,49 @@ void test_pointer() {
     cout << (ptr1 == ptr2) << std::endl;
 }
 
-void draw_points(){
-    auto point0= new TMarker(InnerDectectorR[0],0.857237,0);
+void draw_points() {
+    auto point0 = new TMarker(InnerDetectorR[0], 0.857237, 0);
 
-    auto point1 = new TMarker(InnerDectectorR[1],1.44932,0);
-    auto point2 = new TMarker(InnerDectectorR[2],1.66734,0);
-    TCanvas *c1 = new TCanvas("","");
+    auto point1 = new TMarker(InnerDetectorR[1], 1.44932, 0);
+    auto point2 = new TMarker(InnerDetectorR[2], 1.66734, 0);
+    TCanvas* c1 = new TCanvas("", "");
     TH2D* h = new TH2D();
     c1->cd();
     h->Draw();
     point0->Draw();
     point1->Draw();
     point2->Draw();
+}
+
+void test_posZ_layer0() {
+    // std::string file_name = "../root_data_source/e-/posPt50.root";
+    // std::string file_name = "../root_data_source/e-/posPt50_deg36.8699.root";
+    std::string file_name = "../root_data_source/e-/posPt50_deg66.4218.root";
+    double theta = (90 - 66.4218) * TMath::Pi() / 180.;
+    auto* file = new TFile(file_name.c_str());
+    auto* tree = dynamic_cast<TTree*>(file->Get("tree1"));
+    std::vector<double>* posX = nullptr;
+    std::vector<double>* posY = nullptr;
+    std::vector<double>* posZ = nullptr;
+    std::vector<int>* layerID = nullptr;
+    tree->SetBranchAddress("posX", &posX);
+    tree->SetBranchAddress("posY", &posY);
+    tree->SetBranchAddress("posZ", &posZ);
+    tree->SetBranchAddress("layerID", &layerID);
+    auto* c1 = new TCanvas("c1", "c1");
+    auto* hist = new TH1F("hist", "hist", 600, -100, 100);
+    auto entries = tree->GetEntries();
+    for (int ie = 0; ie < entries; ie++) {
+        tree->GetEntry(ie);
+        for (int ip = 0; ip < posZ->size(); ip++) {
+            if (layerID->at(ip) == 0) {
+                hist->Fill(fabs(posZ->at(ip)) - tan(theta) * InnerDetectorR[0]);
+                break;
+            }
+        }
+    }
+    c1->cd();
+    hist->Draw();
 }
 
 void test() {
@@ -182,4 +215,5 @@ void test() {
     test_json_out();
     test_pointer();
     draw_points();
+    test_posZ_layer0();
 }
